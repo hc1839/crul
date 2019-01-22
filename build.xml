@@ -1,0 +1,196 @@
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="crul" default="build">
+    <!-- Ivy properties. -->
+
+    <property name="ivy.install.version" value="2.5.0-rc1"/>
+    <condition property="ivy.home" value="${env.IVY_HOME}">
+        <isset property="env.IVY_HOME"/>
+    </condition>
+    <property name="ivy.home" value="${user.home}/.ant"/>
+    <property name="ivy.jar.dir" value="${ivy.home}/lib"/>
+    <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
+
+
+    <!-- Ivy targets. -->
+
+    <target name="download-ivy" unless="offline">
+        <mkdir dir="${ivy.jar.dir}"/>
+        <get
+            src="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+            dest="${ivy.jar.file}"
+            usetimestamp="true"/>
+    </target>
+
+    <target name="init-ivy" depends="download-ivy">
+        <path id="ivy.lib.path">
+            <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+        </path>
+
+        <taskdef
+            resource="org/apache/ivy/ant/antlib.xml"
+            uri="antlib:org.apache.ivy.ant"
+            classpathref="ivy.lib.path"/>
+    </target>
+
+
+    <!-- Properties related to dependency management. -->
+
+    <!-- Path to the directory where the JAR dependencies will be stored. -->
+    <property name="config.lib.dir" value="lib"/>
+
+
+    <!-- Properties related to building. -->
+
+    <!-- Path to Kotlin lib directory. -->
+    <property name="config.kotlin.lib" value=""/>
+
+    <!-- Path to the directory where the build takes place. -->
+    <property name="config.build.dir" value="build"/>
+
+    <!-- Path to the directory where the packaged JAR file will be stored. -->
+    <property name="config.proj.jar.dir" value="jar"/>
+
+    <!-- Path to the source directory. -->
+    <property name="src.dir" value="src"/>
+
+    <!-- Properties related to project information. -->
+
+    <!-- Name of the project. -->
+    <property name="project.name" value="crul"/>
+
+    <!-- Version of the project. -->
+    <property name="project.version" value="0.5.0"/>
+
+    <!-- Name of the project JAR file. -->
+    <property name="proj.jar.name" value="${project.name}-${project.version}.jar"/>
+
+
+    <!-- Properties related to documentation. -->
+
+    <!-- Output path for the generated documentation. -->
+    <property name="config.doc.dir" value="doc"/>
+
+    <!-- Path to Dokka's fat JAR. -->
+    <property name="config.dokka.fatjar" value=""/>
+
+    <!-- Dokka's output format. -->
+    <property name="config.dokka.output.format" value="html"/>
+
+    <typedef
+        resource="org/jetbrains/kotlin/ant/antlib.xml"
+        classpath="${config.kotlin.lib}/kotlin-ant.jar"
+        onerror="report"/>
+
+    <typedef
+        resource="dokka-antlib.xml"
+        classpath="${config.dokka.fatjar}"
+        onerror="report"/>
+
+    <target
+        name="resolve.deps"
+        description="Retrieves dependencies with Ivy.">
+
+        <ivy:retrieve pattern="${config.lib.dir}/[artifact]-[revision](-[classifier]).[ext]"/>
+    </target>
+
+    <!-- Paths to all dependencies, including the build directory. -->
+    <path id="classpath.all">
+        <fileset dir="${config.lib.dir}">
+            <include name="**/*.jar"/>
+            <exclude name="**/${proj.jar.name}"/>
+        </fileset>
+        <pathelement location="${config.build.dir}"/>
+    </path>
+
+    <target
+        name="list.config.options"
+        description="Lists the configurable options.">
+
+        <echoproperties prefix="config." format="text"/>
+    </target>
+
+    <target
+        name="create.build.dir"
+        depends="init-ivy,resolve.deps">
+
+        <mkdir dir="${config.build.dir}"/>
+    </target>
+
+    <!-- Copies the information stores. -->
+    <target
+        name="copy.info.stores"
+        depends="create.build.dir">
+
+        <copy todir="${config.build.dir}" preservelastmodified="true">
+            <fileset dir="${src.dir}" includes="**/*.xml"/>
+            <fileset dir="${src.dir}" includes="**/*.json"/>
+        </copy>
+    </target>
+
+    <!-- Serves as an intermediate target only. This project must be packaged
+         as a JAR file. -->
+    <target
+        name="compile"
+        depends="copy.info.stores">
+
+        <kotlinc
+            src="${src.dir}"
+            classpathref="classpath.all"
+            output="${config.build.dir}">
+
+            <compilerarg value="-jvm-target"/>
+            <compilerarg value="1.8"/>
+        </kotlinc>
+    </target>
+
+    <target
+        name="build"
+        depends="compile"
+        description="Builds the project by compiling and packaging it as a JAR.">
+
+        <delete quiet="true">
+            <fileset dir="${config.proj.jar.dir}" includes="${proj.jar.name}"/>
+        </delete>
+
+        <mkdir dir="${config.proj.jar.dir}"/>
+
+        <jar
+            basedir="${config.build.dir}"
+            destfile="${config.proj.jar.dir}/${proj.jar.name}"/>
+    </target>
+
+    <target
+        name="doc"
+        description="Generates the library documentation.">
+
+        <mkdir dir="${config.doc.dir}"/>
+
+        <dokka
+            src="${src.dir}"
+            outputDir="${config.doc.dir}"
+            moduleName="crul"
+            outputFormat="${config.dokka.output.format}"/>
+    </target>
+
+    <target
+        name="clean.build"
+        description="Removes the build directory.">
+
+        <delete quiet="true" includeEmptyDirs="true">
+            <fileset dir="${config.build.dir}"/>
+        </delete>
+    </target>
+
+    <target
+        name="clean.doc"
+        description="Removes the doc directory.">
+
+        <delete quiet="true" includeEmptyDirs="true">
+            <fileset dir="${config.doc.dir}"/>
+        </delete>
+    </target>
+
+    <target
+        name="clean"
+        depends="clean.build,clean.doc"
+        description="Removes the build and doc directories."/>
+</project>

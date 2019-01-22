@@ -1,0 +1,197 @@
+{
+    "prefixes": {
+        "Y": {
+            "ci": "YA",
+            "name": "yotta",
+            "value": 1e24
+        },
+        "Z": {
+            "ci": "ZA",
+            "name": "zetta",
+            "value": 1e21
+        },
+        "E": {
+            "ci": "EX",
+            "name": "exa",
+            "value": 1e18
+        },
+        "P": {
+            "ci": "PT",
+            "name": "peta",
+            "value": 1e15
+        },
+        "T": {
+            "ci": "TR",
+            "name": "tera",
+            "value": 1e12
+        },
+        "G": {
+            "ci": "GA",
+            "name": "giga",
+            "value": 1e9
+        },
+        "M": {
+            "ci": "MA",
+            "name": "mega",
+            "value": 1e6
+        },
+        "k": {
+            "ci": "K",
+            "name": "kilo",
+            "value": 1e3
+        },
+        "h": {
+            "ci": "H",
+            "name": "hecto",
+            "value": 1e2
+        },
+        "da": {
+            "ci": "DA",
+            "name": "deka",
+            "value": 1e1
+        },
+        "d": {
+            "ci": "D",
+            "name": "deci",
+            "value": 1e-1
+        },
+        "c": {
+            "ci": "C",
+            "name": "centi",
+            "value": 1e-2
+        },
+        "m": {
+            "ci": "M",
+            "name": "milli",
+            "value": 1e-3
+        },
+        "u": {
+            "ci": "U",
+            "name": "micro",
+            "value": 1e-6
+        },
+        "n": {
+            "ci": "N",
+            "name": "nano",
+            "value": 1e-9
+        },
+        "p": {
+            "ci": "P",
+            "name": "pico",
+            "value": 1e-12
+        },
+        "f": {
+            "ci": "F",
+            "name": "femto",
+            "value": 1e-15
+        },
+        "a": {
+            "ci": "A",
+            "name": "atto",
+            "value": 1e-18
+        },
+        "z": {
+            "ci": "ZO",
+            "name": "zepto",
+            "value": 1e-21
+        },
+        "y": {
+            "ci": "YO",
+            "name": "yocto",
+            "value": 1e-24
+        },
+        "Ki": {
+            "ci": "KIB",
+            "name": "kibi",
+            "value": 1024
+        },
+        "Mi": {
+            "ci": "MIB",
+            "name": "mebi",
+            "value": 1048576
+        },
+        "Gi": {
+            "ci": "GIB",
+            "name": "gibi",
+            "value": 1073741824
+        },
+        "Ti": {
+            "ci": "TIB",
+            "name": "tebi",
+            "value": 1099511627776
+        }
+    },
+    "derived-units": {
+        "Ao": {
+            "ci": "AO",
+            "is-metric": false,
+            "magnitude": 0.1e-9,
+            "dimension": {
+                "m": 1
+            }
+        },
+        "mol": {
+            "ci": "MOL",
+            "is-metric": true,
+            "magnitude": 6.0221367e23,
+            "dimension": {}
+        },
+        "J": {
+            "ci": "J",
+            "is-metric": true,
+            "magnitude": 1e3,
+            "dimension": {
+                "g": 1,
+                "m": 2,
+                "s": -2
+            }
+        },
+        "cal": {
+            "ci": "CAL",
+            "is-metric": true,
+            "magnitude": 4.184e3,
+            "dimension": {
+                "g": 1,
+                "m": 2,
+                "s": -2
+            }
+        },
+        "eV": {
+            "ci": "EV",
+            "is-metric": true,
+            "magnitude": 1.60217733e-16,
+            "dimension": {
+                "g": 1,
+                "m": 2,
+                "s": -2
+            }
+        },
+        "A": {
+            "ci": "A",
+            "is-metric": true,
+            "magnitude": 1.0,
+            "dimension": {
+                "C": 1,
+                "s": -1
+            }
+        },
+        "W": {
+            "ci": "W",
+            "is-metric": true,
+            "magnitude": 1e3,
+            "dimension": {
+                "g": 1,
+                "m": 2,
+                "s": -3
+            }
+        },
+        "sr": {
+            "ci": "SR",
+            "is-metric": true,
+            "magnitude": 1.0,
+            "dimension": {
+                "rad": 2
+            }
+        }
+    }
+}

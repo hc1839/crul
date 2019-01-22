@@ -1,0 +1,243 @@
+/*
+ *  Copyright Han Chen
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ *  use this file except in compliance with the License. You may obtain a copy
+ *  of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  License for the specific language governing permissions and limitations
+ *  under the License.
+ */
+
+package measure.dimension
+
+import kotlin.math.pow
+import org.msgpack.core.MessagePack
+import org.msgpack.value.Value
+import serialize.BinarySerializable
+
+/**
+ *  Dimension of a quantity according to the International System of Quantities
+ *  (ISQ).
+ *
+ *  Dimension does not include the magnitude or the unit.
+ */
+class Dimension : BinarySerializable {
+    /**
+     *  Exponents associated by base dimensions as a backing property.
+     */
+    private val _exponents: MutableMap<BaseDimension, Int> = mutableMapOf()
+
+    /**
+     *  Exponents associated by base dimensions.
+     *
+     *  Only entries where the exponent is non-zero is returned.
+     */
+    val exponents: Map<BaseDimension, Int>
+        get() = _exponents.filter { (_, exp) -> exp != 0 }
+
+    /**
+     *  Dimensionless instance.
+     */
+    constructor()
+
+    /**
+     *  Base dimension raised to the power of 1.
+     */
+    constructor(baseDimension: BaseDimension) {
+        _exponents[baseDimension] = 1
+    }
+
+    /**
+     *  For delegation by the data-based constructor.
+     */
+    private constructor(exponents: Map<BaseDimension, Int>) {
+        this._exponents.putAll(exponents)
+    }
+
+    /**
+     *  Data-based constructor.
+     */
+    private constructor(ctorArgs: CtorArgs): this(ctorArgs.exponents)
+
+    /**
+     *  Deserialization constructor.
+     */
+    constructor(msgpack: ByteArray): this(getCtorArgs(msgpack))
+
+    override fun hashCode(): Int =
+        exponents.hashCode()
+
+    override fun equals(other: Any?): Boolean =
+        other is Dimension &&
+        this::class == other::class &&
+        (
+            exponents == other.exponents
+        )
+
+    /**
+     *  MessagePack serialization.
+     */
+    override fun serialize(): ByteArray {
+        val packer = MessagePack.newDefaultBufferPacker()
+
+        packer.packMapHeader(1)
+
+        packer
+            .packString(this::class.qualifiedName)
+            .packMapHeader(1)
+
+        val exponentsBuf = exponents
+
+        packer
+            .packString("exponents")
+            .packMapHeader(exponentsBuf.count())
+
+        for ((baseDim, exp) in exponentsBuf) {
+            packer
+                .packString(baseDim.name)
+                .packInt(exp)
+        }
+
+        packer.close()
+
+        return packer.toByteArray()
+    }
+
+    /**
+     *  `n`-th power.
+     */
+    fun pow(n: Int): Dimension {
+        val newObj = Dimension()
+
+        for ((baseDim, exp) in _exponents) {
+            val newExp = exp * n
+
+            if (newExp != 0) {
+                newObj._exponents[baseDim] = newExp
+            }
+        }
+
+        return newObj
+    }
+
+    /**
+     *  `n`-th root.
+     */
+    fun root(n: Int): Dimension {
+        val newObj = Dimension()
+
+        for ((baseDim, exp) in _exponents) {
+            if (exp % n != 0) {
+                throw IllegalArgumentException(
+                    "Exponent of ${baseDim.name}, $exp, " +
+                    "is not divisible by $n."
+                )
+            }
+
+            val newExp = exp / n
+
+            if (newExp != 0) {
+                newObj._exponents[baseDim] = newExp
+            }
+        }
+
+        return newObj
+    }
+
+    operator fun times(other: Dimension): Dimension {
+        val newObj = Dimension()
+
+        val thisExps = exponents
+        val otherExps = other.exponents
+
+        // Add the exponents of each base dimension.
+        for (baseDim in thisExps.keys.union(otherExps.keys)) {
+            val newExp =
+                thisExps.getOrDefault(baseDim, 0) +
+                otherExps.getOrDefault(baseDim, 0)
+
+            if (newExp != 0) {
+                newObj._exponents[baseDim] = newExp
+            }
+        }
+
+        return newObj
+    }
+
+    operator fun div(other: Dimension): Dimension {
+        val newObj = Dimension()
+
+        val thisExps = exponents
+        val otherExps = other.exponents
+
+        // Subtract the exponents of each base dimension.
+        for (baseDim in thisExps.keys.union(otherExps.keys)) {
+            val newExp =
+                thisExps.getOrDefault(baseDim, 0) -
+                otherExps.getOrDefault(baseDim, 0)
+
+            if (newExp != 0) {
+                newObj._exponents[baseDim] = newExp
+            }
+        }
+
+        return newObj
+    }
+
+    companion object {
+        /**
+         *  Constructor arguments.
+         */
+        private data class CtorArgs(val exponents: Map<BaseDimension, Int>)
+
+        /**
+         *  Convenience function for creating a dimension from several base
+         *  dimensions using dimension symbols according to ISQ.
+         */
+        @JvmStatic
+        fun create(exponents: Map<String, Int>): Dimension =
+            if (exponents.count() == 0) {
+                Dimension()
+            } else {
+                exponents
+                    .map { (baseDimSymbol, exp) ->
+                        Dimension(enumValueOf<BaseDimension>(baseDimSymbol))
+                            .pow(exp)
+                    }
+                    .reduce { acc, item -> acc * item }
+            }
+
+        /**
+         *  Gets the constructor arguments from [serialize].
+         */
+        @JvmStatic
+        private fun getCtorArgs(msgpack: ByteArray): CtorArgs {
+            val (unpackedMap, _) = BinarySerializable
+                .getMapRestPair(
+                    msgpack,
+                    Dimension::class.qualifiedName!!
+                )
+
+            return CtorArgs(
+                unpackedMap["exponents"]!!
+                    .asMapValue()
+                    .map()
+                    .map { (key, value) ->
+                        val baseDim = enumValueOf<BaseDimension>(
+                            key.asStringValue().toString()
+                        )
+                        val exp = value.asIntegerValue().toInt()
+
+                        Pair(baseDim, exp)
+                    }
+                    .toMap()
+            )
+        }
+    }
+}

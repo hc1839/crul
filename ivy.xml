@@ -1,0 +1,9 @@
+<ivy-module version="2.0">
+    <info organisation="crul" module="crul"/>
+    <dependencies>
+        <dependency org="com.google.code.gson" name="gson" rev="latest.integration"/>
+        <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
+        <dependency org="org.msgpack" name="msgpack-core" rev="latest.integration"/>
+        <dependency org="xerces" name="xercesImpl" rev="latest.integration"/>
+    </dependencies>
+</ivy-module>

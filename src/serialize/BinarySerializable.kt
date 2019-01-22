@@ -1,0 +1,144 @@
+/*
+ *  Copyright Han Chen
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ *  use this file except in compliance with the License. You may obtain a copy
+ *  of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  License for the specific language governing permissions and limitations
+ *  under the License.
+ */
+
+@file:JvmMultifileClass
+
+package serialize
+
+import org.msgpack.core.MessagePack
+import org.msgpack.value.Value
+import org.msgpack.value.impl.ImmutableArrayValueImpl
+import org.msgpack.value.impl.ImmutableStringValueImpl
+
+/**
+ *  Tag for a class whose instances can be serialized to a byte array.
+ */
+interface BinarySerializable {
+    /**
+     *  Serializes the object to a byte array.
+     *
+     *  The serialization format is specific to the class implementing this
+     *  function.
+     */
+    fun serialize(): ByteArray
+
+    companion object {
+        /**
+         *  Convenience function that gets the map associated with a key in a
+         *  MessagePack map.
+         *
+         *  This function assumes that `msgpackMap` is a MessagePack map of
+         *  string to another map, which in turn is an association of string
+         *  with a MessagePack value.
+         *
+         *  In the returned pair, the first component is the map that is
+         *  associated `key`, and the second component is the rest of the
+         *  MessagePack map without `key` encoded as a byte array.
+         *
+         *  If `key` does not exist, an exception is raised.
+         */
+        @JvmStatic
+        fun getMapRestPair(msgpackMap: ByteArray, key: String):
+            Pair<Map<String, Value>, ByteArray>
+        {
+            val unpacker = MessagePack.newDefaultUnpacker(msgpackMap)
+
+            val totalMap = unpacker
+                .unpackValue()
+                .asMapValue()
+                .map()
+                .mapKeys { (keyValue, _) ->
+                    keyValue.asStringValue().toString()
+                }
+
+            unpacker.close()
+
+            val unpackedRequestedMap = totalMap[key]!!
+                .asMapValue()
+                .map()
+                .mapKeys { (keyValue, _) ->
+                    keyValue.asStringValue().toString()
+                }
+
+            val restMap = totalMap - key
+            val restMapPacker = MessagePack.newDefaultBufferPacker()
+
+            restMapPacker.packMapHeader(restMap.count())
+
+            for ((restMapKey, restMapValue) in restMap.entries) {
+                restMapPacker
+                    .packString(restMapKey)
+                    .packValue(restMapValue)
+            }
+
+            restMapPacker.close()
+
+            return Pair(unpackedRequestedMap, restMapPacker.toByteArray())
+        }
+
+        /**
+         *  Convenience function that returns a new MessagePack map encoded as
+         *  a byte array by adding a key-value entry.
+         *
+         *  @param msgpackMap
+         *      MessagePack map that will have `key` and `addendum` added. It
+         *      is not modified.
+         *
+         *  @param key
+         *      Key that is associated with `addendum`.
+         *
+         *  @param addendum
+         *      MessagePack value that is associated by `key`.
+         */
+        @JvmStatic
+        fun addKeyValueEntry(
+            msgpackMap: ByteArray,
+            key: String,
+            addendum: ByteArray
+        ): ByteArray
+        {
+            val mapUnpacker = MessagePack.newDefaultUnpacker(msgpackMap)
+            val addendumUnpacker = MessagePack
+                .newDefaultUnpacker(addendum)
+
+            var mapAsList = mapUnpacker
+                .unpackValue()
+                .asMapValue()
+                .keyValueArray
+                .toList()
+
+            mapAsList += listOf(
+                ImmutableStringValueImpl(key),
+                addendumUnpacker.unpackValue()
+            )
+
+            mapUnpacker.close()
+            addendumUnpacker.close()
+
+            val packer = MessagePack.newDefaultBufferPacker()
+
+            packer.packValue(
+                ImmutableArrayValueImpl(
+                    Array(mapAsList.count()) { mapAsList[it] }
+                )
+            )
+
+            packer.close()
+
+            return packer.toByteArray()
+        }
+    }
+}
