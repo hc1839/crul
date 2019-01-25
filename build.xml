@@ -58,7 +58,7 @@
     <property name="project.name" value="crul"/>
 
     <!-- Version of the project. -->
-    <property name="project.version" value="0.5.0"/>
+    <property name="project.version" value="0.5.1-beta"/>
 
     <!-- Name of the project JAR file. -->
     <property name="proj.jar.name" value="${project.name}-${project.version}.jar"/>
@@ -74,6 +74,7 @@
 
     <!-- Dokka's output format. -->
     <property name="config.dokka.output.format" value="html"/>
+
 
     <typedef
         resource="org/jetbrains/kotlin/ant/antlib.xml"

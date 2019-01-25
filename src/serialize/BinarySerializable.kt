@@ -19,7 +19,6 @@
 package serialize
 
 import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
 import org.msgpack.value.impl.ImmutableArrayValueImpl
 import org.msgpack.value.impl.ImmutableStringValueImpl
 
@@ -52,7 +51,7 @@ interface BinarySerializable {
          */
         @JvmStatic
         fun getMapRestPair(msgpackMap: ByteArray, key: String):
-            Pair<Map<String, Value>, ByteArray>
+            Pair<Map<String, org.msgpack.value.Value>, ByteArray>
         {
             val unpacker = MessagePack.newDefaultUnpacker(msgpackMap)
 

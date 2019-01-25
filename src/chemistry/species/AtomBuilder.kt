@@ -19,8 +19,7 @@ package chemistry.species
 /**
  *  Mutable builder for [Atom].
  */
-class AtomBuilder : AbstractAtomBuilder<Atom, AtomBuilder>
-{
+class AtomBuilder : AbstractAtomBuilder<Atom, AtomBuilder> {
     constructor(): super()
 
     override fun build(): Atom =

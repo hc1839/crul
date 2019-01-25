@@ -36,7 +36,7 @@ abstract class AbstractBasicAtomBuilder<A, B>
         private set
 
     /**
-     *  Configure the element.
+     *  Configures the element.
      */
     fun element(value: Element?): B {
         element = value
@@ -54,7 +54,7 @@ abstract class AbstractBasicAtomBuilder<A, B>
         private set
 
     /**
-     *  Configure the name.
+     *  Configures the name.
      */
     fun name(value: String?): B {
         name = value

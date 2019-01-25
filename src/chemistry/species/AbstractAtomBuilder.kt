@@ -22,7 +22,7 @@ import math.coordsys.Vector3D
  *  Abstract mutable builder for subclasses of [AbstractAtom].
  */
 abstract class AbstractAtomBuilder<A, B> :
-    AbstractBasicAtomBuilder<Atom, AtomBuilder>
+    AbstractBasicAtomBuilder<A, B>
     where A : AbstractAtom<A>,
           B : AbstractAtomBuilder<A, B>
 {
@@ -37,7 +37,7 @@ abstract class AbstractAtomBuilder<A, B> :
         private set
 
     /**
-     *  Configure the formal charge.
+     *  Configures the formal charge.
      */
     fun formalCharge(value: Double?): B {
         formalCharge = value
@@ -55,7 +55,7 @@ abstract class AbstractAtomBuilder<A, B> :
         private set
 
     /**
-     *  Configure the centroid.
+     *  Configures the centroid.
      */
     fun centroid(value: Vector3D?): B {
         centroid = value
