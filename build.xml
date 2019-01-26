@@ -32,25 +32,32 @@
     </target>
 
 
+    <property environment="env"/>
+
+
     <!-- Properties related to dependency management. -->
 
-    <!-- Path to the directory where the JAR dependencies will be stored. -->
-    <property name="config.lib.dir" value="lib"/>
+    <!-- Path to the directory of the JAR dependencies managed by Ivy. -->
+    <property name="config.lib.path" value="lib"/>
 
 
     <!-- Properties related to building. -->
 
-    <!-- Path to Kotlin lib directory. -->
-    <property name="config.kotlin.lib" value=""/>
-
-    <!-- Path to the directory where the build takes place. -->
-    <property name="config.build.dir" value="build"/>
-
-    <!-- Path to the directory where the packaged JAR file will be stored. -->
-    <property name="config.proj.jar.dir" value="jar"/>
+    <!-- Path to root directory of Kotlin's compiler distribution. -->
+    <property name="config.kotlin.home" value="${env.KOTLIN_HOME}"/>
 
     <!-- Path to the source directory. -->
-    <property name="src.dir" value="src"/>
+    <property name="src.path" value="src"/>
+
+    <!-- Path to the target directory. -->
+    <property name="config.target.path" value="target"/>
+
+    <!-- Path to the compile directory. -->
+    <property name="compile.path" value="${config.target.path}/compile"/>
+
+    <!-- Path to the build directory. -->
+    <property name="build.path" value="${config.target.path}/build"/>
+
 
     <!-- Properties related to project information. -->
 
@@ -66,19 +73,19 @@
 
     <!-- Properties related to documentation. -->
 
-    <!-- Output path for the generated documentation. -->
-    <property name="config.doc.dir" value="doc"/>
-
     <!-- Path to Dokka's fat JAR. -->
     <property name="config.dokka.fatjar" value=""/>
 
     <!-- Dokka's output format. -->
     <property name="config.dokka.output.format" value="html"/>
 
+    <!-- Path to the output directory for the generated documentation. -->
+    <property name="doc.path" value="${config.target.path}/doc"/>
+
 
     <typedef
         resource="org/jetbrains/kotlin/ant/antlib.xml"
-        classpath="${config.kotlin.lib}/kotlin-ant.jar"
+        classpath="${config.kotlin.home}/lib/kotlin-ant.jar"
         onerror="report"/>
 
     <typedef
@@ -90,16 +97,16 @@
         name="resolve.deps"
         description="Retrieves dependencies with Ivy.">
 
-        <ivy:retrieve pattern="${config.lib.dir}/[artifact]-[revision](-[classifier]).[ext]"/>
+        <ivy:retrieve pattern="${config.lib.path}/[artifact]-[revision](-[classifier]).[ext]"/>
     </target>
 
     <!-- Paths to all dependencies, including the build directory. -->
     <path id="classpath.all">
-        <fileset dir="${config.lib.dir}">
+        <fileset dir="${config.lib.path}">
             <include name="**/*.jar"/>
             <exclude name="**/${proj.jar.name}"/>
         </fileset>
-        <pathelement location="${config.build.dir}"/>
+        <pathelement location="${config.target.path}/compile"/>
     </path>
 
     <target
@@ -110,33 +117,33 @@
     </target>
 
     <target
-        name="create.build.dir"
+        name="create.compile.dir"
         depends="init-ivy,resolve.deps">
 
-        <mkdir dir="${config.build.dir}"/>
+        <mkdir dir="${compile.path}"/>
     </target>
 
     <!-- Copies the information stores. -->
     <target
         name="copy.info.stores"
-        depends="create.build.dir">
+        depends="create.compile.dir">
 
-        <copy todir="${config.build.dir}" preservelastmodified="true">
-            <fileset dir="${src.dir}" includes="**/*.xml"/>
-            <fileset dir="${src.dir}" includes="**/*.json"/>
+        <copy todir="${compile.path}" preservelastmodified="true">
+            <fileset dir="${src.path}" includes="**/*.xml"/>
+            <fileset dir="${src.path}" includes="**/*.json"/>
         </copy>
     </target>
 
-    <!-- Serves as an intermediate target only. This project must be packaged
-         as a JAR file. -->
+    <!-- Serves as an intermediate target only. Project must be packaged as a
+         JAR file. -->
     <target
         name="compile"
         depends="copy.info.stores">
 
         <kotlinc
-            src="${src.dir}"
+            src="${src.path}"
             classpathref="classpath.all"
-            output="${config.build.dir}">
+            output="${compile.path}">
 
             <compilerarg value="-jvm-target"/>
             <compilerarg value="1.8"/>
@@ -149,26 +156,26 @@
         description="Builds the project by compiling and packaging it as a JAR.">
 
         <delete quiet="true">
-            <fileset dir="${config.proj.jar.dir}" includes="${proj.jar.name}"/>
+            <fileset dir="${build.path}" includes="${proj.jar.name}"/>
         </delete>
 
-        <mkdir dir="${config.proj.jar.dir}"/>
+        <mkdir dir="${build.path}"/>
 
         <jar
-            basedir="${config.build.dir}"
-            destfile="${config.proj.jar.dir}/${proj.jar.name}"/>
+            basedir="${compile.path}"
+            destfile="${build.path}/${proj.jar.name}"/>
     </target>
 
     <target
         name="doc"
         description="Generates the library documentation.">
 
-        <mkdir dir="${config.doc.dir}"/>
+        <mkdir dir="${doc.path}"/>
 
         <dokka
-            src="${src.dir}"
-            outputDir="${config.doc.dir}"
-            moduleName="crul"
+            src="${src.path}"
+            outputDir="${doc.path}"
+            moduleName="${project.name}"
             outputFormat="${config.dokka.output.format}"/>
     </target>
 
@@ -177,7 +184,7 @@
         description="Removes the build directory.">
 
         <delete quiet="true" includeEmptyDirs="true">
-            <fileset dir="${config.build.dir}"/>
+            <fileset dir="${build.path}"/>
         </delete>
     </target>
 
@@ -186,12 +193,16 @@
         description="Removes the doc directory.">
 
         <delete quiet="true" includeEmptyDirs="true">
-            <fileset dir="${config.doc.dir}"/>
+            <fileset dir="${doc.path}"/>
         </delete>
     </target>
 
     <target
         name="clean"
-        depends="clean.build,clean.doc"
-        description="Removes the build and doc directories."/>
+        description="Removes the target directory.">
+
+        <delete quiet="true" includeEmptyDirs="true">
+            <fileset dir="${config.target.path}"/>
+        </delete>
+    </target>
 </project>

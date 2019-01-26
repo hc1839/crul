@@ -75,7 +75,8 @@ open class MoleculeComplex<A, F> :
     protected val indexer: MoleculeGraph
 
     /**
-     *  For the rest of the arguments, see the other constructor(s).
+     *  For a description of the rest of the arguments, see other
+     *  constructor(s).
      *
      *  @param indexerFactory
      *      Factory for the type of indexer to use.
@@ -145,7 +146,7 @@ open class MoleculeComplex<A, F> :
      *      CML as a string.
      *
      *  @param fromLengthUnit
-     *      The unit of length that the coordinates in the CML file are in.
+     *      The unit of length that the coordinates in the CML string are in.
      *
      *  @param toLengthUnit
      *      The unit of length that the coordinates in the deserialized complex

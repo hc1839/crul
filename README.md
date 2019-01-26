@@ -30,18 +30,15 @@ There are several build options that can be configured. `ant
 list.config.options` lists the configurable options along with their defaults.
 The options are
 
-* `config.build.dir`: Directory where the building takes place. This directory
-  can be safely removed after the library is built.
-* `config.doc.dir`: Directory where the generated documentation resides.
+* `config.kotlin.home`: Root directory of Kotlin's compiler distribution. By
+  default, it uses the environment variable, `KOTLIN_HOME`.
+* `config.target.path`: Directory where the target files (such as the packaged
+  JAR file and the documentation) will be stored.
+* `config.lib.path`: Directory of the JAR dependencies managed by Ivy. The JAR
+  dependencies are used in both building and using the library.
 * `config.dokka.fatjar`: Path to Dokka's fat JAR.
 * `config.dokka.output.format`: Output format of the generated documentation
   according to Dokka.
-* `config.kotlin.lib`: Kotlin's `lib` directory that is distributed with the
-  compiler.
-* `config.lib.dir`: Directory where dependencies are to be stored. The
-  dependencies are used in building the library and for using the packaged
-  library afterward.
-* `config.proj.jar.dir`: Directory where the packaged library will be stored.
 
 For building, `config.kotlin.lib` is required. For documentation generation,
 `config.dokka.fatjar` is required.
