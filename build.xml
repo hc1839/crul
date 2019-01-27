@@ -65,7 +65,7 @@
     <property name="project.name" value="crul"/>
 
     <!-- Version of the project. -->
-    <property name="project.version" value="0.5.1-beta"/>
+    <property name="project.version" value="0.5.1"/>
 
     <!-- Name of the project JAR file. -->
     <property name="proj.jar.name" value="${project.name}-${project.version}.jar"/>
