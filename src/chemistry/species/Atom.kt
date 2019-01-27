@@ -29,10 +29,10 @@ class Atom : AbstractAtom<Atom> {
     @JvmOverloads
     constructor(
         element: Element,
-        formalCharge: Double,
         centroid: Vector3D,
+        formalCharge: Double,
         name: String = uuid.Generator.inNCName()
-    ): super(element, formalCharge, centroid, name)
+    ): super(element, centroid, formalCharge, name)
 
     /**
      *  Copy constructor.

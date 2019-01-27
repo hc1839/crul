@@ -35,42 +35,42 @@ abstract class AbstractAtom<A : AbstractAtom<A>> :
     AbstractBasicAtom<A>,
     AtomIntf<A>
 {
-    override var formalCharge: Double
-
     override var centroid: Vector3D
+
+    override var formalCharge: Double
 
     @JvmOverloads
     constructor(
         element: Element,
-        formalCharge: Double,
         centroid: Vector3D,
+        formalCharge: Double,
         name: String = uuid.Generator.inNCName()
     ): super(element, name)
     {
-        this.formalCharge = formalCharge
         this.centroid = centroid
+        this.formalCharge = formalCharge
     }
 
     /**
      *  Copy constructor.
      */
     constructor(other: AbstractAtom<A>): super(other) {
-        this.formalCharge = other.formalCharge
         this.centroid = other.centroid
+        this.formalCharge = other.formalCharge
     }
 
     /**
      *  Copy constructor using a different atom name.
      */
     constructor(other: AbstractAtom<A>, name: String):
-        this(other.element, other.formalCharge, other.centroid, name)
+        this(other.element, other.centroid, other.formalCharge, name)
 
     /**
      *  Data-based constructor.
      */
     private constructor(ctorArgs: CtorArgs): super(ctorArgs.restTreeLine) {
-        this.formalCharge = ctorArgs.formalCharge
         this.centroid = ctorArgs.centroid
+        this.formalCharge = ctorArgs.formalCharge
     }
 
     /**
@@ -86,10 +86,6 @@ abstract class AbstractAtom<A : AbstractAtom<A>> :
 
         packer.packMapHeader(2)
 
-        packer
-            .packString("formal-charge")
-            .packDouble(formalCharge)
-
         val centroidAsBytes = centroid.serialize()
 
         packer
@@ -97,6 +93,10 @@ abstract class AbstractAtom<A : AbstractAtom<A>> :
             .packBinaryHeader(centroidAsBytes.count())
 
         packer.writePayload(centroidAsBytes)
+
+        packer
+            .packString("formal-charge")
+            .packDouble(formalCharge)
 
         packer.close()
 
@@ -112,8 +112,8 @@ abstract class AbstractAtom<A : AbstractAtom<A>> :
          *  Constructor arguments.
          */
         private data class CtorArgs(
-            val formalCharge: Double,
             val centroid: Vector3D,
+            val formalCharge: Double,
             val restTreeLine: ByteArray
         )
 
@@ -128,10 +128,10 @@ abstract class AbstractAtom<A : AbstractAtom<A>> :
                 )
 
             return CtorArgs(
-                unpackedMap["formal-charge"]!!.asFloatValue().toDouble(),
                 Vector3D(
                     unpackedMap["centroid"]!!.asBinaryValue().asByteArray()
                 ),
+                unpackedMap["formal-charge"]!!.asFloatValue().toDouble(),
                 restTreeLine
             )
         }

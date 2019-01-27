@@ -172,8 +172,8 @@ open class MoleculeComplex<A, F> :
      *      are in.
      *
      *  @param atomFactory
-     *      Factory that creates an atom given the element, formal charge,
-     *      position, and name, respectively.
+     *      Factory that creates an atom given the element, position, formal
+     *      charge, and name, respectively.
      *
      *  @param fragmentFactory
      *      Factory that creates a fragment given an iterable of atoms and a
@@ -189,7 +189,7 @@ open class MoleculeComplex<A, F> :
         cmlString: String,
         fromLengthUnit: UnitOfMeasure,
         toLengthUnit: UnitOfMeasure,
-        atomFactory: (Element, Double, Vector3D, String) -> A,
+        atomFactory: (Element, Vector3D, Double, String) -> A,
         fragmentFactory: (Iterable<A>, String) -> F,
         name: String? = null
     ) {
@@ -258,13 +258,6 @@ open class MoleculeComplex<A, F> :
 
                 val element = Element(atomNode.getAttribute("elementType"))
 
-                val formalCharge =
-                    if (atomNode.hasAttribute("formalCharge")) {
-                        atomNode.getAttribute("formalCharge").toDouble()
-                    } else {
-                        0.0
-                    }
-
                 val position = Vector3D(
                     listOf("x3", "y3", "z3").map { cmptName ->
                         Quantity.convertUnit(
@@ -275,13 +268,20 @@ open class MoleculeComplex<A, F> :
                     }
                 )
 
+                val formalCharge =
+                    if (atomNode.hasAttribute("formalCharge")) {
+                        atomNode.getAttribute("formalCharge").toDouble()
+                    } else {
+                        0.0
+                    }
+
                 val atomName = atomNode.getAttribute("id")
 
                 // Construct the atom.
                 val atom = atomFactory(
                     element,
-                    formalCharge,
                     position,
+                    formalCharge,
                     atomName
                 )
 
@@ -792,6 +792,20 @@ open class MoleculeComplex<A, F> :
             atomNode.setAttribute("id", atom.name)
             atomNode.setAttribute("elementType", atom.element.symbol)
 
+            val cmptsByName = listOf("x3", "y3", "z3")
+                .zip(atom.centroid.components)
+                .toMap()
+
+            // Set the position of the atom.
+            for ((cmptName, cmpt) in cmptsByName) {
+                atomNode.setAttribute(
+                    cmptName,
+                    Quantity
+                        .convertUnit(cmpt, fromLengthUnit, toLengthUnit)
+                        .toString()
+                )
+            }
+
             val atomFormalCharge = atom.formalCharge
 
             // Set the formal charge, converting it to an integer if it is.
@@ -808,20 +822,6 @@ open class MoleculeComplex<A, F> :
                     atomFormalCharge.toString()
                 }
             )
-
-            val cmptsByName = listOf("x3", "y3", "z3")
-                .zip(atom.centroid.components)
-                .toMap()
-
-            // Set the position of the atom.
-            for ((cmptName, cmpt) in cmptsByName) {
-                atomNode.setAttribute(
-                    cmptName,
-                    Quantity
-                        .convertUnit(cmpt, fromLengthUnit, toLengthUnit)
-                        .toString()
-                )
-            }
         }
 
         // Create and append the node for an array of bonds.

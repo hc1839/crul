@@ -29,24 +29,6 @@ abstract class AbstractAtomBuilder<A, B> :
     constructor(): super()
 
     /**
-     *  Formal charge.
-     *
-     *  It cannot be `null` when [build] is called.
-     */
-    var formalCharge: Double? = null
-        private set
-
-    /**
-     *  Configures the formal charge.
-     */
-    fun formalCharge(value: Double?): B {
-        formalCharge = value
-
-        @Suppress("UNCHECKED_CAST")
-        return this as B
-    }
-
-    /**
      *  Centroid.
      *
      *  It cannot be `null` when [build] is called.
@@ -59,6 +41,24 @@ abstract class AbstractAtomBuilder<A, B> :
      */
     fun centroid(value: Vector3D?): B {
         centroid = value
+
+        @Suppress("UNCHECKED_CAST")
+        return this as B
+    }
+
+    /**
+     *  Formal charge.
+     *
+     *  It cannot be `null` when [build] is called.
+     */
+    var formalCharge: Double? = null
+        private set
+
+    /**
+     *  Configures the formal charge.
+     */
+    fun formalCharge(value: Double?): B {
+        formalCharge = value
 
         @Suppress("UNCHECKED_CAST")
         return this as B

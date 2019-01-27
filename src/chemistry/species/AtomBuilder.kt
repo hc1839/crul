@@ -24,8 +24,8 @@ class AtomBuilder : AbstractAtomBuilder<Atom, AtomBuilder> {
 
     override fun build(): Atom =
         if (name == null) {
-            Atom(element!!, formalCharge!!, centroid!!)
+            Atom(element!!, centroid!!, formalCharge!!)
         } else {
-            Atom(element!!, formalCharge!!, centroid!!, name!!)
+            Atom(element!!, centroid!!, formalCharge!!, name!!)
         }
 }

@@ -23,27 +23,6 @@ import math.coordsys.Vector3D
  */
 interface AtomCollection<A : Atom<A>> : BasicAtomCollection<A> {
     /**
-     *  Formal charge of this collection, which is defined as the sum of the
-     *  formal charges of the atoms.
-     *
-     *  An exception is raised if there are no atoms in this complex.
-     *
-     *  It is a concrete property.
-     */
-    val formalCharge: Double
-        get() {
-            val atomsBuf = atoms
-
-            if (atomsBuf.count() == 0) {
-                throw RuntimeException("No atoms.")
-            }
-
-            return atomsBuf
-                .map { it.formalCharge }
-                .reduce { acc, item -> acc + item }
-        }
-
-    /**
      *  Centroid of this collection, which is defined as the centroid of the
      *  group of atoms.
      *
@@ -75,6 +54,27 @@ interface AtomCollection<A : Atom<A>> : BasicAtomCollection<A> {
             for (atom in atomsBuf) {
                 atom.translate(value - centroidBuf)
             }
+        }
+
+    /**
+     *  Formal charge of this collection, which is defined as the sum of the
+     *  formal charges of the atoms.
+     *
+     *  An exception is raised if there are no atoms in this complex.
+     *
+     *  It is a concrete property.
+     */
+    val formalCharge: Double
+        get() {
+            val atomsBuf = atoms
+
+            if (atomsBuf.count() == 0) {
+                throw RuntimeException("No atoms.")
+            }
+
+            return atomsBuf
+                .map { it.formalCharge }
+                .reduce { acc, item -> acc + item }
         }
 
     /**
