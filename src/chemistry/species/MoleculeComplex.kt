@@ -75,6 +75,25 @@ open class MoleculeComplex<A, F> :
     protected val indexer: MoleculeGraph
 
     /**
+     *  Implementation for [addAtom].
+     */
+    private fun addAtomImpl(atom: A) {
+        val atomVertex = indexer.createAtomVertex(atom.name)
+        atomVertex.userData = atom
+    }
+
+    /**
+     *  Implementation for [addBond].
+     */
+    private fun addBondImpl(
+        atom1Name: String,
+        atom2Name: String,
+        order: String = "other"
+    ) {
+        indexer.createBondEdge(atom1Name, atom2Name, order)
+    }
+
+    /**
      *  For a description of the rest of the arguments, see other
      *  constructor(s).
      *
@@ -122,7 +141,7 @@ open class MoleculeComplex<A, F> :
         this.indexer = this.indexerFactory.create(this.name)
 
         for (atom in other.atoms.map { it.clone() }) {
-            addAtom(atom)
+            addAtomImpl(atom)
         }
 
         for (bond in other.bonds) {
@@ -135,7 +154,7 @@ open class MoleculeComplex<A, F> :
                 )
             }
 
-            addBond(atomNames[0], atomNames[1], bond.order)
+            addBondImpl(atomNames[0], atomNames[1], bond.order)
         }
     }
 
@@ -267,7 +286,7 @@ open class MoleculeComplex<A, F> :
                 )
 
                 // Add the atom to this complex.
-                addAtom(atom)
+                addAtomImpl(atom)
 
                 atom
             }
@@ -317,7 +336,7 @@ open class MoleculeComplex<A, F> :
                 )
             }
 
-            addBond(
+            addBondImpl(
                 atomNames[0],
                 atomNames[1],
                 bondNode.getAttribute("order")
@@ -392,11 +411,21 @@ open class MoleculeComplex<A, F> :
     }
 
     /**
+     *  Whether a bond exists between two atoms.
+     *
+     *  If a given atom name does not exist, `false` is returned.
+     */
+    fun containsBond(atom1Name: String, atom2Name: String): Boolean {
+        val sharedBondEdge = getBondEdgeByAtomPair(atom1Name, atom2Name)
+
+        return sharedBondEdge != null
+    }
+
+    /**
      *  Adds an atom to the complex.
      */
-    fun addAtom(atom: A) {
-        val atomVertex = indexer.createAtomVertex(atom.name)
-        atomVertex.userData = atom
+    open fun addAtom(atom: A) {
+        addAtomImpl(atom)
     }
 
     /**
@@ -405,12 +434,12 @@ open class MoleculeComplex<A, F> :
      *  The two atoms must already exist in the complex.
      */
     @JvmOverloads
-    fun addBond(
+    open fun addBond(
         atom1Name: String,
         atom2Name: String,
         order: String = "other"
     ) {
-        indexer.createBondEdge(atom1Name, atom2Name, order)
+        addBondImpl(atom1Name, atom2Name, order)
     }
 
     /**
