@@ -141,8 +141,8 @@
         depends="copy.info.stores">
 
         <kotlinc
-            src="${src.path}"
             classpathref="classpath.all"
+            src="${src.path}"
             output="${compile.path}">
 
             <compilerarg value="-jvm-target"/>
@@ -173,6 +173,7 @@
         <mkdir dir="${doc.path}"/>
 
         <dokka
+            classpathref="classpath.all"
             src="${src.path}"
             outputDir="${doc.path}"
             moduleName="${project.name}"
