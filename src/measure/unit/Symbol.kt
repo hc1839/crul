@@ -91,6 +91,35 @@ class UnitPrefix : BinarySerializable {
         )
 
     /**
+     *  Initializes from a MessagePack map.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
+     *
+     *  @param msgpack
+     *      MessagePack map for the entire inheritance tree.
+     */
+    private constructor(
+        unpackedMap: Map<String, Value>,
+        @Suppress("UNUSED_PARAMETER")
+        msgpack: ByteArray
+    ): this(
+        unpackedMap["cs"]!!.asStringValue().toString(),
+        unpackedMap["value"]!!.asFloatValue().toDouble()
+    )
+
+    /**
+     *  Deserialization constructor.
+     */
+    constructor(msgpack: ByteArray): this(
+        BinarySerializable.getInnerMap(
+            msgpack,
+            UnitPrefix::class.qualifiedName!!
+        ),
+        msgpack
+    )
+
+    /**
      *  MessagePack serialization.
      */
     override fun serialize(): ByteArray {
@@ -131,11 +160,6 @@ class UnitPrefix : BinarySerializable {
 
     companion object {
         /**
-         *  Constructor arguments.
-         */
-        private data class CtorArgs(val cs: String, val value: Double)
-
-        /**
          *  JSON of UCUM prefixes parsed by Gson.
          */
         private val prefixes: Map<String, Map<String, Any>> =
@@ -162,23 +186,6 @@ class UnitPrefix : BinarySerializable {
             return UnitPrefix(
                 cs,
                 prefixes[cs]!!["value"]!! as Double
-            )
-        }
-
-        /**
-         *  Gets the constructor arguments from [serialize].
-         */
-        @JvmStatic
-        private fun getCtorArgs(msgpack: ByteArray): CtorArgs {
-            val (unpackedMap, _) = BinarySerializable
-                .getMapRestPair(
-                    msgpack,
-                    UnitPrefix::class.qualifiedName!!
-                )
-
-            return CtorArgs(
-                unpackedMap["cs"]!!.asStringValue().toString(),
-                unpackedMap["value"]!!.asFloatValue().toDouble()
             )
         }
     }
@@ -240,31 +247,51 @@ class UnitOfMeasure : BinarySerializable {
     }
 
     /**
-     *  For delegation by the data-based constructor.
+     *  Initializes from a MessagePack map.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
+     *
+     *  @param msgpack
+     *      MessagePack map for the entire inheritance tree.
      */
     private constructor(
-        magnitude: Double,
-        dimension: Map<BaseUnit, Int>,
-        isMetric: Boolean
+        unpackedMap: Map<String, Value>,
+        @Suppress("UNUSED_PARAMETER")
+        msgpack: ByteArray
     ) {
-        this.magnitude = magnitude
-        this._dimension.putAll(dimension)
-        this.isMetric = isMetric
-    }
+        this.magnitude =
+            unpackedMap["magnitude"]!!.asFloatValue().toDouble()
 
-    /**
-     *  Data-based constructor.
-     */
-    private constructor(ctorArgs: CtorArgs): this(
-        ctorArgs.magnitude,
-        ctorArgs.dimension,
-        ctorArgs.isMetric
-    )
+        this._dimension.putAll(
+            unpackedMap["dimension"]!!
+                .asMapValue()
+                .map()
+                .map { (key, value) ->
+                    val baseUnit = enumValueOf<BaseUnit>(
+                        key.asStringValue().toString()
+                    )
+                    val exp = value.asIntegerValue().toInt()
+
+                    Pair(baseUnit, exp)
+                }
+                .toMap()
+        )
+
+        this.isMetric =
+            unpackedMap["is-metric"]!!.asBooleanValue().boolean
+    }
 
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(getCtorArgs(msgpack))
+    constructor(msgpack: ByteArray): this(
+        BinarySerializable.getInnerMap(
+            msgpack,
+            UnitOfMeasure::class.qualifiedName!!
+        ),
+        msgpack
+    )
 
     /**
      *  Whether `other` is commensurable with this unit.
@@ -503,15 +530,6 @@ class UnitOfMeasure : BinarySerializable {
 
     companion object {
         /**
-         *  Constructor arguments.
-         */
-        private data class CtorArgs(
-            val magnitude: Double,
-            val dimension: Map<BaseUnit, Int>,
-            val isMetric: Boolean
-        )
-
-        /**
          *  Creates a [UnitOfMeasure] that is represented by a UCUM c/s symbol.
          *
          *  @param cs
@@ -553,41 +571,6 @@ class UnitOfMeasure : BinarySerializable {
             newObj.isMetric = derivedUnits[cs]!!["is-metric"]!! as Boolean
 
             return newObj
-        }
-
-        /**
-         *  Gets the constructor arguments from [serialize].
-         */
-        @JvmStatic
-        private fun getCtorArgs(msgpack: ByteArray): CtorArgs {
-            val (unpackedMap, _) = BinarySerializable
-                .getMapRestPair(
-                    msgpack,
-                    UnitOfMeasure::class.qualifiedName!!
-                )
-
-            val magnitude = unpackedMap["magnitude"]!!
-                .asFloatValue()
-                .toDouble()
-
-            val dimension = unpackedMap["dimension"]!!
-                .asMapValue()
-                .map()
-                .map { (key, value) ->
-                    val baseUnit = enumValueOf<BaseUnit>(
-                        key.asStringValue().toString()
-                    )
-                    val exp = value.asIntegerValue().toInt()
-
-                    Pair(baseUnit, exp)
-                }
-                .toMap()
-
-            val isMetric = unpackedMap["is-metric"]!!
-                .asBooleanValue()
-                .boolean
-
-            return CtorArgs(magnitude, dimension, isMetric)
         }
     }
 }

@@ -41,21 +41,47 @@ class UnitSystem : BinarySerializable {
     constructor()
 
     /**
-     *  For delegation by the data-based constructor.
+     *  Initializes from a MessagePack map.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
+     *
+     *  @param msgpack
+     *      MessagePack map for the entire inheritance tree.
      */
-    private constructor(baseUnits: Map<BaseDimension, UnitOfMeasure>) {
-        this._baseUnits.putAll(baseUnits)
-    }
+    private constructor(
+        unpackedMap: Map<String, Value>,
+        @Suppress("UNUSED_PARAMETER")
+        msgpack: ByteArray
+    ) {
+        this._baseUnits.putAll(
+            unpackedMap["base-units"]!!
+                .asMapValue()
+                .map()
+                .map { (key, value) ->
+                    val baseDim = enumValueOf<BaseDimension>(
+                        key.asStringValue().toString()
+                    )
+                    val baseUnit = UnitOfMeasure(
+                        value.asBinaryValue().asByteArray()
+                    )
 
-    /**
-     *  Data-based constructor.
-     */
-    private constructor(ctorArgs: CtorArgs): this(ctorArgs.baseUnits)
+                    Pair(baseDim, baseUnit)
+                }
+                .toMap()
+        )
+    }
 
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(getCtorArgs(msgpack))
+    constructor(msgpack: ByteArray): this(
+        BinarySerializable.getInnerMap(
+            msgpack,
+            UnitSystem::class.qualifiedName!!
+        ),
+        msgpack
+    )
 
     /**
      *  Base units associated by base dimensions.
@@ -176,11 +202,6 @@ class UnitSystem : BinarySerializable {
 
     companion object {
         /**
-         *  Constructor arguments.
-         */
-        private data class CtorArgs(val baseUnits: Map<BaseDimension, UnitOfMeasure>)
-
-        /**
          *  SI base units associated by base dimensions.
          */
         private val siBaseUnits: Map<BaseDimension, UnitOfMeasure> by lazy {
@@ -211,35 +232,6 @@ class UnitSystem : BinarySerializable {
                     }
                 }
                 .toMap()
-        }
-
-        /**
-         *  Gets the constructor arguments from [serialize].
-         */
-        @JvmStatic
-        private fun getCtorArgs(msgpack: ByteArray): CtorArgs {
-            val (unpackedMap, _) = BinarySerializable
-                .getMapRestPair(
-                    msgpack,
-                    UnitSystem::class.qualifiedName!!
-                )
-
-            val baseUnits = unpackedMap["base-units"]!!
-                .asMapValue()
-                .map()
-                .map { (key, value) ->
-                    val baseDim = enumValueOf<BaseDimension>(
-                        key.asStringValue().toString()
-                    )
-                    val baseUnit = UnitOfMeasure(
-                        value.asBinaryValue().asByteArray()
-                    )
-
-                    Pair(baseDim, baseUnit)
-                }
-                .toMap()
-
-            return CtorArgs(baseUnits)
         }
     }
 }

@@ -17,6 +17,7 @@
 package chemistry.species
 
 import org.msgpack.core.MessagePack
+import org.msgpack.value.Value
 
 import chemistry.species.base.BasicAtom as BasicAtomIntf
 import chemistry.species.base.BasicFragment as BasicFragmentIntf
@@ -78,10 +79,31 @@ abstract class AbstractBasicFragment<A, F> :
         this(other.atoms.map { it.clone() }, other.name)
 
     /**
-     *  Data-based constructor.
+     *  Initializes from a MessagePack map.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
+     *
+     *  @param atomFactory
+     *      Factory function for the atoms.
+     *
+     *  @param msgpack
+     *      MessagePack map for the entire inheritance tree.
      */
-    private constructor(ctorArgs: CtorArgs<A, F>):
-        this(ctorArgs.atoms, ctorArgs.name)
+    private constructor(
+        unpackedMap: Map<String, Value>,
+        atomFactory: (ByteArray) -> A,
+        @Suppress("UNUSED_PARAMETER")
+        msgpack: ByteArray
+    ): this(
+        unpackedMap["atoms"]!!
+            .asArrayValue()
+            .list()
+            .map {
+                atomFactory(it.asBinaryValue().asByteArray())
+            },
+        unpackedMap["name"]!!.asStringValue().toString()
+    )
 
     /**
      *  Deserialization constructor.
@@ -89,7 +111,14 @@ abstract class AbstractBasicFragment<A, F> :
     constructor(
         msgpack: ByteArray,
         atomFactory: (ByteArray) -> A
-    ): this(getCtorArgs(msgpack, atomFactory))
+    ): this(
+        BinarySerializable.getInnerMap(
+            msgpack,
+            AbstractBasicFragment::class.qualifiedName!!
+        ),
+        atomFactory,
+        msgpack
+    )
 
     override val atoms: List<A>
         get() = atomsByName.values.sortedBy { it.name }
@@ -138,44 +167,5 @@ abstract class AbstractBasicFragment<A, F> :
         packer.close()
 
         return packer.toByteArray()
-    }
-
-    companion object {
-        /**
-         *  Constructor arguments.
-         */
-        private data class CtorArgs<A, F>(
-            val atoms: List<A>,
-            val name: String
-        ) where A : AbstractBasicAtom<A>,
-                F : AbstractBasicFragment<A, F>
-
-        /**
-         *  Gets the constructors arguments from [serialize].
-         */
-        private fun <A, F> getCtorArgs(
-            msgpack: ByteArray,
-            atomFactory: (ByteArray) -> A
-        ): CtorArgs<A, F>
-           where A : AbstractBasicAtom<A>,
-                 F : AbstractBasicFragment<A, F>
-        {
-            val (unpackedMap, _) = BinarySerializable
-                .getMapRestPair(
-                    msgpack,
-                    AbstractBasicFragment::class.qualifiedName!!
-                )
-
-            val atoms = unpackedMap["atoms"]!!
-                .asArrayValue()
-                .list()
-                .map {
-                    atomFactory(it.asBinaryValue().asByteArray())
-                }
-
-            val name = unpackedMap["name"]!!.asStringValue().toString()
-
-            return CtorArgs(atoms, name)
-        }
     }
 }

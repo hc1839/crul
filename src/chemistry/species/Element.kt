@@ -20,6 +20,7 @@ import com.google.gson.Gson
 import java.io.File
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
+
 import serialize.BinarySerializable
 
 /**
@@ -62,14 +63,32 @@ class Element : BinarySerializable {
     }
 
     /**
-     *  Data-based constructor.
+     *  Initializes from a MessagePack map.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
+     *
+     *  @param msgpack
+     *      MessagePack map for the entire inheritance tree.
      */
-    private constructor(ctorArgs: CtorArgs): this(ctorArgs.symbol)
+    private constructor(
+        unpackedMap: Map<String, Value>,
+        @Suppress("UNUSED_PARAMETER")
+        msgpack: ByteArray
+    ): this(
+        unpackedMap["symbol"]!!.asStringValue().toString()
+    )
 
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(getCtorArgs(msgpack))
+    constructor(msgpack: ByteArray): this(
+        BinarySerializable.getInnerMap(
+            msgpack,
+            Element::class.qualifiedName!!
+        ),
+        msgpack
+    )
 
     /**
      *  Name of the element.
@@ -133,26 +152,4 @@ class Element : BinarySerializable {
         (
             symbol == other.symbol
         )
-
-    companion object {
-        /**
-         *  Constructor arguments.
-         */
-        private data class CtorArgs(val symbol: String)
-
-        /**
-         *  Gets the constructor arguments from [serialize].
-         */
-        private fun getCtorArgs(msgpack: ByteArray): CtorArgs {
-            val (unpackedMap, _) = BinarySerializable
-                .getMapRestPair(
-                    msgpack,
-                    Element::class.qualifiedName!!
-                )
-
-            return CtorArgs(
-                unpackedMap["symbol"]!!.asStringValue().toString()
-            )
-        }
-    }
 }

@@ -66,14 +66,35 @@ class Quantity : Comparable<Quantity>, BinarySerializable {
     constructor(value: Double): this(value, UnitOfMeasure())
 
     /**
-     *  Data-based constructor.
+     *  Initializes from a MessagePack map.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
+     *
+     *  @param msgpack
+     *      MessagePack map for the entire inheritance tree.
      */
-    private constructor(ctorArgs: CtorArgs): this(ctorArgs.value, ctorArgs.unit)
+    private constructor(
+        unpackedMap: Map<String, Value>,
+        @Suppress("UNUSED_PARAMETER")
+        msgpack: ByteArray
+    ): this(
+        unpackedMap["value"]!!.asFloatValue().toDouble(),
+        UnitOfMeasure(
+            unpackedMap["unit"]!!.asBinaryValue().asByteArray()
+        )
+    )
 
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(getCtorArgs(msgpack))
+    constructor(msgpack: ByteArray): this(
+        BinarySerializable.getInnerMap(
+            msgpack,
+            Quantity::class.qualifiedName!!
+        ),
+        msgpack
+    )
 
     /**
      *  Uses [equals] for determining equality.
@@ -201,14 +222,6 @@ class Quantity : Comparable<Quantity>, BinarySerializable {
 
     companion object {
         /**
-         *  Constructor arguments.
-         */
-        private data class CtorArgs(
-            val value: Double,
-            val unit: UnitOfMeasure
-        )
-
-        /**
          *  Converts a value as having `dimension` using `fromUnitSystem` to
          *  `toUnitSystem`.
          */
@@ -265,25 +278,6 @@ class Quantity : Comparable<Quantity>, BinarySerializable {
         ): Double
         {
             return Quantity(value, asDimension, fromUnitSystem).value(toUnit)
-        }
-
-        /**
-         *  Gets the constructor arguments from [serialize].
-         */
-        @JvmStatic
-        private fun getCtorArgs(msgpack: ByteArray): CtorArgs {
-            val (unpackedMap, _) = BinarySerializable
-                .getMapRestPair(
-                    msgpack,
-                    Quantity::class.qualifiedName!!
-                )
-
-            return CtorArgs(
-                unpackedMap["value"]!!.asFloatValue().toDouble(),
-                UnitOfMeasure(
-                    unpackedMap["unit"]!!.asBinaryValue().asByteArray()
-                )
-            )
         }
     }
 }

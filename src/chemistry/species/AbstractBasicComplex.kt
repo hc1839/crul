@@ -17,6 +17,7 @@
 package chemistry.species
 
 import org.msgpack.core.MessagePack
+import org.msgpack.value.Value
 
 import chemistry.species.base.BasicAtom as BasicAtomIntf
 import chemistry.species.base.BasicComplex as BasicComplexIntf
@@ -91,10 +92,43 @@ abstract class AbstractBasicComplex<A, F> :
     }
 
     /**
-     *  Data-based constructor.
+     *  Initializes from a MessagePack map.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
+     *
+     *  @param atomFactory
+     *      Factory function for the atoms.
+     *
+     *  @param fragmentFactory
+     *      Factory function for the fragments.
+     *
+     *  @param msgpack
+     *      MessagePack map for the entire inheritance tree.
      */
-    private constructor(ctorArgs: CtorArgs<A, F>): this(ctorArgs.name) {
-        for (fragment in ctorArgs.fragments) {
+    private constructor(
+        unpackedMap: Map<String, Value>,
+        atomFactory: (ByteArray) -> A,
+        fragmentFactory: (ByteArray, (ByteArray) -> A) -> F,
+        @Suppress("UNUSED_PARAMETER") msgpack: ByteArray
+    ) {
+        this.name =
+            unpackedMap["name"]!!.asStringValue().toString()
+
+        this.indexerFactory = ComplexGraphFactory()
+        this.indexer = this.indexerFactory.create(this.name)
+
+        val fragments = unpackedMap["fragments"]!!
+            .asArrayValue()
+            .list()
+            .map {
+                fragmentFactory(
+                    it.asBinaryValue().asByteArray(),
+                    atomFactory
+                )
+            }
+
+        for (fragment in fragments) {
             addFragment(fragment)
         }
     }
@@ -106,7 +140,15 @@ abstract class AbstractBasicComplex<A, F> :
         msgpack: ByteArray,
         atomFactory: (ByteArray) -> A,
         fragmentFactory: (ByteArray, (ByteArray) -> A) -> F
-    ): this(getCtorArgs(msgpack, atomFactory, fragmentFactory))
+    ): this(
+        BinarySerializable.getInnerMap(
+            msgpack,
+            AbstractBasicComplex::class.qualifiedName!!
+        ),
+        atomFactory,
+        fragmentFactory,
+        msgpack
+    )
 
     override val fragments: List<F>
         get() = indexer
@@ -229,49 +271,6 @@ abstract class AbstractBasicComplex<A, F> :
 
                 atomVertex.userData = atom
             }
-        }
-    }
-
-    companion object {
-        /**
-         *  Constructor arguments.
-         */
-        private data class CtorArgs<A, F>(
-            val fragments: List<F>,
-            val name: String
-        ) where A : AbstractBasicAtom<A>,
-                F : AbstractBasicFragment<A, F>
-
-        /**
-         *  Gets the constructors arguments from [serialize].
-         */
-        private fun <A, F> getCtorArgs(
-            msgpack: ByteArray,
-            atomFactory: (ByteArray) -> A,
-            fragmentFactory: (ByteArray, (ByteArray) -> A) -> F
-        ): CtorArgs<A, F>
-           where A : AbstractBasicAtom<A>,
-                 F : AbstractBasicFragment<A, F>
-        {
-            val (unpackedMap, _) = BinarySerializable
-                .getMapRestPair(
-                    msgpack,
-                    AbstractBasicComplex::class.qualifiedName!!
-                )
-
-            val fragments = unpackedMap["fragments"]!!
-                .asArrayValue()
-                .list()
-                .map {
-                    fragmentFactory(
-                        it.asBinaryValue().asByteArray(),
-                        atomFactory
-                    )
-                }
-
-            val name = unpackedMap["name"]!!.asStringValue().toString()
-
-            return CtorArgs(fragments, name)
         }
     }
 }

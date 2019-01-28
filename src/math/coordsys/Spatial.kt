@@ -18,6 +18,7 @@ package math.coordsys
 
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
+
 import serialize.BinarySerializable
 
 /**
@@ -40,14 +41,35 @@ open class Spatial : BinarySerializable {
     constructor(vararg components: Double): this(components.asIterable())
 
     /**
-     *  Data-based constructor.
+     *  Initializes from a MessagePack map.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
+     *
+     *  @param msgpack
+     *      MessagePack map for the entire inheritance tree.
      */
-    private constructor(ctorArgs: CtorArgs): this(ctorArgs.components)
+    private constructor(
+        unpackedMap: Map<String, Value>,
+        @Suppress("UNUSED_PARAMETER")
+        msgpack: ByteArray
+    ): this(
+        unpackedMap["components"]!!
+            .asArrayValue()
+            .list()
+            .map { it.asFloatValue().toDouble() }
+    )
 
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(getCtorArgs(msgpack))
+    constructor(msgpack: ByteArray): this(
+        BinarySerializable.getInnerMap(
+            msgpack,
+            Spatial::class.qualifiedName!!
+        ),
+        msgpack
+    )
 
     /**
      *  Components of the coordinate tuple or vector.
@@ -92,30 +114,5 @@ open class Spatial : BinarySerializable {
         packer.close()
 
         return packer.toByteArray()
-    }
-
-    companion object {
-        /**
-         *  Constructor arguments.
-         */
-        private class CtorArgs(val components: List<Double>)
-
-        /**
-         *  Gets the constructor arguments from [serialize].
-         */
-        private fun getCtorArgs(msgpack: ByteArray): CtorArgs {
-            val (unpackedMap, _) = BinarySerializable
-                .getMapRestPair(
-                    msgpack,
-                    Spatial::class.qualifiedName!!
-                )
-
-            return CtorArgs(
-                unpackedMap["components"]!!
-                    .asArrayValue()
-                    .list()
-                    .map { it.asFloatValue().toDouble() }
-            )
-        }
     }
 }

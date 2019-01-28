@@ -17,6 +17,7 @@
 package chemistry.species
 
 import org.msgpack.core.MessagePack
+import org.msgpack.value.Value
 
 import chemistry.species.Element
 import chemistry.species.base.Atom as AtomIntf
@@ -66,17 +67,35 @@ abstract class AbstractAtom<A : AbstractAtom<A>> :
         this(other.element, other.centroid, other.formalCharge, name)
 
     /**
-     *  Data-based constructor.
+     *  Initializes from a MessagePack map.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
+     *
+     *  @param msgpack
+     *      MessagePack map for the entire inheritance tree.
      */
-    private constructor(ctorArgs: CtorArgs): super(ctorArgs.restTreeLine) {
-        this.centroid = ctorArgs.centroid
-        this.formalCharge = ctorArgs.formalCharge
+    private constructor(unpackedMap: Map<String, Value>, msgpack: ByteArray):
+        super(msgpack)
+    {
+        this.centroid = Vector3D(
+            unpackedMap["centroid"]!!.asBinaryValue().asByteArray()
+        )
+
+        this.formalCharge =
+            unpackedMap["formal-charge"]!!.asFloatValue().toDouble()
     }
 
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(getCtorArgs(msgpack))
+    constructor(msgpack: ByteArray): this(
+        BinarySerializable.getInnerMap(
+            msgpack,
+            AbstractAtom::class.qualifiedName!!
+        ),
+        msgpack
+    )
 
     /**
      *  Message serialization.
@@ -105,35 +124,5 @@ abstract class AbstractAtom<A : AbstractAtom<A>> :
             this::class.qualifiedName!!,
             packer.toByteArray()
         )
-    }
-
-    companion object {
-        /**
-         *  Constructor arguments.
-         */
-        private data class CtorArgs(
-            val centroid: Vector3D,
-            val formalCharge: Double,
-            val restTreeLine: ByteArray
-        )
-
-        /**
-         *  Gets the constructor arguments from [serialize].
-         */
-        private fun getCtorArgs(msgpack: ByteArray): CtorArgs {
-            val (unpackedMap, restTreeLine) = BinarySerializable
-                .getMapRestPair(
-                    msgpack,
-                    AbstractAtom::class.qualifiedName!!
-                )
-
-            return CtorArgs(
-                Vector3D(
-                    unpackedMap["centroid"]!!.asBinaryValue().asByteArray()
-                ),
-                unpackedMap["formal-charge"]!!.asFloatValue().toDouble(),
-                restTreeLine
-            )
-        }
     }
 }

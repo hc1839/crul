@@ -17,6 +17,7 @@
 package chemistry.species
 
 import org.msgpack.core.MessagePack
+import org.msgpack.value.Value
 
 import chemistry.species.base.BasicAtom as BasicAtomIntf
 import serialize.BinarySerializable
@@ -70,17 +71,34 @@ abstract class AbstractBasicAtom<A : AbstractBasicAtom<A>> :
         this(other.element, name)
 
     /**
-     *  Data-based constructor.
+     *  Initializes from a MessagePack map.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
+     *
+     *  @param msgpack
+     *      MessagePack map for the entire inheritance tree.
      */
-    private constructor(ctorArgs: CtorArgs): this(
-        ctorArgs.element,
-        ctorArgs.name
+    private constructor(
+        unpackedMap: Map<String, Value>,
+        @Suppress("UNUSED_PARAMETER") msgpack: ByteArray
+    ): this(
+        Element(
+            unpackedMap["element"]!!.asBinaryValue().asByteArray()
+        ),
+        unpackedMap["name"]!!.asStringValue().toString()
     )
 
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(getCtorArgs(msgpack))
+    constructor(msgpack: ByteArray): this(
+        BinarySerializable.getInnerMap(
+            msgpack,
+            AbstractBasicAtom::class.qualifiedName!!
+        ),
+        msgpack
+    )
 
     override fun hashCode() =
         listOf(name, element.hashCode()).hashCode()
@@ -126,29 +144,4 @@ abstract class AbstractBasicAtom<A : AbstractBasicAtom<A>> :
      *  Clones this atom.
      */
     public override abstract fun clone(): A
-
-    companion object {
-        /**
-         *  Constructor arguments.
-         */
-        private data class CtorArgs(val element: Element, val name: String)
-
-        /**
-         *  Gets the constructor arguments from [serialize].
-         */
-        private fun getCtorArgs(msgpack: ByteArray): CtorArgs {
-            val (unpackedMap, _) = BinarySerializable
-                .getMapRestPair(
-                    msgpack,
-                    AbstractBasicAtom::class.qualifiedName!!
-                )
-
-            return CtorArgs(
-                Element(
-                    unpackedMap["element"]!!.asBinaryValue().asByteArray()
-                ),
-                unpackedMap["name"]!!.asStringValue().toString()
-            )
-        }
-    }
 }

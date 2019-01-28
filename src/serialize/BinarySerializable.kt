@@ -39,23 +39,26 @@ interface BinarySerializable {
          *  Convenience function that gets the map associated with a key in a
          *  MessagePack map.
          *
-         *  This function assumes that `msgpackMap` is a MessagePack map of
-         *  string to another map, which in turn is an association of string
-         *  with a MessagePack value.
+         *  @param msgpackMap
+         *      MessagePack map of string to another map, which in turn is an
+         *      association of string with a MessagePack value. In essence, it
+         *      is a map that contains the serializations of the objects in an
+         *      inheritance tree.
          *
-         *  In the returned pair, the first component is the map that is
-         *  associated `key`, and the second component is the rest of the
-         *  MessagePack map without `key` encoded as a byte array.
+         *  @param key
+         *      Key that is associated with the map within `msgpackMap` to
+         *      retrieve. If it does not exist, an exception is raised.
          *
-         *  If `key` does not exist, an exception is raised.
+         *  @return
+         *      Map within `msgpackMap` that is associated by `key`.
          */
         @JvmStatic
-        fun getMapRestPair(msgpackMap: ByteArray, key: String):
-            Pair<Map<String, org.msgpack.value.Value>, ByteArray>
+        fun getInnerMap(msgpackMap: ByteArray, key: String):
+            Map<String, org.msgpack.value.Value>
         {
             val unpacker = MessagePack.newDefaultUnpacker(msgpackMap)
 
-            val totalMap = unpacker
+            val outerMap = unpacker
                 .unpackValue()
                 .asMapValue()
                 .map()
@@ -65,27 +68,14 @@ interface BinarySerializable {
 
             unpacker.close()
 
-            val unpackedRequestedMap = totalMap[key]!!
+            val innerMap = outerMap[key]!!
                 .asMapValue()
                 .map()
                 .mapKeys { (keyValue, _) ->
                     keyValue.asStringValue().toString()
                 }
 
-            val restMap = totalMap - key
-            val restMapPacker = MessagePack.newDefaultBufferPacker()
-
-            restMapPacker.packMapHeader(restMap.count())
-
-            for ((restMapKey, restMapValue) in restMap.entries) {
-                restMapPacker
-                    .packString(restMapKey)
-                    .packValue(restMapValue)
-            }
-
-            restMapPacker.close()
-
-            return Pair(unpackedRequestedMap, restMapPacker.toByteArray())
+            return innerMap
         }
 
         /**

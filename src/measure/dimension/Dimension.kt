@@ -19,6 +19,7 @@ package measure.dimension
 import kotlin.math.pow
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
+
 import serialize.BinarySerializable
 
 /**
@@ -54,21 +55,45 @@ class Dimension : BinarySerializable {
     }
 
     /**
-     *  For delegation by the data-based constructor.
+     *  Initializes from a MessagePack map.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
+     *
+     *  @param msgpack
+     *      MessagePack map for the entire inheritance tree.
      */
-    private constructor(exponents: Map<BaseDimension, Int>) {
-        this._exponents.putAll(exponents)
-    }
+    private constructor(
+        unpackedMap: Map<String, Value>,
+        @Suppress("UNUSED_PARAMETER")
+        msgpack: ByteArray
+    ) {
+        this._exponents.putAll(
+            unpackedMap["exponents"]!!
+                .asMapValue()
+                .map()
+                .map { (key, value) ->
+                    val baseDim = enumValueOf<BaseDimension>(
+                        key.asStringValue().toString()
+                    )
+                    val exp = value.asIntegerValue().toInt()
 
-    /**
-     *  Data-based constructor.
-     */
-    private constructor(ctorArgs: CtorArgs): this(ctorArgs.exponents)
+                    Pair(baseDim, exp)
+                }
+                .toMap()
+        )
+    }
 
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(getCtorArgs(msgpack))
+    constructor(msgpack: ByteArray): this(
+        BinarySerializable.getInnerMap(
+            msgpack,
+            Dimension::class.qualifiedName!!
+        ),
+        msgpack
+    )
 
     override fun hashCode(): Int =
         exponents.hashCode()
@@ -192,11 +217,6 @@ class Dimension : BinarySerializable {
 
     companion object {
         /**
-         *  Constructor arguments.
-         */
-        private data class CtorArgs(val exponents: Map<BaseDimension, Int>)
-
-        /**
          *  Convenience function for creating a dimension from several base
          *  dimensions using dimension symbols according to ISQ.
          */
@@ -212,32 +232,5 @@ class Dimension : BinarySerializable {
                     }
                     .reduce { acc, item -> acc * item }
             }
-
-        /**
-         *  Gets the constructor arguments from [serialize].
-         */
-        @JvmStatic
-        private fun getCtorArgs(msgpack: ByteArray): CtorArgs {
-            val (unpackedMap, _) = BinarySerializable
-                .getMapRestPair(
-                    msgpack,
-                    Dimension::class.qualifiedName!!
-                )
-
-            return CtorArgs(
-                unpackedMap["exponents"]!!
-                    .asMapValue()
-                    .map()
-                    .map { (key, value) ->
-                        val baseDim = enumValueOf<BaseDimension>(
-                            key.asStringValue().toString()
-                        )
-                        val exp = value.asIntegerValue().toInt()
-
-                        Pair(baseDim, exp)
-                    }
-                    .toMap()
-            )
-        }
     }
 }

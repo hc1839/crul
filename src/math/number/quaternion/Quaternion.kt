@@ -16,9 +16,10 @@
 
 package math.number.quaternion
 
-import math.coordsys.Vector3D
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
+
+import math.coordsys.Vector3D
 import serialize.BinarySerializable
 
 /**
@@ -41,15 +42,35 @@ open class Quaternion : BinarySerializable {
     }
 
     /**
-     *  Data-based constructor.
+     *  Initializes from a MessagePack map.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
+     *
+     *  @param msgpack
+     *      MessagePack map for the entire inheritance tree.
      */
-    private constructor(ctorArgs: CtorArgs):
-        this(ctorArgs.scalar, ctorArgs.vector)
+    private constructor(
+        unpackedMap: Map<String, Value>,
+        @Suppress("UNUSED_PARAMETER")
+        msgpack: ByteArray
+    ): this(
+        unpackedMap["scalar"]!!.asFloatValue().toDouble(),
+        Vector3D(
+            unpackedMap["vector"]!!.asBinaryValue().asByteArray()
+        )
+    )
 
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(getCtorArgs(msgpack))
+    constructor(msgpack: ByteArray): this(
+        BinarySerializable.getInnerMap(
+            msgpack,
+            Quaternion::class.qualifiedName!!
+        ),
+        msgpack
+    )
 
     /**
      *  Conjugate.
@@ -138,32 +159,6 @@ open class Quaternion : BinarySerializable {
         packer.close()
 
         return packer.toByteArray()
-    }
-
-    companion object {
-        /**
-         *  Constructor arguments.
-         */
-        private data class CtorArgs(
-            val scalar: Double,
-            val vector: Vector3D
-        )
-
-        /**
-         *  Gets the constructor arguments from [serialize].
-         */
-        private fun getCtorArgs(msgpack: ByteArray): CtorArgs {
-            val (unpackedMap, _) = BinarySerializable
-                .getMapRestPair(
-                    msgpack,
-                    Quaternion::class.qualifiedName!!
-                )
-
-            return CtorArgs(
-                unpackedMap["scalar"]!!.asFloatValue().toDouble(),
-                Vector3D(unpackedMap["vector"]!!.asBinaryValue().asByteArray())
-            )
-        }
     }
 }
 
