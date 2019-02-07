@@ -35,15 +35,15 @@ interface Reducer<T : Enum<T>> {
     val isAccepting: Boolean
 
     /**
-     *  Whether a token can match the production rule corresponding to this
-     *  reducer.
+     *  Whether a leftmost token can match the production rule corresponding to
+     *  this reducer.
      *
-     *  It is mainly used in determining whether a token can be matched to a
-     *  specific production rule in order to decide how the parse stack should
-     *  be reduced. It does not mean that the token will be reduced as such in
-     *  the parse stack.
+     *  It is mainly used in determining whether a token can be matched to the
+     *  leftmost token of a specific production in order to decide how the
+     *  parse stack should be reduced. It does not necessarily mean that the
+     *  token will be reduced as such in the parse stack.
      */
-    fun matches(token: String): Boolean
+    fun matchesLeftmost(token: String): Boolean
 
     /**
      *  Performs an individual reduce step.

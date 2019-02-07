@@ -100,8 +100,7 @@ interface BinarySerializable {
         ): ByteArray
         {
             val mapUnpacker = MessagePack.newDefaultUnpacker(msgpackMap)
-            val addendumUnpacker = MessagePack
-                .newDefaultUnpacker(addendum)
+            val addendumUnpacker = MessagePack.newDefaultUnpacker(addendum)
 
             var mapAsList = mapUnpacker
                 .unpackValue()

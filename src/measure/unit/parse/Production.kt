@@ -38,7 +38,7 @@ enum class Production : Reducer<Production> {
      *  Literal symbol that is not acting as an ID for something.
      */
     TERMINAL {
-        override fun matches(token: String): Boolean =
+        override fun matchesLeftmost(token: String): Boolean =
             when (token) {
                 // Digits.
                 in (0..9).map { it.toString() } -> true
@@ -66,22 +66,22 @@ enum class Production : Reducer<Production> {
                 as String
 
             return when {
-                DIGIT.matches(tokenSymbol) ->
+                DIGIT.matchesLeftmost(tokenSymbol) ->
                     Pair(Node(DIGIT), 1)
 
-                SIGN.matches(tokenSymbol) ->
+                SIGN.matchesLeftmost(tokenSymbol) ->
                     Pair(Node(SIGN), 1)
 
-                MULTIPLY.matches(tokenSymbol) ->
+                MULTIPLY.matchesLeftmost(tokenSymbol) ->
                     Pair(Node(MULTIPLY), 1)
 
-                DIVIDE.matches(tokenSymbol) ->
+                DIVIDE.matchesLeftmost(tokenSymbol) ->
                     Pair(Node(DIVIDE), 1)
 
-                OPENING_ROUND_BRACKET.matches(tokenSymbol) ->
+                OPENING_ROUND_BRACKET.matchesLeftmost(tokenSymbol) ->
                     Pair(Node(OPENING_ROUND_BRACKET), 1)
 
-                CLOSING_ROUND_BRACKET.matches(tokenSymbol) ->
+                CLOSING_ROUND_BRACKET.matchesLeftmost(tokenSymbol) ->
                     Pair(Node(CLOSING_ROUND_BRACKET), 1)
 
                 else -> throw RuntimeException(
@@ -98,7 +98,7 @@ enum class Production : Reducer<Production> {
      *  not represent a known c/s symbol, an exception is raised.
      */
     ID {
-        override fun matches(token: String): Boolean =
+        override fun matchesLeftmost(token: String): Boolean =
             Regex("^[a-zA-Z]+$") in token
 
         override fun reduce(
@@ -114,17 +114,17 @@ enum class Production : Reducer<Production> {
                 ?.getUserData(userDataKey) as String?
 
             return when {
-                PREFIX_SYMBOL.matches(tokenSymbol) &&
+                PREFIX_SYMBOL.matchesLeftmost(tokenSymbol) &&
                 metricUnitLookaheadMatcher.matches(
                     parseStack,
                     lookaheadSymbol
                 ) ->
                     Pair(Node(PREFIX_SYMBOL), 1)
 
-                ATOM_SYMBOL_METRIC.matches(tokenSymbol) ->
+                ATOM_SYMBOL_METRIC.matchesLeftmost(tokenSymbol) ->
                     Pair(Node(ATOM_SYMBOL_METRIC), 1)
 
-                ATOM_SYMBOL_NONMETRIC.matches(tokenSymbol) ->
+                ATOM_SYMBOL_NONMETRIC.matchesLeftmost(tokenSymbol) ->
                     Pair(Node(ATOM_SYMBOL_NONMETRIC), 1)
 
                 else -> throw RuntimeException(
@@ -150,7 +150,7 @@ enum class Production : Reducer<Production> {
      *  Opening round bracket.
      */
     OPENING_ROUND_BRACKET {
-        override fun matches(token: String): Boolean =
+        override fun matchesLeftmost(token: String): Boolean =
             token == "("
 
         override fun reduce(
@@ -166,7 +166,7 @@ enum class Production : Reducer<Production> {
      *  Closing round bracket.
      */
     CLOSING_ROUND_BRACKET {
-        override fun matches(token: String): Boolean =
+        override fun matchesLeftmost(token: String): Boolean =
             token == ")"
 
         override fun reduce(
@@ -202,7 +202,7 @@ enum class Production : Reducer<Production> {
      *  '`.`' is the multiplication operator.
      */
     MULTIPLY {
-        override fun matches(token: String): Boolean =
+        override fun matchesLeftmost(token: String): Boolean =
             token == "."
 
         override fun reduce(
@@ -237,7 +237,7 @@ enum class Production : Reducer<Production> {
      *  '`/`' is the division operator.
      */
     DIVIDE {
-        override fun matches(token: String): Boolean =
+        override fun matchesLeftmost(token: String): Boolean =
             token == "/"
 
         override fun reduce(
@@ -266,8 +266,25 @@ enum class Production : Reducer<Production> {
         }
     },
 
+    SIGN {
+        override fun matchesLeftmost(token: String): Boolean =
+            token in listOf("+", "-")
+
+        override fun reduce(
+            parseStack: List<Node<Production>>,
+            lookahead: Node<Production>?
+        ): Pair<Node<Production>, Int>?
+        {
+            return null
+        }
+
+        override fun colorFill(node: Node<Production>) {
+            super.colorFill(node)
+        }
+    },
+
     DIGIT {
-        override fun matches(token: String): Boolean =
+        override fun matchesLeftmost(token: String): Boolean =
             token in (0..9).map { it.toString() }
 
         override fun reduce(
@@ -301,93 +318,9 @@ enum class Production : Reducer<Production> {
         }
     },
 
-    PREFIX_SYMBOL {
-        override fun matches(token: String): Boolean =
-            UnitPrefix.isPrefix(token)
-
-        override fun reduce(
-            parseStack: List<Node<Production>>,
-            lookahead: Node<Production>?
-        ): Pair<Node<Production>, Int>?
-        {
-            return null
-        }
-
-        override fun colorFill(node: Node<Production>) {
-            super.colorFill(node)
-        }
-    },
-
-    /**
-     *  Unit atom that is metric.
-     */
-    ATOM_SYMBOL_METRIC {
-        override fun matches(token: String): Boolean =
-            UnitOfMeasure.isMetric(token)
-
-        override fun reduce(
-            parseStack: List<Node<Production>>,
-            lookahead: Node<Production>?
-        ): Pair<Node<Production>, Int>?
-        {
-            val childCount =
-                if (precededByPrefix.matches(parseStack, null)) {
-                    2
-                } else {
-                    1
-                }
-
-            return Pair(Node(SIMPLE_UNIT), childCount)
-        }
-
-        /**
-         *  Production matcher for determining whether the metric unit is
-         *  preceded by a prefix.
-         */
-        private val precededByPrefix: ProductionMatcher<Production> by lazy {
-            ProductionMatcher<Production>(
-                listOf(PREFIX_SYMBOL, ATOM_SYMBOL_METRIC),
-                null
-            )
-        }
-    },
-
-    /**
-     *  Unit atom that is not metric.
-     */
-    ATOM_SYMBOL_NONMETRIC {
-        override fun matches(token: String): Boolean =
-            UnitOfMeasure.isUnit(token) && !UnitOfMeasure.isMetric(token)
-
-        override fun reduce(
-            parseStack: List<Node<Production>>,
-            lookahead: Node<Production>?
-        ): Pair<Node<Production>, Int>?
-        {
-            return Pair(Node(SIMPLE_UNIT), 1)
-        }
-    },
-
-    SIGN {
-        override fun matches(token: String): Boolean =
-            token in listOf("+", "-")
-
-        override fun reduce(
-            parseStack: List<Node<Production>>,
-            lookahead: Node<Production>?
-        ): Pair<Node<Production>, Int>?
-        {
-            return null
-        }
-
-        override fun colorFill(node: Node<Production>) {
-            super.colorFill(node)
-        }
-    },
-
     DIGITS {
-        override fun matches(token: String): Boolean =
-            DIGIT.matches(token)
+        override fun matchesLeftmost(token: String): Boolean =
+            DIGIT.matchesLeftmost(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -436,8 +369,8 @@ enum class Production : Reducer<Production> {
     },
 
     FACTOR {
-        override fun matches(token: String): Boolean =
-            DIGITS.matches(token)
+        override fun matchesLeftmost(token: String): Boolean =
+            DIGITS.matchesLeftmost(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -453,8 +386,9 @@ enum class Production : Reducer<Production> {
     },
 
     EXPONENT {
-        override fun matches(token: String): Boolean =
-            DIGITS.matches(token)
+        override fun matchesLeftmost(token: String): Boolean =
+            SIGN.matchesLeftmost(token) ||
+            DIGITS.matchesLeftmost(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -487,10 +421,79 @@ enum class Production : Reducer<Production> {
         }
     },
 
+    PREFIX_SYMBOL {
+        override fun matchesLeftmost(token: String): Boolean =
+            UnitPrefix.isPrefix(token)
+
+        override fun reduce(
+            parseStack: List<Node<Production>>,
+            lookahead: Node<Production>?
+        ): Pair<Node<Production>, Int>?
+        {
+            return null
+        }
+
+        override fun colorFill(node: Node<Production>) {
+            super.colorFill(node)
+        }
+    },
+
+    /**
+     *  Unit atom that is metric.
+     */
+    ATOM_SYMBOL_METRIC {
+        override fun matchesLeftmost(token: String): Boolean =
+            UnitOfMeasure.isMetric(token)
+
+        override fun reduce(
+            parseStack: List<Node<Production>>,
+            lookahead: Node<Production>?
+        ): Pair<Node<Production>, Int>?
+        {
+            val childCount =
+                if (precededByPrefix.matches(parseStack, null)) {
+                    2
+                } else {
+                    1
+                }
+
+            return Pair(Node(SIMPLE_UNIT), childCount)
+        }
+
+        /**
+         *  Production matcher for determining whether the metric unit is
+         *  preceded by a prefix.
+         */
+        private val precededByPrefix: ProductionMatcher<Production> by lazy {
+            ProductionMatcher<Production>(
+                listOf(PREFIX_SYMBOL, ATOM_SYMBOL_METRIC),
+                null
+            )
+        }
+    },
+
+    /**
+     *  Unit atom that is not metric.
+     */
+    ATOM_SYMBOL_NONMETRIC {
+        override fun matchesLeftmost(token: String): Boolean =
+            UnitOfMeasure.isUnit(token) &&
+            !UnitOfMeasure.isMetric(token)
+
+        override fun reduce(
+            parseStack: List<Node<Production>>,
+            lookahead: Node<Production>?
+        ): Pair<Node<Production>, Int>?
+        {
+            return Pair(Node(SIMPLE_UNIT), 1)
+        }
+    },
+
     SIMPLE_UNIT {
-        override fun matches(token: String): Boolean =
-            ATOM_SYMBOL_METRIC.matches(token) ||
-            ATOM_SYMBOL_NONMETRIC.matches(token)
+        override fun matchesLeftmost(token: String): Boolean =
+            PREFIX_SYMBOL.matchesLeftmost(token) ||
+            ATOM_SYMBOL_METRIC.matchesLeftmost(token) ||
+            ATOM_SYMBOL_NONMETRIC.matchesLeftmost(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -525,8 +528,8 @@ enum class Production : Reducer<Production> {
     },
 
     ANNOTATABLE {
-        override fun matches(token: String): Boolean =
-            SIMPLE_UNIT.matches(token)
+        override fun matchesLeftmost(token: String): Boolean =
+            SIMPLE_UNIT.matchesLeftmost(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -542,8 +545,9 @@ enum class Production : Reducer<Production> {
     },
 
     COMPONENT {
-        override fun matches(token: String): Boolean =
-            ANNOTATABLE.matches(token) || FACTOR.matches(token)
+        override fun matchesLeftmost(token: String): Boolean =
+            ANNOTATABLE.matchesLeftmost(token) ||
+            FACTOR.matchesLeftmost(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -592,8 +596,8 @@ enum class Production : Reducer<Production> {
     },
 
     TERM {
-        override fun matches(token: String): Boolean =
-            COMPONENT.matches(token)
+        override fun matchesLeftmost(token: String): Boolean =
+            COMPONENT.matchesLeftmost(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -665,8 +669,9 @@ enum class Production : Reducer<Production> {
     MAIN_TERM {
         override val isAccepting: Boolean = true
 
-        override fun matches(token: String): Boolean =
-            TERM.matches(token)
+        override fun matchesLeftmost(token: String): Boolean =
+            DIVIDE.matchesLeftmost(token) ||
+            TERM.matchesLeftmost(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
