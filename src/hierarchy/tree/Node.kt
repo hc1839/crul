@@ -46,13 +46,6 @@ class Node<T : Enum<T>> {
     private var parentWeakRef: WeakRef<Node<T>>? = null
 
     /**
-     *  ID of this node.
-     *
-     *  It is unique in the tree.
-     */
-    val id: String
-
-    /**
      *  Node type as an enum constant.
      */
     var type: T
@@ -76,25 +69,10 @@ class Node<T : Enum<T>> {
         }
 
     /**
-     *  Constructs a root node.
-     *
-     *  To construct a child node, use [createChild].
-     *
      *  @param type
      *      Node type.
-     *
-     *  @param id
-     *      Node ID. It must conform to XML NCName production.
      */
-    @JvmOverloads
-    constructor(type: T, id: String = uuid.Generator.inNCName()) {
-        if (!xml.Datatype.isNCName(id)) {
-            throw IllegalArgumentException(
-                "Node ID does not conform to XML NCName production."
-            )
-        }
-
-        this.id = id
+    constructor(type: T) {
         this.type = type
     }
 
@@ -104,19 +82,7 @@ class Node<T : Enum<T>> {
      *  Root node is defined to have a depth of `0`.
      */
     val depth: Int
-        get() {
-            var currNode: Node<T> = this
-
-            // Number of levels up relative to this node for the current node.
-            var levelsUp: Int = 0
-
-            while (currNode.parentNode != null) {
-                currNode = currNode.parentNode!!
-                ++levelsUp
-            }
-
-            return levelsUp
-        }
+        get() = ancestorNodes().count()
 
     /**
      *  Whether `other` references the same node as this.
@@ -169,8 +135,7 @@ class Node<T : Enum<T>> {
             val parent = parentNode
 
             return if (parent != null) {
-                // Use private property to avoid list copying.
-                parent._childNodes.first()
+                parent.childNodes.first()
             } else {
                 this
             }
@@ -184,8 +149,7 @@ class Node<T : Enum<T>> {
             val parent = parentNode
 
             return if (parent != null) {
-                // Use private property to avoid list copying.
-                parent._childNodes.last()
+                parent.childNodes.last()
             } else {
                 this
             }
@@ -203,8 +167,7 @@ class Node<T : Enum<T>> {
                 return null
             }
 
-            // Use private property to avoid list copying.
-            val siblingsWithSelf = parent._childNodes
+            val siblingsWithSelf = parent.childNodes
 
             // Index of this node in the parent's list of children.
             val thisIndex = siblingsWithSelf.indexOfFirst { isSameNode(it) }
@@ -228,8 +191,7 @@ class Node<T : Enum<T>> {
                 return null
             }
 
-            // Use private property to avoid list copying.
-            val siblingsWithSelf = parent._childNodes
+            val siblingsWithSelf = parent.childNodes
 
             // Index of this node in the parent's list of children.
             val thisIndex = siblingsWithSelf.indexOfFirst { isSameNode(it) }
@@ -245,28 +207,17 @@ class Node<T : Enum<T>> {
      *  Root node.
      */
     val rootNode: Node<T>
-        get() {
-            var ancestor: Node<T> = this
-
-            while (true) {
-                val parentOfAncestor = ancestor.parentNode
-
-                if (parentOfAncestor != null) {
-                    ancestor = parentOfAncestor
-                } else {
-                    break
-                }
-            }
-
-            // Ancestor is now the root node.
-            return ancestor
-        }
+        get() = ancestorNodes(true).last()
 
     /**
      *  Descendants of this node in a memory-efficient depth-first order.
+     *
+     *  @param includeSelf
+     *      Whether to include this node at the beginning of the traversal.
      */
-    fun descendantsByDepth(): Sequence<Node<T>> =
-        object: AbstractIterator<Node<T>>() {
+    @JvmOverloads
+    fun descendantsByDepth(includeSelf: Boolean = false): Sequence<Node<T>> {
+        val iterator = object: AbstractIterator<Node<T>>() {
             private var nextNode: Node<T>? = firstChild
 
             override fun computeNext() {
@@ -281,7 +232,7 @@ class Node<T : Enum<T>> {
                 // used to determine the new next node.
                 val currNode = nextNode!!
 
-                if (currNode.firstChild != null) {
+                if (currNode.hasChildNodes()) {
                     nextNode = currNode.firstChild
                 } else {
                     // Reference node in the subtree that changes during
@@ -301,18 +252,33 @@ class Node<T : Enum<T>> {
                     nextNode = refNode.nextSibling
                 }
             }
-        }.asSequence()
+        }
+
+        return if (includeSelf) {
+            listOf(this).asSequence() + iterator.asSequence()
+        } else {
+            iterator.asSequence()
+        }
+    }
 
     /**
      *  Descendants of this node in a memory-efficient breadth-first order.
+     *
+     *  @param includeSelf
+     *      Whether to include this node at the beginning of the traversal.
      *
      *  @param bottomUp
      *      Whether to start from the bottom. If `true`, the subtree is
      *      necessarily traversed once in order to determine the first node
      *      with the greatest depth before returning the sequence.
      */
-    fun descendantsByBreadth(bottomUp: Boolean = false): Sequence<Node<T>> =
-        object: AbstractIterator<Node<T>>() {
+    @JvmOverloads
+    fun descendantsByBreadth(
+        includeSelf: Boolean = false,
+        bottomUp: Boolean = false
+    ): Sequence<Node<T>>
+    {
+        val iterator = object: AbstractIterator<Node<T>>() {
             private var nextNode: Node<T>? =
                 if (!bottomUp) {
                     firstChild
@@ -407,64 +373,88 @@ class Node<T : Enum<T>> {
 
                 nextNode = newNextNode
             }
-        }.asSequence()
-
-    /**
-     *  Retrieves a descendant node using node ID.
-     *
-     *  @param id
-     *      ID of the descendant node to retrieve.
-     *
-     *  @return
-     *      Descendant node, or `null` if there is no such node.
-     */
-    fun getDescendantById(id: String): Node<T>? =
-        descendantsByDepth().firstOrNull {
-            it.id == id
         }
 
-    /**
-     *  Whether a given ID is unique in the tree.
-     */
-    fun isIdUnique(testId: String): Boolean {
-        if (rootNode.id == testId) {
-            return false
-        }
-
-        for (node in rootNode.descendantsByDepth()) {
-            if (node.id == testId) {
-                return false
+        return if (includeSelf) {
+            if (!bottomUp) {
+                listOf(this).asSequence() + iterator.asSequence()
+            } else {
+                iterator.asSequence() + listOf(this).asSequence()
             }
+        } else {
+            iterator.asSequence()
         }
-
-        return true
     }
 
     /**
-     *  Inserts a node as a child.
+     *  Ancestors of this node in order of decreasing depth.
      *
-     *  The node is added as a child, and its parent node is set to this node.
-     *  No checks are done for the uniqueness of node IDs.
+     *  @param includeSelf
+     *      Whether to include this node at the beginning of the traversal.
+     */
+    @JvmOverloads
+    fun ancestorNodes(includeSelf: Boolean = false): Sequence<Node<T>> {
+        val iterator = object: AbstractIterator<Node<T>>() {
+            private var nextNode: Node<T>? = parentNode
+
+            override fun computeNext() {
+                if (nextNode == null) {
+                    done()
+                    return
+                }
+
+                setNext(nextNode!!)
+
+                nextNode = nextNode!!.parentNode
+            }
+        }
+
+        return if (includeSelf) {
+            listOf(this).asSequence() + iterator.asSequence()
+        } else {
+            iterator.asSequence()
+        }
+    }
+
+    /**
+     *  Adds a node as a child of this node.
      *
-     *  If an exception is raised, there would be no side effects.
+     *  If an exception is raised, there are no side effects.
      *
      *  @param newChild
-     *      Node to be inserted.
+     *      Node to be added as a child. If it has a parent, it is first
+     *      removed. If it is this node or an ancestor of this node, an
+     *      exception is raised.
      *
      *  @param refChild
-     *      See [createChild].
+     *      Reference node that the `newChild` is inserted before. If `null`,
+     *      `newChild` is added at the end of the list of children. If it is
+     *      not a child of this node or if it is the same node as `newChild`,
+     *      an exception is raised.
      *
      *  @return
-     *      Node that is inserted.
+     *      Node that is added.
      */
-    private fun insertBefore(
-        newChild: Node<T>,
-        refChild: Node<T>? = null
-    ): Node<T>
-    {
+    @JvmOverloads
+    fun addChild(newChild: Node<T>, refChild: Node<T>? = null): Node<T> {
+        // Check that the node to be added is not this node or an ancestor.
+        if (ancestorNodes(true).any { it.isSameNode(newChild) }) {
+            throw IllegalArgumentException(
+                "Node to be added is this node or an ancestor of it."
+            )
+        }
+
         if (refChild == null) {
+            newChild.remove()
             _childNodes.add(newChild)
         } else {
+            if (refChild.isSameNode(newChild)) {
+                throw IllegalArgumentException(
+                    "Reference child is the same node " +
+                    "as the node to be added."
+                )
+            }
+
             val refChildIndex = _childNodes.indexOfFirst {
                 it.isSameNode(refChild)
             }
@@ -475,64 +465,11 @@ class Node<T : Enum<T>> {
                 )
             }
 
+            newChild.remove()
             _childNodes.add(refChildIndex, newChild)
         }
 
         newChild.parentWeakRef = WeakRef(this)
-
-        return newChild
-    }
-
-    /**
-     *  Creates a new child node.
-     *
-     *  If an exception is raised, there would be no side effects.
-     *
-     *  @param newChildType
-     *      Node type of the new child.
-     *
-     *  @param newChildId
-     *      ID of the new child node. It must conform to XML NCName production
-     *      and be unique in this tree. If `null`, a unique ID is generated.
-     *
-     *  @param refChild
-     *      Reference node that the new child node is inserted before. If
-     *      `null`, the new child node is inserted at the end of the list of
-     *      children. If it is not a child of this node, an exception is
-     *      raised.
-     *
-     *  @return
-     *      New child node.
-     */
-    @JvmOverloads
-    fun createChild(
-        newChildType: T,
-        newChildId: String? = null,
-        refChild: Node<T>? = null
-    ): Node<T>
-    {
-        val newChildIdToUse =
-            if (newChildId == null) {
-                var uuidBuf: String
-
-                do {
-                    uuidBuf = uuid.Generator.inNCName()
-                } while (!isIdUnique(uuidBuf))
-
-                uuidBuf
-            } else {
-                if (!isIdUnique(newChildId)) {
-                    throw IllegalArgumentException(
-                        "ID is not unique: $newChildId"
-                    )
-                }
-
-                newChildId
-            }
-
-        val newChild = Node<T>(newChildType, newChildIdToUse)
-
-        insertBefore(newChild, refChild)
 
         return newChild
     }
@@ -551,7 +488,7 @@ class Node<T : Enum<T>> {
         }
 
         val thisIndex = parent._childNodes.indexOfFirst {
-            it.id == id && it.isSameNode(this)
+            it.isSameNode(this)
         }
 
         if (thisIndex == -1) {
@@ -596,26 +533,21 @@ class Node<T : Enum<T>> {
      *  @return
      *      Duplicated node.
      */
-    fun cloneNode(
-        deep: Boolean,
-        includeUserData: Boolean
-    ): Node<T>
-    {
-        val clonedNode = Node<T>(type, id)
+    fun cloneNode(deep: Boolean, includeUserData: Boolean): Node<T> {
+        val clonedNode = Node<T>(type)
 
         if (includeUserData) {
             clonedNode._userData.putAll(_userData)
         }
 
         if (deep) {
-            for (childNode in _childNodes) {
+            for (childNode in childNodes) {
                 val clonedChildNode = childNode.cloneNode(
                     deep,
                     includeUserData
                 )
 
-                clonedNode._childNodes.add(clonedChildNode)
-                clonedChildNode.parentWeakRef = WeakRef(clonedNode)
+                clonedNode.addChild(clonedChildNode)
             }
         }
 
@@ -635,59 +567,6 @@ class Node<T : Enum<T>> {
         }
 
         return clonedNode
-    }
-
-    /**
-     *  Imports the clone of a node.
-     *
-     *  IDs of `other` and, if `deep` is `true`, its descendants must not
-     *  already exist in this tree. As a consequence, importing a node of this
-     *  tree will fail.
-     *
-     *  If an exception is raised, there would be no side effects.
-     *
-     *  @param other
-     *      Node to be cloned and added as a child to this node.
-     *
-     *  @param deep
-     *      See [cloneNode].
-     *
-     *  @param includeUserData
-     *      See [cloneNode].
-     *
-     *  @param refChild
-     *      See [createChild].
-     *
-     *  @return
-     *      Clone of `other` that has been imported.
-     */
-    @JvmOverloads
-    fun importNode(
-        other: Node<T>,
-        deep: Boolean,
-        includeUserData: Boolean,
-        refChild: Node<T>? = null
-    ): Node<T>
-    {
-        val newChild = other.cloneNode(deep, includeUserData)
-
-        if (!isIdUnique(newChild.id)) {
-            throw IllegalArgumentException(
-                "Node ID is not unique: ${newChild.id}"
-            )
-        }
-
-        for (newDescendant in descendantsByDepth()) {
-            if (!isIdUnique(newDescendant.id)) {
-                throw IllegalArgumentException(
-                    "Node ID is not unique: ${newDescendant.id}"
-                )
-            }
-        }
-
-        insertBefore(newChild, refChild)
-
-        return newChild
     }
 
     /**
@@ -712,8 +591,7 @@ class Node<T : Enum<T>> {
      *  The object can be retrieved through [getUserData].
      *
      *  @param key
-     *      Key to be associated with `userData` and `handler`. It must conform
-     *      to XML NCName production.
+     *      Key to be associated with `userData` and `handler`.
      *
      *  @param userData
      *      Object to be associated by `key`, or `null` to remove `key`.
@@ -722,21 +600,16 @@ class Node<T : Enum<T>> {
      *      Handler to be associated by `key`, or `null` if it is not needed.
      *
      *  @return
-     *      Object that was previously associated by `key`, or `null` if there
-     *      was none.
+     *      User data previously associated with `key`, or `null` if there was
+     *      none.
      */
+    @JvmOverloads
     fun setUserData(
         key: String,
         userData: Any?,
-        handler: UserDataHandler<T>?
+        handler: UserDataHandler<T>? = null
     ): Any?
     {
-        if (!xml.Datatype.isNCName(key)) {
-            throw IllegalArgumentException(
-                "Key does not conform to XML NCName production."
-            )
-        }
-
         val prevUserData = getUserData(key)
 
         if (userData == null) {

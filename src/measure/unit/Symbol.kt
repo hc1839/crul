@@ -188,6 +188,13 @@ class UnitPrefix : BinarySerializable {
                 prefixes[cs]!!["value"]!! as Double
             )
         }
+
+        /**
+         *  Whether a UCUM c/s symbol represents a prefix.
+         */
+        @JvmStatic
+        fun isPrefix(cs: String): Boolean =
+            prefixes.containsKey(cs)
     }
 }
 
@@ -529,6 +536,55 @@ class UnitOfMeasure : BinarySerializable {
     }
 
     companion object {
+        /**
+         *  Whether a UCUM c/s symbol represents a metric unit.
+         *
+         *  `false` is returned if the c/s symbol does not exist in the JSON
+         *  file that contains predefined units.
+         */
+        @JvmStatic
+        fun isMetric(cs: String): Boolean {
+            val csAsBaseUnit = BaseUnit.getBaseUnit(cs)
+
+            if (csAsBaseUnit != null) {
+                return true
+            }
+
+            val derivedUnits = @Suppress("UNCHECKED_CAST") (
+                UcumSymbolStore.json["derived-units"]!!
+                    as Map<String, Map<String, Any>>
+            )
+
+            if (!derivedUnits.containsKey(cs)) {
+                return false
+            }
+
+            return derivedUnits[cs]!!["is-metric"]!! as Boolean
+        }
+
+        /**
+         *  Whether a UCUM c/s symbol represents a known unit.
+         */
+        @JvmStatic
+        fun isUnit(cs: String): Boolean {
+            val csAsBaseUnit = BaseUnit.getBaseUnit(cs)
+
+            if (csAsBaseUnit != null) {
+                return true
+            }
+
+            val derivedUnits = @Suppress("UNCHECKED_CAST") (
+                UcumSymbolStore.json["derived-units"]!!
+                    as Map<String, Map<String, Any>>
+            )
+
+            if (derivedUnits.containsKey(cs)) {
+                return true
+            }
+
+            return false
+        }
+
         /**
          *  Creates a [UnitOfMeasure] that is represented by a UCUM c/s symbol.
          *
