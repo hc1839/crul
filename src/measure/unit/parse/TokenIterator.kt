@@ -19,6 +19,7 @@ package measure.unit.parse
 import hierarchy.tree.Node
 import measure.unit.UnitOfMeasure
 import measure.unit.UnitPrefix
+import parse.AbstractTokenIterator
 
 /**
  *  Iterator of tokens as nodes of a UCUM unit.
@@ -30,23 +31,18 @@ import measure.unit.UnitPrefix
  *  All tokens have user data as `String` associated by
  *  [Production.userDataKey].
  */
-class TokenIterator : AbstractIterator<Node<Production>> {
+class TokenIterator : AbstractTokenIterator<Production> {
     /**
-     *  Complete input string representing a UCUM unit.
+     *  Complete input string.
      */
-    val input: String
-
-    /**
-     *  Unscanned text of the UCUM unit.
-     */
-    private var stream: String
+    private val input: String
 
     /**
      *  @param input
      *      Input string representing a UCUM unit. It cannot contain
      *      intervening newlines.
      */
-    constructor(input: String) {
+    constructor(input: String): super(listOf(input.trim()).asSequence()) {
         this.input = input.trim()
 
         if (Regex("\\n") in this.input) {
@@ -54,22 +50,24 @@ class TokenIterator : AbstractIterator<Node<Production>> {
                 "Input string cannot contain intervening newlines."
             )
         }
-
-        this.stream = this.input
     }
 
     override fun computeNext() {
-        if (stream == "") {
+        val currString = shift()
+
+        if (currString == null) {
             // Text is completely scanned.
             done()
             return
         }
 
+        // String that will be unshifted if not empty.
+        val nextString: String
+
         // Construct the next token as a node for the parse tree.
         val nextToken = when {
-            idRegex in stream -> {
-                val matchResult = idRegex.find(stream)!!
-
+            idRegex in currString -> {
+                val matchResult = idRegex.find(currString)!!
                 val node = Node(Production.ID)
 
                 // Determine whether it is a prefix preceding a metric unit.
@@ -83,25 +81,29 @@ class TokenIterator : AbstractIterator<Node<Production>> {
                         Production.userDataKey,
                         matchResult.value.first().toString()
                     )
-                    stream = stream.drop(1)
+                    nextString = currString.drop(1).trim()
                 } else {
                     node.setUserData(
                         Production.userDataKey,
                         matchResult.value
                     )
-                    stream = stream.drop(matchResult.value.length)
+                    nextString = currString
+                        .drop(matchResult.value.length)
+                        .trim()
                 }
 
                 node
             }
 
-            terminalRegex in stream -> {
-                val matchResult = terminalRegex.find(stream)!!
+            terminalRegex in currString -> {
+                val matchResult = terminalRegex.find(currString)!!
 
                 val node = Node(Production.TERMINAL)
                 node.setUserData(Production.userDataKey, matchResult.value)
 
-                stream = stream.drop(matchResult.value.length)
+                nextString = currString
+                    .drop(matchResult.value.length)
+                    .trim()
 
                 node
             }
@@ -110,7 +112,7 @@ class TokenIterator : AbstractIterator<Node<Production>> {
                 // Construct a string with a pointer to the location of the
                 // error.
 
-                val errorPosition =  input.length - stream.length
+                val errorPosition =  input.length - currString.length
 
                 val errorPointerString = (0 until input.length)
                     .map {
@@ -130,7 +132,9 @@ class TokenIterator : AbstractIterator<Node<Production>> {
             }
         }
 
-        stream = stream.trim()
+        if (nextString != "") {
+            unshift(nextString)
+        }
 
         setNext(nextToken)
 
