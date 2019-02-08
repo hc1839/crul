@@ -16,7 +16,7 @@
 
 package parse.shiftreduce
 
-import hierarchy.tree.Node
+import hierarchy.tree.TypedNode
 
 /**
  *  Actuator that executes a sequence of shift-reduce steps.
@@ -33,7 +33,7 @@ class Actuator<T>
     /**
      *  Tokens in the stream.
      */
-    private val tokens: Iterator<Node<T>>
+    private val tokens: Iterator<TypedNode<T>>
 
     /**
      *  Whether this actuator has previously run.
@@ -47,7 +47,7 @@ class Actuator<T>
      *      retrieved and cloned along with the user data. Any descendants are
      *      ignored. The sequence must not be empty.
      */
-    constructor(tokens: Sequence<Node<T>>) {
+    constructor(tokens: Sequence<TypedNode<T>>) {
         this.tokens = tokens.iterator()
     }
 
@@ -72,7 +72,7 @@ class Actuator<T>
      *      Root node of the completed parse tree. It must be a node type that
      *      represents an accepting state.
      */
-    fun actuate(): Node<T> {
+    fun actuate(): TypedNode<T> {
         if (hasRun) {
             throw RuntimeException(
                 "Actuator has previously run."
@@ -81,7 +81,7 @@ class Actuator<T>
             hasRun = true
         }
 
-        var parseStack: List<Node<T>> = listOf()
+        var parseStack: List<TypedNode<T>> = listOf()
 
         // There must be at least one lookahead symbol.
         if (!tokens.hasNext()) {
@@ -90,7 +90,7 @@ class Actuator<T>
             )
         }
 
-        var lookahead: Node<T>? = tokens.next().cloneNode(false, true)
+        var lookahead: TypedNode<T>? = tokens.next().cloneNode(false, true)
 
         // Actuate the sequence of shift-reduce steps.
         do {
@@ -126,7 +126,7 @@ class Actuator<T>
                 }
 
                 for (childNode in parseStack.takeLast(childCount)) {
-                    parentNode.addChild(childNode)
+                    parentNode.appendChild(childNode)
                 }
 
                 parseStack = parseStack.dropLast(childCount) + parentNode

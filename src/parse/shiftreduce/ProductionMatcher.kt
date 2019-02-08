@@ -16,7 +16,7 @@
 
 package parse.shiftreduce
 
-import hierarchy.tree.Node
+import hierarchy.tree.TypedNode
 
 /**
  *  Matcher for the rightmost node(s) in a parse stack and the lookahead symbol
@@ -80,7 +80,11 @@ class ProductionMatcher<T>
      *      [lookaheadMatchType] is `null`.  `lookaheadSymbol` never matches if
      *      it is `null` and [lookaheadMatchType] is non-`null`.
      */
-    fun matches(parseStack: List<Node<T>>, lookaheadSymbol: String?): Boolean {
+    fun matches(
+        parseStack: List<TypedNode<T>>,
+        lookaheadSymbol: String?
+    ): Boolean
+    {
         if (parseStack.count() < rightmostMatchTypes.count()) {
             return false
         }

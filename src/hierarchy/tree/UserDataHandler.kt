@@ -22,10 +22,10 @@ package hierarchy.tree
  *
  *  It is inspired by `org.w3c.dom.UserDataHandler`.
  *
- *  @param T
- *      Enum type representing node type.
+ *  @param D
+ *      Type of user data.
  */
-interface UserDataHandler<T : Enum<T>> {
+interface UserDataHandler<D : Any, N : Node<D, N>> {
     /**
      *  Function to call after the node is modified.
      *
@@ -47,9 +47,9 @@ interface UserDataHandler<T : Enum<T>> {
     fun handle(
         operation: Operation,
         key: String,
-        userData: Any,
-        src: Node<T>?,
-        dst: Node<T>?
+        userData: D,
+        src: N?,
+        dst: N?
     )
 
     /**
@@ -62,13 +62,8 @@ interface UserDataHandler<T : Enum<T>> {
         CLONED,
 
         /**
-         *  Node is removed using [Node.remove].
+         *  Node is removed using [Node.removeChild].
          */
-        REMOVED,
-
-        /**
-         *  Node type has changed using [Node.type].
-         */
-        TYPE_CHANGED
+        REMOVED
     }
 }

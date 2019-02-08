@@ -16,7 +16,7 @@
 
 package measure.unit.parse
 
-import hierarchy.tree.Node
+import hierarchy.tree.TypedNode
 import measure.unit.UnitOfMeasure
 import measure.unit.UnitPrefix
 import parse.AbstractTokenIterator
@@ -68,7 +68,7 @@ class TokenIterator : AbstractTokenIterator<Production> {
         val nextToken = when {
             idRegex in currString -> {
                 val matchResult = idRegex.find(currString)!!
-                val node = Node(Production.ID)
+                val node = TypedNode(Production.ID)
 
                 // Determine whether it is a prefix preceding a metric unit.
                 if (
@@ -79,13 +79,15 @@ class TokenIterator : AbstractTokenIterator<Production> {
                 ) {
                     node.setUserData(
                         Production.userDataKey,
-                        matchResult.value.first().toString()
+                        matchResult.value.first().toString(),
+                        null
                     )
                     nextString = currString.drop(1).trim()
                 } else {
                     node.setUserData(
                         Production.userDataKey,
-                        matchResult.value
+                        matchResult.value,
+                        null
                     )
                     nextString = currString
                         .drop(matchResult.value.length)
@@ -98,8 +100,12 @@ class TokenIterator : AbstractTokenIterator<Production> {
             terminalRegex in currString -> {
                 val matchResult = terminalRegex.find(currString)!!
 
-                val node = Node(Production.TERMINAL)
-                node.setUserData(Production.userDataKey, matchResult.value)
+                val node = TypedNode(Production.TERMINAL)
+                node.setUserData(
+                    Production.userDataKey,
+                    matchResult.value,
+                    null
+                )
 
                 nextString = currString
                     .drop(matchResult.value.length)

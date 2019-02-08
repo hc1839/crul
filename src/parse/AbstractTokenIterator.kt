@@ -16,12 +16,14 @@
 
 package parse
 
-import hierarchy.tree.Node
+import hierarchy.tree.TypedNode
 
 /**
  *  Iterator over tokens for parsing.
  */
-abstract class AbstractTokenIterator<T : Enum<T>> : AbstractIterator<Node<T>> {
+abstract class AbstractTokenIterator<T : Enum<T>> :
+    AbstractIterator<TypedNode<T>>
+{
     /**
      *  Staging area as an iterator over strings.
      */

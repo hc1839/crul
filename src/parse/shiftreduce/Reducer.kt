@@ -16,7 +16,7 @@
 
 package parse.shiftreduce
 
-import hierarchy.tree.Node
+import hierarchy.tree.TypedNode
 
 /**
  *  Performer of an individual reduce step corresponding to the node type of
@@ -69,5 +69,8 @@ interface Reducer<T : Enum<T>> {
      *      The number of rightmost nodes in the parse stack to become its
      *      children must be positive.
      */
-    fun reduce(parseStack: List<Node<T>>, lookahead: Node<T>?): Pair<Node<T>, Int>?
+    fun reduce(
+        parseStack: List<TypedNode<T>>,
+        lookahead: TypedNode<T>?
+    ): Pair<TypedNode<T>, Int>?
 }
