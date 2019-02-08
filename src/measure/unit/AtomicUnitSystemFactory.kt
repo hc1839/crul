@@ -37,15 +37,15 @@ package measure.unit
  */
 class AtomicUnitSystemFactory : UnitSystemBuilder {
     constructor() {
-        val atomicTimeUnit = UnitOfMeasure.create("s") * 2.418884326505e-17
+        val atomicTimeUnit = UnitOfMeasure("s") * 2.418884326505e-17
 
-        set("L", UnitOfMeasure.create("m") * 5.2917721092e-11)
-        set("M", UnitPrefix.create("k") * UnitOfMeasure.create("g") * 9.10938291e-31)
+        set("L", UnitOfMeasure("m") * 5.2917721092e-11)
+        set("M", UnitOfMeasure.parse("kg") * 9.10938291e-31)
         set("T", atomicTimeUnit)
-        set("I", UnitOfMeasure.create("C") * 1.602176565e-19 / atomicTimeUnit)
-        set("Th", UnitOfMeasure.create("K") * 3.1577464e5)
-        set("N", UnitOfMeasure.create("mol"))
-        set("J", UnitOfMeasure.create("cd") * 671.2146654428731)
+        set("I", UnitOfMeasure("C") * 1.602176565e-19 / atomicTimeUnit)
+        set("Th", UnitOfMeasure("K") * 3.1577464e5)
+        set("N", UnitOfMeasure("mol"))
+        set("J", UnitOfMeasure("cd") * 671.2146654428731)
     }
 
     /**

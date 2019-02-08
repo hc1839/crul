@@ -67,17 +67,6 @@ class TokenIterator : AbstractIterator<Node<Production>> {
 
         // Construct the next token as a node for the parse tree.
         val nextToken = when {
-            terminalRegex in stream -> {
-                val matchResult = terminalRegex.find(stream)!!
-
-                val node = Node(Production.TERMINAL)
-                node.setUserData(Production.userDataKey, matchResult.value)
-
-                stream = stream.drop(matchResult.value.length)
-
-                node
-            }
-
             idRegex in stream -> {
                 val matchResult = idRegex.find(stream)!!
 
@@ -92,13 +81,27 @@ class TokenIterator : AbstractIterator<Node<Production>> {
                 ) {
                     node.setUserData(
                         Production.userDataKey,
-                        stream.first().toString()
+                        matchResult.value.first().toString()
                     )
                     stream = stream.drop(1)
                 } else {
-                    node.setUserData(Production.userDataKey, matchResult.value)
+                    node.setUserData(
+                        Production.userDataKey,
+                        matchResult.value
+                    )
                     stream = stream.drop(matchResult.value.length)
                 }
+
+                node
+            }
+
+            terminalRegex in stream -> {
+                val matchResult = terminalRegex.find(stream)!!
+
+                val node = Node(Production.TERMINAL)
+                node.setUserData(Production.userDataKey, matchResult.value)
+
+                stream = stream.drop(matchResult.value.length)
 
                 node
             }
@@ -136,17 +139,16 @@ class TokenIterator : AbstractIterator<Node<Production>> {
 
     companion object {
         /**
+         *  Regular expression for matching an ID.
+         */
+        private val idRegex: Regex =
+            Regex("^[!#-'\\*,0-<>-Z\\\\^-z|~]*[!#-'\\*,:-<>-Z\\\\^-z|~]")
+
+        /**
          *  Regular expression for matching a terminal symbol at the beginning
          *  of the unscanned text.
          */
         private val terminalRegex: Regex =
             Regex("^(\\+|\\-|\\d|\\(|\\)|\\.|/|\\{|\\})")
-
-        /**
-         *  Regular expression for matching an ID, which is a sequence of
-         *  alphabetical letters, at the beginning of the unscanned text.
-         */
-        private val idRegex: Regex =
-            Regex("^[a-zA-Z]+")
     }
 }

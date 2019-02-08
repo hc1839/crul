@@ -95,7 +95,7 @@ class ProductionMatcher<T>
 
         return lookaheadMatchType == null || (
             lookaheadSymbol != null &&
-            lookaheadMatchType.matchesLeftmost(lookaheadSymbol)
+            lookaheadMatchType.matchesFirst(lookaheadSymbol)
         )
     }
 }

@@ -210,13 +210,13 @@ class Node<T : Enum<T>> {
         get() = ancestorNodes(true).last()
 
     /**
-     *  Descendants of this node in a memory-efficient depth-first order.
+     *  Descendants of this node in depth-first order.
      *
      *  @param includeSelf
      *      Whether to include this node at the beginning of the traversal.
      */
     @JvmOverloads
-    fun descendantsByDepth(includeSelf: Boolean = false): Sequence<Node<T>> {
+    fun descendants(includeSelf: Boolean = false): Sequence<Node<T>> {
         val iterator = object: AbstractIterator<Node<T>>() {
             private var nextNode: Node<T>? = firstChild
 
@@ -256,131 +256,6 @@ class Node<T : Enum<T>> {
 
         return if (includeSelf) {
             listOf(this).asSequence() + iterator.asSequence()
-        } else {
-            iterator.asSequence()
-        }
-    }
-
-    /**
-     *  Descendants of this node in a memory-efficient breadth-first order.
-     *
-     *  @param includeSelf
-     *      Whether to include this node at the beginning of the traversal.
-     *
-     *  @param bottomUp
-     *      Whether to start from the bottom. If `true`, the subtree is
-     *      necessarily traversed once in order to determine the first node
-     *      with the greatest depth before returning the sequence.
-     */
-    @JvmOverloads
-    fun descendantsByBreadth(
-        includeSelf: Boolean = false,
-        bottomUp: Boolean = false
-    ): Sequence<Node<T>>
-    {
-        val iterator = object: AbstractIterator<Node<T>>() {
-            private var nextNode: Node<T>? =
-                if (!bottomUp) {
-                    firstChild
-                } else {
-                    // Temporary variable to hold the descendant with the
-                    // currently greatest depth without having to recalculate
-                    // its depth in later comparisons with other descendants.
-                    var descendantDepthPair: Pair<Node<T>, Int> =
-                        Pair(this@Node, depth)
-
-                    // Find the descendant with the greatest depth.
-                    for (descendantNode in descendantsByDepth()) {
-                        if (!descendantNode.hasChildNodes()) {
-                            val descendantDepth = descendantNode.depth
-
-                            if (descendantDepth > descendantDepthPair.second) {
-                                descendantDepthPair =
-                                    Pair(descendantNode, descendantDepth)
-                            }
-                        }
-                    }
-
-                    descendantDepthPair.first
-                }
-
-            // Current depth with respect to the root node. If the initial
-            // value of the next node is `null`, it does not matter what the
-            // initial value of the current depth is.
-            private var currDepth: Int = nextNode?.depth ?: -1
-
-            override fun computeNext() {
-                if (nextNode == null) {
-                    done()
-                    return
-                }
-
-                setNext(nextNode!!)
-
-                var newNextNode: Node<T>? = null
-
-                // What was the next node is now the current node, which is
-                // used to determine the new next node.
-                val currNode = nextNode!!
-
-                if (currNode.nextSibling != null) {
-                    newNextNode = currNode.nextSibling
-                } else {
-                    // Reference node in the subtree that the walker is on.
-                    var refNode: Node<T> = currNode
-
-                    while (newNextNode == null) {
-                        // Find the nearest ancestor or self with respect to
-                        // the reference node in this subtree that has a next
-                        // sibling.
-                        while (!refNode.isSameNode(this@Node)) {
-                            if (refNode.nextSibling != null) {
-                                break
-                            }
-
-                            refNode = refNode.parentNode!!
-                        }
-
-                        if (refNode.isSameNode(this@Node)) {
-                            // Current depth has been exhausted. Advance to the
-                            // next depth.
-                            if (!bottomUp) {
-                                ++currDepth
-                            } else {
-                                --currDepth
-                            }
-
-                            newNextNode =
-                                if (bottomUp && currDepth <= depth) {
-                                    null
-                                } else {
-                                    descendantsByDepth().firstOrNull {
-                                        it.depth == currDepth
-                                    }
-                                }
-
-                            break
-                        } else {
-                            // Advance to the next subtree.
-                            refNode = refNode.nextSibling!!
-
-                            newNextNode = refNode
-                                .descendantsByDepth()
-                                .firstOrNull { it.depth == currDepth }
-                        }
-                    }
-                }
-
-                nextNode = newNextNode
-            }
-        }
-
-        return if (includeSelf) {
-            if (!bottomUp) {
-                listOf(this).asSequence() + iterator.asSequence()
-            } else {
-                iterator.asSequence() + listOf(this).asSequence()
-            }
         } else {
             iterator.asSequence()
         }

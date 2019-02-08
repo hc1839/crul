@@ -210,25 +210,25 @@ class UnitSystem : BinarySerializable {
                 .associateWith {
                     when (it) {
                         BaseDimension.L ->
-                            UnitOfMeasure.create("m")
+                            UnitOfMeasure("m")
 
                         BaseDimension.M ->
-                            UnitPrefix.create("k") * UnitOfMeasure.create("g")
+                            UnitOfMeasure.parse("kg")
 
                         BaseDimension.T ->
-                            UnitOfMeasure.create("s")
+                            UnitOfMeasure("s")
 
                         BaseDimension.I ->
-                            UnitOfMeasure.create("A")
+                            UnitOfMeasure("A")
 
                         BaseDimension.Th ->
-                            UnitOfMeasure.create("K")
+                            UnitOfMeasure("K")
 
                         BaseDimension.N ->
-                            UnitOfMeasure.create("mol")
+                            UnitOfMeasure("mol")
 
                         BaseDimension.J ->
-                            UnitOfMeasure.create("cd")
+                            UnitOfMeasure("cd")
                     }
                 }
                 .toMap()

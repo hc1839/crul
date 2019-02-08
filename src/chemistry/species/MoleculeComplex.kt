@@ -201,7 +201,7 @@ open class MoleculeComplex<A, F> :
             )
         }
 
-        val siLengthUnit = UnitOfMeasure.create("m")
+        val siLengthUnit = UnitOfMeasure("m")
 
         if (!fromLengthUnit.isCommensurable(siLengthUnit)) {
             throw IllegalArgumentException(
@@ -733,10 +733,10 @@ open class MoleculeComplex<A, F> :
     @JvmOverloads
     fun toCml(
         fromLengthUnit: UnitOfMeasure,
-        toLengthUnit: UnitOfMeasure = UnitOfMeasure.create("Ao")
+        toLengthUnit: UnitOfMeasure = UnitOfMeasure("Ao")
     ): String
     {
-        val siLengthUnit = UnitOfMeasure.create("m")
+        val siLengthUnit = UnitOfMeasure("m")
 
         if (!fromLengthUnit.isCommensurable(siLengthUnit)) {
             throw IllegalArgumentException(
@@ -867,11 +867,11 @@ open class MoleculeComplex<A, F> :
     @JvmOverloads
     fun toXyz(
         fromLengthUnit: UnitOfMeasure,
-        toLengthUnit: UnitOfMeasure = UnitOfMeasure.create("Ao"),
+        toLengthUnit: UnitOfMeasure = UnitOfMeasure("Ao"),
         separator: String = " "
     ): String
     {
-        val siLengthUnit = UnitOfMeasure.create("m")
+        val siLengthUnit = UnitOfMeasure("m")
 
         if (!fromLengthUnit.isCommensurable(siLengthUnit)) {
             throw IllegalArgumentException(

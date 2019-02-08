@@ -22,9 +22,12 @@ import kotlin.math.pow
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
+import hierarchy.tree.Node
 import measure.dimension.BaseDimension
 import measure.dimension.Dimension
-import measure.unit.BaseUnit
+import measure.unit.parse.Production
+import measure.unit.parse.TokenIterator
+import parse.shiftreduce.Actuator
 import serialize.BinarySerializable
 
 /**
@@ -52,159 +55,51 @@ private object UcumSymbolStore {
 }
 
 /**
- *  Prefix for a metric unit according to the Unified Code for Units of Measure
- *  (UCUM).
- *
- *  To instantiate this class, use [create].
+ *  Prefix-related operations.
  */
-class UnitPrefix : BinarySerializable {
+object UnitPrefix {
     /**
-     *  UCUM c/s symbol of the prefix.
+     *  JSON of UCUM prefixes parsed by Gson.
      */
-    val cs: String
-
-    /**
-     *  Value of the prefix.
-     */
-    val value: Double
-
-    private constructor(cs: String, value: Double) {
-        this.cs = cs
-        this.value = value
-    }
-
-    override fun hashCode(): Int =
-        cs.hashCode()
-
-    /**
-     *  Uses [float.Comparison.nearlyEquals] for the value component.
-     */
-    override fun equals(other: Any?): Boolean =
-        other is UnitPrefix &&
-        this::class == other::class &&
-        (
-            cs == other.cs &&
-            float.Comparison.nearlyEquals(
-                value,
-                other.value
-            )
+    private val prefixes: Map<String, Map<String, Any>> =
+        @Suppress("UNCHECKED_CAST") (
+            UcumSymbolStore.json["prefixes"]!!
+                as Map<String, Map<String, Any>>
         )
 
     /**
-     *  Initializes from a MessagePack map.
+     *  Whether a UCUM c/s symbol represents a prefix.
      *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
+     *  @param cs
+     *      UCUM c/s symbol of the prefix.
+     */
+    @JvmStatic
+    fun isPrefix(cs: String): Boolean =
+        prefixes.containsKey(cs)
+
+    /**
+     *  Value of a prefix.
      *
-     *  @param msgpack
-     *      MessagePack map for the entire inheritance tree.
+     *  @param cs
+     *      UCUM c/s symbol of the prefix. An exception is raised if there is
+     *      no such prefix.
      */
-    private constructor(
-        unpackedMap: Map<String, Value>,
-        @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray
-    ): this(
-        unpackedMap["cs"]!!.asStringValue().toString(),
-        unpackedMap["value"]!!.asFloatValue().toDouble()
-    )
-
-    /**
-     *  Deserialization constructor.
-     */
-    constructor(msgpack: ByteArray): this(
-        BinarySerializable.getInnerMap(
-            msgpack,
-            UnitPrefix::class.qualifiedName!!
-        ),
-        msgpack
-    )
-
-    /**
-     *  MessagePack serialization.
-     */
-    override fun serialize(): ByteArray {
-        val packer = MessagePack.newDefaultBufferPacker()
-
-        packer.packMapHeader(1)
-
-        packer
-            .packString(this::class.qualifiedName)
-            .packMapHeader(2)
-
-        packer
-            .packString("cs")
-            .packString(cs)
-
-        packer
-            .packString("value")
-            .packDouble(value)
-
-        packer.close()
-
-        return packer.toByteArray()
-    }
-
-    /**
-     *  @param other
-     *      Unit to be prepended with this prefix. Must be a metric unit.
-     */
-    operator fun times(other: UnitOfMeasure): UnitOfMeasure {
-        if (!other.isMetric) {
+    @JvmStatic
+    fun getValue(cs: String): Double {
+        if (!isPrefix(cs)) {
             throw IllegalArgumentException(
-                "Unit to be prepended with this prefix is not metric."
+                "No such prefix: $cs"
             )
         }
 
-        return other * value
-    }
-
-    companion object {
-        /**
-         *  JSON of UCUM prefixes parsed by Gson.
-         */
-        private val prefixes: Map<String, Map<String, Any>> =
-            @Suppress("UNCHECKED_CAST") (
-                UcumSymbolStore.json["prefixes"]!!
-                    as Map<String, Map<String, Any>>
-            )
-
-        /**
-         *  Creates a [UnitPrefix] that has the UCUM c/s symbol, `cs`.
-         *
-         *  @param cs
-         *      UCUM c/s symbol. It must exist in the JSON file that contains
-         *      the predefined UCUM symbols.
-         */
-        @JvmStatic
-        fun create(cs: String): UnitPrefix {
-            if (!prefixes.containsKey(cs)) {
-                throw IllegalArgumentException(
-                    "Unknown prefix: $cs"
-                )
-            }
-
-            return UnitPrefix(
-                cs,
-                prefixes[cs]!!["value"]!! as Double
-            )
-        }
-
-        /**
-         *  Whether a UCUM c/s symbol represents a prefix.
-         */
-        @JvmStatic
-        fun isPrefix(cs: String): Boolean =
-            prefixes.containsKey(cs)
+        return prefixes[cs]!!["value"]!! as Double
     }
 }
 
 /**
  *  Unit of measure according to the Unified Code for Units of Measure (UCUM).
  *
- *  To instantiate this class with a derived unit, use [create].
- *
- *  Operations that yield new a unit assume that any unit that is not a base
- *  unit is not metric, which is conservative but not always accurate.
+ *  To instantiate this class with a derived unit, use [parse].
  */
 class UnitOfMeasure : BinarySerializable {
     /**
@@ -214,35 +109,33 @@ class UnitOfMeasure : BinarySerializable {
         private set
 
     /**
-     *  Whether this unit can be prefixed by [UnitPrefix].
-     */
-    var isMetric: Boolean
-        private set
-
-    /**
      *  Base units associated with their exponents as a backing property.
      */
-    private val _dimension: MutableMap<BaseUnit, Int> = mutableMapOf()
+    private val _dimension: MutableMap<String, Int> = mutableMapOf()
 
     /**
      *  Base units associated with their exponents.
      *
      *  Only entries where the exponent is non-zero is returned.
      */
-    val dimension: Map<BaseUnit, Int>
+    val dimension: Map<String, Int>
         get() = _dimension.filter { (_, exp) -> exp != 0 }
 
     /**
      *  Base unit raised to the power of 1.
      *
-     *  @param baseUnit
-     *      Base unit to construct. It must exist in the JSON file that
-     *      contains the predefined UCUM symbols.
+     *  @param baseUnitCs
+     *      UCUM c/s symbol of the base unit to construct.
      */
-    constructor(baseUnit: BaseUnit) {
+    constructor(baseUnitCs: String) {
+        if (!baseUnits.containsKey(baseUnitCs)) {
+            throw IllegalArgumentException(
+                "Not a valid base unit: $baseUnitCs"
+            )
+        }
+
         magnitude = 1.0
-        _dimension[baseUnit] = 1
-        isMetric = true
+        _dimension[baseUnitCs] = 1
     }
 
     /**
@@ -250,7 +143,6 @@ class UnitOfMeasure : BinarySerializable {
      */
     constructor() {
         magnitude = 1.0
-        isMetric = false
     }
 
     /**
@@ -275,18 +167,13 @@ class UnitOfMeasure : BinarySerializable {
                 .asMapValue()
                 .map()
                 .map { (key, value) ->
-                    val baseUnit = enumValueOf<BaseUnit>(
-                        key.asStringValue().toString()
-                    )
+                    val baseUnit = key.asStringValue().toString()
                     val exp = value.asIntegerValue().toInt()
 
                     Pair(baseUnit, exp)
                 }
                 .toMap()
         )
-
-        this.isMetric =
-            unpackedMap["is-metric"]!!.asBooleanValue().boolean
     }
 
     /**
@@ -351,14 +238,6 @@ class UnitOfMeasure : BinarySerializable {
                     newObj._dimension[baseUnit] = exp
                 }
 
-                newObj.isMetric =
-                    newDim.count() == 1 &&
-                    newDim.toList()[0].second == 1 &&
-                    float.Comparison.nearlyEquals(
-                        newObj.magnitude,
-                        1.0
-                    )
-
                 newObj
             }
 
@@ -399,14 +278,6 @@ class UnitOfMeasure : BinarySerializable {
             newObj._dimension[baseUnit] = exp
         }
 
-        newObj.isMetric =
-            newDim.count() == 1 &&
-            newDim.toList()[0].second == 1 &&
-            float.Comparison.nearlyEquals(
-                newObj.magnitude,
-                1.0
-            )
-
         return newObj
     }
 
@@ -425,14 +296,6 @@ class UnitOfMeasure : BinarySerializable {
                 otherDim.getOrDefault(baseUnit, 0)
         }
 
-        newObj.isMetric =
-            newObj._dimension.count() == 1 &&
-            newObj._dimension.toList()[0].second == 1 &&
-            float.Comparison.nearlyEquals(
-                newObj.magnitude,
-                1.0
-            )
-
         return newObj
     }
 
@@ -444,14 +307,6 @@ class UnitOfMeasure : BinarySerializable {
         for ((baseUnit, exp) in dimension) {
             newObj._dimension[baseUnit] = exp
         }
-
-        newObj.isMetric =
-            newObj._dimension.count() == 1 &&
-            newObj._dimension.toList()[0].second == 1 &&
-            float.Comparison.nearlyEquals(
-                newObj.magnitude,
-                1.0
-            )
 
         return newObj
     }
@@ -471,19 +326,11 @@ class UnitOfMeasure : BinarySerializable {
                 otherDim.getOrDefault(baseUnit, 0)
         }
 
-        newObj.isMetric =
-            newObj._dimension.count() == 1 &&
-            newObj._dimension.toList()[0].second == 1 &&
-            float.Comparison.nearlyEquals(
-                newObj.magnitude,
-                1.0
-            )
-
         return newObj
     }
 
     override fun hashCode(): Int =
-        listOf(dimension, isMetric).hashCode()
+        listOf(dimension).hashCode()
 
     /**
      *  Uses [float.Comparison.nearlyEquals] for the magnitude component.
@@ -509,7 +356,7 @@ class UnitOfMeasure : BinarySerializable {
 
         packer
             .packString(this::class.qualifiedName)
-            .packMapHeader(3)
+            .packMapHeader(2)
 
         packer
             .packString("magnitude")
@@ -522,13 +369,9 @@ class UnitOfMeasure : BinarySerializable {
             .packMapHeader(dimensionBuf.count())
 
         for ((baseUnit, exp) in dimensionBuf) {
-            packer.packString(baseUnit.name)
+            packer.packString(baseUnit)
             packer.packInt(exp)
         }
-
-        packer
-            .packString("is-metric")
-            .packBoolean(isMetric)
 
         packer.close()
 
@@ -537,6 +380,57 @@ class UnitOfMeasure : BinarySerializable {
 
     companion object {
         /**
+         *  JSON of UCUM base units parsed by Gson.
+         */
+        private val baseUnits: Map<String, Map<String, Any>> by lazy {
+            @Suppress("UNCHECKED_CAST") (
+                UcumSymbolStore.json["base-units"]!!
+                    as Map<String, Map<String, Any>>
+            )
+        }
+
+        /**
+         *  @suppress
+         *
+         *  JSON of UCUM base units parsed by Gson.
+         */
+        @JvmStatic
+        fun baseUnits(
+            @Suppress("UNUSED_PARAMETER")
+            friendAccess: Production.FriendAccess
+        ): Map<String, Map<String, Any>> =
+            baseUnits
+
+        /**
+         *  JSON of UCUM derived units parsed by Gson.
+         */
+        private val derivedUnits: Map<String, Map<String, Any>> by lazy {
+            @Suppress("UNCHECKED_CAST") (
+                UcumSymbolStore.json["derived-units"]!!
+                    as Map<String, Map<String, Any>>
+            )
+        }
+
+        /**
+         *  @suppress
+         *
+         *  JSON of UCUM derived units parsed by Gson.
+         */
+        @JvmStatic
+        fun derivedUnits(
+            @Suppress("UNUSED_PARAMETER")
+            friendAccess: Production.FriendAccess
+        ): Map<String, Map<String, Any>> =
+            derivedUnits
+
+        /**
+         *  Whether a UCUM c/s symbol represents a base unit.
+         */
+        @JvmStatic
+        fun isBase(cs: String): Boolean =
+            baseUnits.containsKey(cs)
+
+        /**
          *  Whether a UCUM c/s symbol represents a metric unit.
          *
          *  `false` is returned if the c/s symbol does not exist in the JSON
@@ -544,89 +438,68 @@ class UnitOfMeasure : BinarySerializable {
          */
         @JvmStatic
         fun isMetric(cs: String): Boolean {
-            val csAsBaseUnit = BaseUnit.getBaseUnit(cs)
-
-            if (csAsBaseUnit != null) {
+            if (baseUnits.containsKey(cs)) {
                 return true
             }
 
-            val derivedUnits = @Suppress("UNCHECKED_CAST") (
-                UcumSymbolStore.json["derived-units"]!!
-                    as Map<String, Map<String, Any>>
-            )
-
-            if (!derivedUnits.containsKey(cs)) {
-                return false
+            return if (derivedUnits.containsKey(cs)) {
+                derivedUnits[cs]!!["metric"]!! as Boolean
+            } else {
+                false
             }
-
-            return derivedUnits[cs]!!["is-metric"]!! as Boolean
         }
 
         /**
          *  Whether a UCUM c/s symbol represents a known unit.
          */
         @JvmStatic
-        fun isUnit(cs: String): Boolean {
-            val csAsBaseUnit = BaseUnit.getBaseUnit(cs)
-
-            if (csAsBaseUnit != null) {
-                return true
-            }
-
-            val derivedUnits = @Suppress("UNCHECKED_CAST") (
-                UcumSymbolStore.json["derived-units"]!!
-                    as Map<String, Map<String, Any>>
-            )
-
-            if (derivedUnits.containsKey(cs)) {
-                return true
-            }
-
-            return false
-        }
+        fun isUnit(cs: String): Boolean =
+            baseUnits.containsKey(cs) || derivedUnits.containsKey(cs)
 
         /**
-         *  Creates a [UnitOfMeasure] that is represented by a UCUM c/s symbol.
+         *  Parses a text that specifies a unit in the UCUM format, and creates
+         *  a [UnitOfMeasure].
          *
-         *  @param cs
-         *      UCUM c/s symbol. It must exist in the JSON file that contains
-         *      the predefined UCUM symbols.
+         *  @param unit
+         *      Unit specified in the UCUM format.
          */
         @JvmStatic
-        fun create(cs: String): UnitOfMeasure {
-            val csAsBaseUnit = BaseUnit.getBaseUnit(cs)
-
-            if (csAsBaseUnit != null) {
-                return UnitOfMeasure(csAsBaseUnit)
+        fun parse(unit: String): UnitOfMeasure {
+            if (baseUnits.containsKey(unit)) {
+                return UnitOfMeasure(unit)
+            } else if (unit == "1") {
+                return UnitOfMeasure()
             }
 
-            val derivedUnits = @Suppress("UNCHECKED_CAST") (
-                UcumSymbolStore.json["derived-units"]!!
-                    as Map<String, Map<String, Any>>
-            )
+            val tokens = TokenIterator(unit)
+            val actuator = Actuator(tokens.asSequence())
+            val parseRoot = actuator.actuate()
 
-            if (!derivedUnits.containsKey(cs)) {
-                throw RuntimeException(
-                    "Unknown unit type for $cs"
-                )
+            // TODO: Make the following efficient.
+
+            // Find the maximum depth.
+            var maxDepth: Int = 0
+
+            for (descendant in parseRoot.descendants(true)) {
+                if (descendant.depth > maxDepth) {
+                    maxDepth = descendant.depth
+                }
             }
 
-            val newObj = UnitOfMeasure()
+            var currDepth: Int = maxDepth
 
-            newObj.magnitude = derivedUnits[cs]!!["magnitude"]!! as Double
+            while (currDepth >= 0) {
+                for (descendant in parseRoot.descendants(true)) {
+                    if (descendant.depth == currDepth) {
+                        descendant.type.colorFill(descendant)
+                    }
+                }
 
-            val expsByBaseCs = @Suppress("UNCHECKED_CAST") (
-                derivedUnits[cs]!!["dimension"]!!
-                    as Map<String, Int>
-            )
-
-            for ((baseCs, exp) in expsByBaseCs) {
-                newObj._dimension[BaseUnit.getBaseUnit(baseCs)!!] = exp
+                --currDepth
             }
 
-            newObj.isMetric = derivedUnits[cs]!!["is-metric"]!! as Boolean
-
-            return newObj
+            return parseRoot
+                .getUserData(Production.userDataKey) as UnitOfMeasure
         }
     }
 }

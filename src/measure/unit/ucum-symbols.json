@@ -121,77 +121,119 @@
             "value": 1099511627776
         }
     },
+    "base-units": {
+        "m": {
+            "ci": "M"
+        },
+        "s": {
+            "ci": "S"
+        },
+        "g": {
+            "ci": "G"
+        },
+        "rad": {
+            "ci": "RAD"
+        },
+        "K": {
+            "ci": "K"
+        },
+        "C": {
+            "ci": "C"
+        },
+        "cd": {
+            "ci": "CD"
+        }
+    },
     "derived-units": {
+        "10*": {
+            "ci": "10*",
+            "metric": false,
+            "definition-value": 10.0,
+            "definition-unit": "1"
+        },
+        "10^": {
+            "ci": "10^",
+            "metric": false,
+            "definition-value": 10.0,
+            "definition-unit": "1"
+        },
+        "F": {
+            "ci": "F",
+            "metric": true,
+            "definition-value": 1.0,
+            "definition-unit": "C/V"
+        },
         "Ao": {
             "ci": "AO",
-            "is-metric": false,
-            "magnitude": 0.1e-9,
-            "dimension": {
-                "m": 1
-            }
+            "metric": false,
+            "definition-value": 0.1,
+            "definition-unit": "nm"
         },
         "mol": {
             "ci": "MOL",
-            "is-metric": true,
-            "magnitude": 6.0221367e23,
-            "dimension": {}
+            "metric": true,
+            "definition-value": 6.0221367,
+            "definition-unit": "10*23"
+        },
+        "N": {
+            "ci": "N",
+            "metric": true,
+            "definition-value": 1.0,
+            "definition-unit": "kg.m/s2"
         },
         "J": {
             "ci": "J",
-            "is-metric": true,
-            "magnitude": 1e3,
-            "dimension": {
-                "g": 1,
-                "m": 2,
-                "s": -2
-            }
+            "metric": true,
+            "definition-value": 1.0,
+            "definition-unit": "N.m"
+        },
+        "cal_th": {
+            "ci": "CAL_TH",
+            "metric": true,
+            "definition-value": 4.184,
+            "definition-unit": "J"
         },
         "cal": {
             "ci": "CAL",
-            "is-metric": true,
-            "magnitude": 4.184e3,
-            "dimension": {
-                "g": 1,
-                "m": 2,
-                "s": -2
-            }
+            "metric": true,
+            "definition-value": 1.0,
+            "definition-unit": "cal_th"
+        },
+        "V": {
+            "ci": "V",
+            "metric": true,
+            "definition-value": 1.0,
+            "definition-unit": "J/C"
+        },
+        "[e]": {
+            "ci": "[E]",
+            "metric": true,
+            "definition-value": 1.60217733e-19,
+            "definition-unit": "C"
         },
         "eV": {
             "ci": "EV",
-            "is-metric": true,
-            "magnitude": 1.60217733e-16,
-            "dimension": {
-                "g": 1,
-                "m": 2,
-                "s": -2
-            }
+            "metric": true,
+            "definition-value": 1.0,
+            "definition-unit": "[e].V"
         },
         "A": {
             "ci": "A",
-            "is-metric": true,
-            "magnitude": 1.0,
-            "dimension": {
-                "C": 1,
-                "s": -1
-            }
+            "metric": true,
+            "definition-value": 1.0,
+            "definition-unit": "C/s"
         },
         "W": {
             "ci": "W",
-            "is-metric": true,
-            "magnitude": 1e3,
-            "dimension": {
-                "g": 1,
-                "m": 2,
-                "s": -3
-            }
+            "metric": true,
+            "definition-value": 1.0,
+            "definition-unit": "J/s"
         },
         "sr": {
             "ci": "SR",
-            "is-metric": true,
-            "magnitude": 1.0,
-            "dimension": {
-                "rad": 2
-            }
+            "metric": true,
+            "definition-value": 1.0,
+            "definition-unit": "rad2"
         }
     }
 }

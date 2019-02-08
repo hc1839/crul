@@ -38,7 +38,7 @@ enum class Production : Reducer<Production> {
      *  Literal symbol that is not acting as an ID for something.
      */
     TERMINAL {
-        override fun matchesLeftmost(token: String): Boolean =
+        override fun matchesFirst(token: String): Boolean =
             when (token) {
                 // Digits.
                 in (0..9).map { it.toString() } -> true
@@ -66,22 +66,22 @@ enum class Production : Reducer<Production> {
                 as String
 
             return when {
-                DIGIT.matchesLeftmost(tokenSymbol) ->
+                DIGIT.matchesFirst(tokenSymbol) ->
                     Pair(Node(DIGIT), 1)
 
-                SIGN.matchesLeftmost(tokenSymbol) ->
+                SIGN.matchesFirst(tokenSymbol) ->
                     Pair(Node(SIGN), 1)
 
-                MULTIPLY.matchesLeftmost(tokenSymbol) ->
+                MULTIPLY.matchesFirst(tokenSymbol) ->
                     Pair(Node(MULTIPLY), 1)
 
-                DIVIDE.matchesLeftmost(tokenSymbol) ->
+                DIVIDE.matchesFirst(tokenSymbol) ->
                     Pair(Node(DIVIDE), 1)
 
-                OPENING_ROUND_BRACKET.matchesLeftmost(tokenSymbol) ->
+                OPENING_ROUND_BRACKET.matchesFirst(tokenSymbol) ->
                     Pair(Node(OPENING_ROUND_BRACKET), 1)
 
-                CLOSING_ROUND_BRACKET.matchesLeftmost(tokenSymbol) ->
+                CLOSING_ROUND_BRACKET.matchesFirst(tokenSymbol) ->
                     Pair(Node(CLOSING_ROUND_BRACKET), 1)
 
                 else -> throw RuntimeException(
@@ -98,8 +98,10 @@ enum class Production : Reducer<Production> {
      *  not represent a known c/s symbol, an exception is raised.
      */
     ID {
-        override fun matchesLeftmost(token: String): Boolean =
-            Regex("^[a-zA-Z]+$") in token
+        override fun matchesFirst(token: String): Boolean =
+            Regex(
+                "^[!#-'\\*,0-<>-Z\\\\^-z|~]*[!#-'\\*,:-<>-Z\\\\^-z|~]$"
+            ) in token
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -114,27 +116,23 @@ enum class Production : Reducer<Production> {
                 ?.getUserData(userDataKey) as String?
 
             return when {
-                PREFIX_SYMBOL.matchesLeftmost(tokenSymbol) &&
+                PREFIX_SYMBOL.matchesFirst(tokenSymbol) &&
                 metricUnitLookaheadMatcher.matches(
                     parseStack,
                     lookaheadSymbol
                 ) ->
                     Pair(Node(PREFIX_SYMBOL), 1)
 
-                ATOM_SYMBOL_METRIC.matchesLeftmost(tokenSymbol) ->
+                ATOM_SYMBOL_METRIC.matchesFirst(tokenSymbol) ->
                     Pair(Node(ATOM_SYMBOL_METRIC), 1)
 
-                ATOM_SYMBOL_NONMETRIC.matchesLeftmost(tokenSymbol) ->
+                ATOM_SYMBOL_NONMETRIC.matchesFirst(tokenSymbol) ->
                     Pair(Node(ATOM_SYMBOL_NONMETRIC), 1)
 
                 else -> throw RuntimeException(
                     "Unknown UCUM c/s symbol: $tokenSymbol"
                 )
             }
-        }
-
-        override fun colorFill(node: Node<Production>) {
-            super.colorFill(node)
         }
 
         /**
@@ -150,7 +148,7 @@ enum class Production : Reducer<Production> {
      *  Opening round bracket.
      */
     OPENING_ROUND_BRACKET {
-        override fun matchesLeftmost(token: String): Boolean =
+        override fun matchesFirst(token: String): Boolean =
             token == "("
 
         override fun reduce(
@@ -166,7 +164,7 @@ enum class Production : Reducer<Production> {
      *  Closing round bracket.
      */
     CLOSING_ROUND_BRACKET {
-        override fun matchesLeftmost(token: String): Boolean =
+        override fun matchesFirst(token: String): Boolean =
             token == ")"
 
         override fun reduce(
@@ -202,7 +200,7 @@ enum class Production : Reducer<Production> {
      *  '`.`' is the multiplication operator.
      */
     MULTIPLY {
-        override fun matchesLeftmost(token: String): Boolean =
+        override fun matchesFirst(token: String): Boolean =
             token == "."
 
         override fun reduce(
@@ -237,7 +235,7 @@ enum class Production : Reducer<Production> {
      *  '`/`' is the division operator.
      */
     DIVIDE {
-        override fun matchesLeftmost(token: String): Boolean =
+        override fun matchesFirst(token: String): Boolean =
             token == "/"
 
         override fun reduce(
@@ -248,10 +246,13 @@ enum class Production : Reducer<Production> {
             val lookaheadSymbol = lookahead
                 ?.getUserData(userDataKey) as String?
 
-            if (!termMatcher.matches(parseStack, lookaheadSymbol)) {
+            if (!(
+                termMatcher.matches(parseStack, lookaheadSymbol) ||
+                mainTermMatcher.matches(parseStack, lookaheadSymbol)
+            )) {
                 throw RuntimeException(
-                    "Division operator is not preceded by a 'TERM' " +
-                    "and is not followed by a 'COMPONENT'."
+                    "Division operator is not preceded or followed " +
+                    "by the expected token type."
                 )
             }
 
@@ -264,10 +265,17 @@ enum class Production : Reducer<Production> {
         private val termMatcher: ProductionMatcher<Production> by lazy {
             ProductionMatcher<Production>(listOf(TERM, DIVIDE), COMPONENT)
         }
+
+        /**
+         *  Production matcher for [MAIN_TERM] in the context of [DIVIDE].
+         */
+        private val mainTermMatcher: ProductionMatcher<Production> by lazy {
+            ProductionMatcher<Production>(listOf(DIVIDE), TERM)
+        }
     },
 
     SIGN {
-        override fun matchesLeftmost(token: String): Boolean =
+        override fun matchesFirst(token: String): Boolean =
             token in listOf("+", "-")
 
         override fun reduce(
@@ -280,11 +288,16 @@ enum class Production : Reducer<Production> {
 
         override fun colorFill(node: Node<Production>) {
             super.colorFill(node)
+
+            node.setUserData(
+                userDataKey,
+                node.firstChild!!.getUserData(userDataKey)
+            )
         }
     },
 
     DIGIT {
-        override fun matchesLeftmost(token: String): Boolean =
+        override fun matchesFirst(token: String): Boolean =
             token in (0..9).map { it.toString() }
 
         override fun reduce(
@@ -306,6 +319,11 @@ enum class Production : Reducer<Production> {
 
         override fun colorFill(node: Node<Production>) {
             super.colorFill(node)
+
+            node.setUserData(
+                userDataKey,
+                node.firstChild!!.getUserData(userDataKey)
+            )
         }
 
         /**
@@ -319,8 +337,8 @@ enum class Production : Reducer<Production> {
     },
 
     DIGITS {
-        override fun matchesLeftmost(token: String): Boolean =
-            DIGIT.matchesLeftmost(token)
+        override fun matchesFirst(token: String): Boolean =
+            DIGIT.matchesFirst(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -344,6 +362,16 @@ enum class Production : Reducer<Production> {
 
         override fun colorFill(node: Node<Production>) {
             super.colorFill(node)
+
+            node.setUserData(
+                userDataKey,
+                node
+                    .childNodes
+                    .map {
+                        it.getUserData(userDataKey) as String
+                    }
+                    .joinToString("")
+            )
         }
 
         private val digitsMatcher: ProductionMatcher<Production> by lazy {
@@ -369,8 +397,8 @@ enum class Production : Reducer<Production> {
     },
 
     FACTOR {
-        override fun matchesLeftmost(token: String): Boolean =
-            DIGITS.matchesLeftmost(token)
+        override fun matchesFirst(token: String): Boolean =
+            DIGITS.matchesFirst(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -382,13 +410,26 @@ enum class Production : Reducer<Production> {
 
         override fun colorFill(node: Node<Production>) {
             super.colorFill(node)
+
+            val digitsAsInt =
+                (
+                    node
+                        .firstChild!!
+                        .getUserData(userDataKey) as String
+                )
+                .toInt()
+
+            node.setUserData(
+                userDataKey,
+                UnitOfMeasure() * digitsAsInt.toDouble()
+            )
         }
     },
 
     EXPONENT {
-        override fun matchesLeftmost(token: String): Boolean =
-            SIGN.matchesLeftmost(token) ||
-            DIGITS.matchesLeftmost(token)
+        override fun matchesFirst(token: String): Boolean =
+            SIGN.matchesFirst(token) ||
+            DIGITS.matchesFirst(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -406,6 +447,19 @@ enum class Production : Reducer<Production> {
 
         override fun colorFill(node: Node<Production>) {
             super.colorFill(node)
+
+            var exponent =
+                (node.lastChild!!.getUserData(userDataKey) as String)
+                .toInt()
+
+            if (
+                node.childNodes.count() == 2 &&
+                node.firstChild!!.getUserData(userDataKey) as String == "-"
+            ) {
+                exponent = -exponent
+            }
+
+            node.setUserData(userDataKey, exponent)
         }
 
         /**
@@ -422,7 +476,7 @@ enum class Production : Reducer<Production> {
     },
 
     PREFIX_SYMBOL {
-        override fun matchesLeftmost(token: String): Boolean =
+        override fun matchesFirst(token: String): Boolean =
             UnitPrefix.isPrefix(token)
 
         override fun reduce(
@@ -435,6 +489,12 @@ enum class Production : Reducer<Production> {
 
         override fun colorFill(node: Node<Production>) {
             super.colorFill(node)
+
+            val prefixCs = node
+                .firstChild!!
+                .getUserData(userDataKey) as String
+
+            node.setUserData(userDataKey, UnitPrefix.getValue(prefixCs))
         }
     },
 
@@ -442,7 +502,7 @@ enum class Production : Reducer<Production> {
      *  Unit atom that is metric.
      */
     ATOM_SYMBOL_METRIC {
-        override fun matchesLeftmost(token: String): Boolean =
+        override fun matchesFirst(token: String): Boolean =
             UnitOfMeasure.isMetric(token)
 
         override fun reduce(
@@ -458,6 +518,18 @@ enum class Production : Reducer<Production> {
                 }
 
             return Pair(Node(SIMPLE_UNIT), childCount)
+        }
+
+        override fun colorFill(node: Node<Production>) {
+            super.colorFill(node)
+
+            val unitAtomCs = node
+                .firstChild!!
+                .getUserData(userDataKey) as String
+
+            val unitAtom = Production.createUnitAtom(unitAtomCs)
+
+            node.setUserData(userDataKey, unitAtom)
         }
 
         /**
@@ -476,7 +548,7 @@ enum class Production : Reducer<Production> {
      *  Unit atom that is not metric.
      */
     ATOM_SYMBOL_NONMETRIC {
-        override fun matchesLeftmost(token: String): Boolean =
+        override fun matchesFirst(token: String): Boolean =
             UnitOfMeasure.isUnit(token) &&
             !UnitOfMeasure.isMetric(token)
 
@@ -487,13 +559,25 @@ enum class Production : Reducer<Production> {
         {
             return Pair(Node(SIMPLE_UNIT), 1)
         }
+
+        override fun colorFill(node: Node<Production>) {
+            super.colorFill(node)
+
+            val unitAtomCs = node
+                .firstChild!!
+                .getUserData(userDataKey) as String
+
+            val unitAtom = Production.createUnitAtom(unitAtomCs)
+
+            node.setUserData(userDataKey, unitAtom)
+        }
     },
 
     SIMPLE_UNIT {
-        override fun matchesLeftmost(token: String): Boolean =
-            PREFIX_SYMBOL.matchesLeftmost(token) ||
-            ATOM_SYMBOL_METRIC.matchesLeftmost(token) ||
-            ATOM_SYMBOL_NONMETRIC.matchesLeftmost(token)
+        override fun matchesFirst(token: String): Boolean =
+            PREFIX_SYMBOL.matchesFirst(token) ||
+            ATOM_SYMBOL_METRIC.matchesFirst(token) ||
+            ATOM_SYMBOL_NONMETRIC.matchesFirst(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -514,6 +598,31 @@ enum class Production : Reducer<Production> {
 
         override fun colorFill(node: Node<Production>) {
             super.colorFill(node)
+
+            val unitAtom = node
+                .lastChild!!
+                .getUserData(userDataKey) as UnitOfMeasure
+
+            node.setUserData(
+                userDataKey,
+                when (node.childNodes.count()) {
+                    1 -> unitAtom
+
+                    2 -> {
+                        val prefix = node
+                            .firstChild!!
+                            .getUserData(userDataKey) as Double
+
+                        unitAtom * prefix
+                    }
+
+                    else -> throw RuntimeException(
+                        "[Internal Error] " +
+                        "'SIMPLE_UNIT' has ${node.childNodes.count()} " +
+                        "child nodes."
+                    )
+                }
+            )
         }
 
         /**
@@ -528,8 +637,8 @@ enum class Production : Reducer<Production> {
     },
 
     ANNOTATABLE {
-        override fun matchesLeftmost(token: String): Boolean =
-            SIMPLE_UNIT.matchesLeftmost(token)
+        override fun matchesFirst(token: String): Boolean =
+            SIMPLE_UNIT.matchesFirst(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -541,13 +650,39 @@ enum class Production : Reducer<Production> {
 
         override fun colorFill(node: Node<Production>) {
             super.colorFill(node)
+
+            val simpleUnit = node
+                .firstChild!!
+                .getUserData(userDataKey) as UnitOfMeasure
+
+            node.setUserData(
+                userDataKey,
+                when (node.childNodes.count()) {
+                    1 -> simpleUnit
+
+                    2 -> {
+                        val exponent = node
+                            .lastChild!!
+                            .getUserData(userDataKey) as Int
+
+                        simpleUnit.pow(exponent)
+                    }
+
+                    else -> throw RuntimeException(
+                        "[Internal Error] " +
+                        "'ANNOTATABLE' has ${node.childNodes.count()} " +
+                        "child nodes."
+                    )
+                }
+            )
         }
     },
 
     COMPONENT {
-        override fun matchesLeftmost(token: String): Boolean =
-            ANNOTATABLE.matchesLeftmost(token) ||
-            FACTOR.matchesLeftmost(token)
+        override fun matchesFirst(token: String): Boolean =
+            ANNOTATABLE.matchesFirst(token) ||
+            FACTOR.matchesFirst(token) ||
+            OPENING_ROUND_BRACKET.matchesFirst(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -568,6 +703,23 @@ enum class Production : Reducer<Production> {
 
         override fun colorFill(node: Node<Production>) {
             super.colorFill(node)
+
+            node.setUserData(
+                userDataKey,
+                when (node.firstChild!!.type) {
+                    ANNOTATABLE, FACTOR ->
+                        node.firstChild!!.getUserData(userDataKey)
+
+                    OPENING_ROUND_BRACKET ->
+                        node.childNodes[1].getUserData(userDataKey)
+
+                    else -> throw RuntimeException(
+                        "[Internal Error] " +
+                        "'COMPONENT' does not have the expected types " +
+                        "of child nodes."
+                    )
+                }
+            )
         }
 
         /**
@@ -596,8 +748,8 @@ enum class Production : Reducer<Production> {
     },
 
     TERM {
-        override fun matchesLeftmost(token: String): Boolean =
-            COMPONENT.matchesLeftmost(token)
+        override fun matchesFirst(token: String): Boolean =
+            COMPONENT.matchesFirst(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -627,6 +779,32 @@ enum class Production : Reducer<Production> {
 
         override fun colorFill(node: Node<Production>) {
             super.colorFill(node)
+
+            val result = if (node.childNodes.count() == 1) {
+                node.firstChild!!.getUserData(userDataKey)
+            } else {
+                val firstOperand = node
+                    .firstChild!!
+                    .getUserData(userDataKey) as UnitOfMeasure
+
+                val secondOperand = node
+                    .lastChild!!
+                    .getUserData(userDataKey) as UnitOfMeasure
+
+                when (node.childNodes[1].type) {
+                    MULTIPLY -> firstOperand * secondOperand
+
+                    DIVIDE -> firstOperand / secondOperand
+
+                    else -> throw RuntimeException(
+                        "[Internal Error] " +
+                        "'TERM' does not have the expected types " +
+                        "of child nodes."
+                    )
+                }
+            }
+
+            node.setUserData(userDataKey, result)
         }
 
         /**
@@ -669,9 +847,9 @@ enum class Production : Reducer<Production> {
     MAIN_TERM {
         override val isAccepting: Boolean = true
 
-        override fun matchesLeftmost(token: String): Boolean =
-            DIVIDE.matchesLeftmost(token) ||
-            TERM.matchesLeftmost(token)
+        override fun matchesFirst(token: String): Boolean =
+            DIVIDE.matchesFirst(token) ||
+            TERM.matchesFirst(token)
 
         override fun reduce(
             parseStack: List<Node<Production>>,
@@ -683,8 +861,43 @@ enum class Production : Reducer<Production> {
 
         override fun colorFill(node: Node<Production>) {
             super.colorFill(node)
+
+            val operand = node
+                .lastChild!!
+                .getUserData(userDataKey) as UnitOfMeasure
+
+            node.setUserData(
+                userDataKey,
+                when (node.childNodes.count()) {
+                    1 -> operand
+
+                    2 -> {
+                        if (node.firstChild!!.type != DIVIDE) {
+                            throw RuntimeException(
+                                "[Internal Error] " +
+                                "'MAIN_TERM' has two child nodes, " +
+                                "but the first child is not 'DIVIDE'"
+                            )
+                        }
+
+                        UnitOfMeasure() / operand
+                    }
+
+                    else -> throw RuntimeException(
+                        "[Internal Error] " +
+                        "'MAIN_TERM' does not have the expected number " +
+                        "of child nodes."
+                    )
+                }
+            )
         }
     };
+
+    /**
+     *  The following enum constants overrides this to be `true`:
+     *      - [MAIN_TERM]
+     */
+    override val isAccepting: Boolean = false
 
     /**
      *  Colors a given node in a parse tree through [Node.setUserData].
@@ -701,10 +914,21 @@ enum class Production : Reducer<Production> {
         }
     }
 
-    /**
-     *  Only [MAIN_TERM] overrides this to be `true`.
-     */
-    override val isAccepting: Boolean = false
+    private object FriendKey : visaccess.FriendKey()
+
+    open class FriendAccess(key: visaccess.FriendKey) :
+        visaccess.FriendAccess
+    {
+        init {
+            if (key != FriendKey) {
+                throw IllegalArgumentException(
+                    "Invalid friend key."
+                )
+            }
+        }
+    }
+
+    protected object Friendship : FriendAccess(FriendKey)
 
     companion object {
         /**
@@ -713,5 +937,42 @@ enum class Production : Reducer<Production> {
          */
         @JvmField
         val userDataKey: String = "production-value"
+
+        /**
+         *  JSON of UCUM base units parsed by Gson.
+         */
+        protected val baseUnits: Map<String, Map<String, Any>> by lazy {
+            UnitOfMeasure.baseUnits(Friendship)
+        }
+
+        /**
+         *  JSON of UCUM derived units parsed by Gson.
+         */
+        protected val derivedUnits: Map<String, Map<String, Any>> by lazy {
+            UnitOfMeasure.derivedUnits(Friendship)
+        }
+
+        /**
+         *  Creates a [UnitOfMeasure] from the UCUM c/s symbol of a unit atom.
+         *
+         *  @param unitAtomCs
+         *      UCUM c/s symbol of a unit atom.
+         */
+        protected fun createUnitAtom(unitAtomCs: String): UnitOfMeasure =
+            if (baseUnits.contains(unitAtomCs)) {
+                UnitOfMeasure(unitAtomCs)
+            } else if (derivedUnits.contains(unitAtomCs)) {
+                val defValue =
+                    derivedUnits[unitAtomCs]!!["definition-value"] as Double
+
+                val defUnitText =
+                    derivedUnits[unitAtomCs]!!["definition-unit"] as String
+
+                UnitOfMeasure.parse(defUnitText) * defValue
+            } else {
+                throw IllegalArgumentException(
+                    "Unknown unit atom: $unitAtomCs"
+                )
+            }
     }
 }
