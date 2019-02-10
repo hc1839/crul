@@ -16,14 +16,15 @@
 
 package parse.shiftreduce
 
-import hierarchy.tree.TypedNode
+import parse.ParseNode
 
 /**
  *  Matcher for the rightmost node(s) in a parse stack and the lookahead symbol
  *  against a production pattern.
  *
  *  @param T
- *      Enum type of the node types in the parse tree.
+ *      Enum type of node types in the parse tree that also acts as the type of
+ *      reducer.
  */
 class ProductionMatcher<T>
     where T : Enum<T>,
@@ -81,7 +82,7 @@ class ProductionMatcher<T>
      *      it is `null` and [lookaheadMatchType] is non-`null`.
      */
     fun matches(
-        parseStack: List<TypedNode<T>>,
+        parseStack: List<ParseNode<T>>,
         lookaheadSymbol: String?
     ): Boolean
     {

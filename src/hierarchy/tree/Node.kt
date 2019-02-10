@@ -25,6 +25,9 @@ package hierarchy.tree
  *
  *  @param D
  *      Type of user data.
+ *
+ *  @param N
+ *      Type of node to use in parameters and returns.
  */
 interface Node<D : Any, N : Node<D, N>> {
     /**

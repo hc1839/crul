@@ -42,6 +42,8 @@ import hypergraph.Edge
 import hypergraph.Vertex
 import math.coordsys.Vector3D
 import measure.Quantity
+import measure.dimension.BaseDimension
+import measure.unit.BaseUnit
 import measure.unit.UnitOfMeasure
 
 /**
@@ -201,15 +203,13 @@ open class MoleculeComplex<A, F> :
             )
         }
 
-        val siLengthUnit = UnitOfMeasure("m")
-
-        if (!fromLengthUnit.isCommensurable(siLengthUnit)) {
+        if (!fromLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
             throw IllegalArgumentException(
                 "Unit of a coordinate must be a unit of length."
             )
         }
 
-        if (!toLengthUnit.isCommensurable(siLengthUnit)) {
+        if (!toLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
             throw IllegalArgumentException(
                 "Unit of a coordinate must be a unit of length."
             )
@@ -225,7 +225,7 @@ open class MoleculeComplex<A, F> :
 
         val moleculeNode = cmlDoc.firstChild as org.w3c.dom.Element
 
-        if (moleculeNode.getTagName() != "molecule") {
+        if (moleculeNode.tagName != "molecule") {
             throw IllegalArgumentException(
                 "Root element is not 'molecule'."
             )
@@ -733,18 +733,16 @@ open class MoleculeComplex<A, F> :
     @JvmOverloads
     fun toCml(
         fromLengthUnit: UnitOfMeasure,
-        toLengthUnit: UnitOfMeasure = UnitOfMeasure("Ao")
+        toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao")
     ): String
     {
-        val siLengthUnit = UnitOfMeasure("m")
-
-        if (!fromLengthUnit.isCommensurable(siLengthUnit)) {
+        if (!fromLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
             throw IllegalArgumentException(
                 "Unit of a coordinate must be a unit of length."
             )
         }
 
-        if (!toLengthUnit.isCommensurable(siLengthUnit)) {
+        if (!toLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
             throw IllegalArgumentException(
                 "Unit of a coordinate must be a unit of length."
             )
@@ -867,19 +865,17 @@ open class MoleculeComplex<A, F> :
     @JvmOverloads
     fun toXyz(
         fromLengthUnit: UnitOfMeasure,
-        toLengthUnit: UnitOfMeasure = UnitOfMeasure("Ao"),
+        toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
         separator: String = " "
     ): String
     {
-        val siLengthUnit = UnitOfMeasure("m")
-
-        if (!fromLengthUnit.isCommensurable(siLengthUnit)) {
+        if (!fromLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
             throw IllegalArgumentException(
                 "Unit of a coordinate must be a unit of length."
             )
         }
 
-        if (!toLengthUnit.isCommensurable(siLengthUnit)) {
+        if (!toLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
             throw IllegalArgumentException(
                 "Unit of a coordinate must be a unit of length."
             )

@@ -111,31 +111,14 @@ class UnitOfMeasure : BinarySerializable {
     /**
      *  Base units associated with their exponents as a backing property.
      */
-    private val _dimension: MutableMap<String, Int> = mutableMapOf()
-
-    /**
-     *  Base units associated with their exponents.
-     *
-     *  Only entries where the exponent is non-zero is returned.
-     */
-    val dimension: Map<String, Int>
-        get() = _dimension.filter { (_, exp) -> exp != 0 }
+    private val _dimension: MutableMap<BaseUnit, Int> = mutableMapOf()
 
     /**
      *  Base unit raised to the power of 1.
-     *
-     *  @param baseUnitCs
-     *      UCUM c/s symbol of the base unit to construct.
      */
-    constructor(baseUnitCs: String) {
-        if (!baseUnits.containsKey(baseUnitCs)) {
-            throw IllegalArgumentException(
-                "Not a valid base unit: $baseUnitCs"
-            )
-        }
-
+    constructor(baseUnit: BaseUnit) {
         magnitude = 1.0
-        _dimension[baseUnitCs] = 1
+        _dimension[baseUnit] = 1
     }
 
     /**
@@ -144,6 +127,14 @@ class UnitOfMeasure : BinarySerializable {
     constructor() {
         magnitude = 1.0
     }
+
+    /**
+     *  Base units associated with their exponents.
+     *
+     *  Only entries where the exponent is non-zero is returned.
+     */
+    val dimension: Map<BaseUnit, Int>
+        get() = _dimension.filter { (_, exp) -> exp != 0 }
 
     /**
      *  Initializes from a MessagePack map.
@@ -167,7 +158,9 @@ class UnitOfMeasure : BinarySerializable {
                 .asMapValue()
                 .map()
                 .map { (key, value) ->
-                    val baseUnit = key.asStringValue().toString()
+                    val baseUnit = BaseUnit
+                        .getByCs(key.asStringValue().toString())!!
+
                     val exp = value.asIntegerValue().toInt()
 
                     Pair(baseUnit, exp)
@@ -369,7 +362,7 @@ class UnitOfMeasure : BinarySerializable {
             .packMapHeader(dimensionBuf.count())
 
         for ((baseUnit, exp) in dimensionBuf) {
-            packer.packString(baseUnit)
+            packer.packString(baseUnit.cs)
             packer.packInt(exp)
         }
 
@@ -379,28 +372,6 @@ class UnitOfMeasure : BinarySerializable {
     }
 
     companion object {
-        /**
-         *  JSON of UCUM base units parsed by Gson.
-         */
-        private val baseUnits: Map<String, Map<String, Any>> by lazy {
-            @Suppress("UNCHECKED_CAST") (
-                UcumSymbolStore.json["base-units"]!!
-                    as Map<String, Map<String, Any>>
-            )
-        }
-
-        /**
-         *  @suppress
-         *
-         *  JSON of UCUM base units parsed by Gson.
-         */
-        @JvmStatic
-        fun baseUnits(
-            @Suppress("UNUSED_PARAMETER")
-            friendAccess: Production.FriendAccess
-        ): Map<String, Map<String, Any>> =
-            baseUnits
-
         /**
          *  JSON of UCUM derived units parsed by Gson.
          */
@@ -412,23 +383,11 @@ class UnitOfMeasure : BinarySerializable {
         }
 
         /**
-         *  @suppress
-         *
-         *  JSON of UCUM derived units parsed by Gson.
-         */
-        @JvmStatic
-        fun derivedUnits(
-            @Suppress("UNUSED_PARAMETER")
-            friendAccess: Production.FriendAccess
-        ): Map<String, Map<String, Any>> =
-            derivedUnits
-
-        /**
          *  Whether a UCUM c/s symbol represents a base unit.
          */
         @JvmStatic
         fun isBase(cs: String): Boolean =
-            baseUnits.containsKey(cs)
+            BaseUnit.getByCs(cs) != null
 
         /**
          *  Whether a UCUM c/s symbol represents a metric unit.
@@ -438,7 +397,7 @@ class UnitOfMeasure : BinarySerializable {
          */
         @JvmStatic
         fun isMetric(cs: String): Boolean {
-            if (baseUnits.containsKey(cs)) {
+            if (isBase(cs)) {
                 return true
             }
 
@@ -450,56 +409,41 @@ class UnitOfMeasure : BinarySerializable {
         }
 
         /**
-         *  Whether a UCUM c/s symbol represents a known unit.
+         *  Whether a UCUM c/s symbol represents a known unit atom.
          */
         @JvmStatic
-        fun isUnit(cs: String): Boolean =
-            baseUnits.containsKey(cs) || derivedUnits.containsKey(cs)
+        fun isUnitAtom(cs: String): Boolean =
+            isBase(cs) || derivedUnits.containsKey(cs)
 
         /**
          *  Parses a text that specifies a unit in the UCUM format, and creates
          *  a [UnitOfMeasure].
          *
-         *  @param unit
+         *  @param unitText
          *      Unit specified in the UCUM format.
          */
         @JvmStatic
-        fun parse(unit: String): UnitOfMeasure {
-            if (baseUnits.containsKey(unit)) {
-                return UnitOfMeasure(unit)
-            } else if (unit == "1") {
-                return UnitOfMeasure()
+        fun parse(unitText: String): UnitOfMeasure =
+            if (isBase(unitText)) {
+                UnitOfMeasure(BaseUnit.getByCs(unitText)!!)
+            } else if (unitText == "1") {
+                UnitOfMeasure()
+            } else if (isUnitAtom(unitText)) {
+                // It is a unit atom that is not a base unit.
+
+                val defValue =
+                    derivedUnits[unitText]!!["definition-value"] as Double
+
+                val defUnitText =
+                    derivedUnits[unitText]!!["definition-unit"] as String
+
+                parse(defUnitText) * defValue
+            } else {
+                val tokens = TokenIterator(unitText)
+                val actuator = Actuator(tokens.asSequence())
+                val parseRoot = actuator.actuate()
+
+                parseRoot.getUserData(Production.userDataKey) as UnitOfMeasure
             }
-
-            val tokens = TokenIterator(unit)
-            val actuator = Actuator(tokens.asSequence())
-            val parseRoot = actuator.actuate()
-
-            // TODO: Make the following efficient.
-
-            // Find the maximum depth.
-            var maxDepth: Int = 0
-
-            for (descendant in parseRoot.descendants(true)) {
-                if (descendant.depth > maxDepth) {
-                    maxDepth = descendant.depth
-                }
-            }
-
-            var currDepth: Int = maxDepth
-
-            while (currDepth >= 0) {
-                for (descendant in parseRoot.descendants(true)) {
-                    if (descendant.depth == currDepth) {
-                        descendant.type.colorFill(descendant)
-                    }
-                }
-
-                --currDepth
-            }
-
-            return parseRoot
-                .getUserData(Production.userDataKey) as UnitOfMeasure
-        }
     }
 }

@@ -16,9 +16,10 @@
 
 package measure.unit.parse
 
-import hierarchy.tree.TypedNode
 import measure.unit.UnitOfMeasure
 import measure.unit.UnitPrefix
+import parse.ColorFiller
+import parse.ParseNode
 import parse.shiftreduce.ProductionMatcher
 import parse.shiftreduce.Reducer
 
@@ -33,32 +34,26 @@ import parse.shiftreduce.Reducer
  *  follow the BNF as specified in the UCUM and are not documented here.
  *  Additional productions, on the other hand, are documented here.
  */
-enum class Production : Reducer<Production> {
+enum class Production :
+    Reducer<Production>,
+    ColorFiller<Production>
+{
     /**
      *  Literal symbol that is not acting as an ID for something.
      */
     TERMINAL {
         override fun matchesFirst(token: String): Boolean =
-            when (token) {
-                // Digits.
-                in (0..9).map { it.toString() } -> true
-
-                // Signs.
-                "+", "-" -> true
-
-                // Operators.
-                ".", "/" -> true
-
-                // Round brackets.
-                "(", ")" -> true
-
-                else -> false
-            }
+            DIGIT.matchesFirst(token) ||
+            SIGN.matchesFirst(token) ||
+            MULTIPLY.matchesFirst(token) ||
+            DIVIDE.matchesFirst(token) ||
+            OPENING_ROUND_BRACKET.matchesFirst(token) ||
+            CLOSING_ROUND_BRACKET.matchesFirst(token)
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             val tokenSymbol = parseStack
                 .last()
@@ -66,22 +61,22 @@ enum class Production : Reducer<Production> {
 
             return when {
                 DIGIT.matchesFirst(tokenSymbol) ->
-                    Pair(TypedNode(DIGIT), 1)
+                    Pair(DIGIT, 1)
 
                 SIGN.matchesFirst(tokenSymbol) ->
-                    Pair(TypedNode(SIGN), 1)
+                    Pair(SIGN, 1)
 
                 MULTIPLY.matchesFirst(tokenSymbol) ->
-                    Pair(TypedNode(MULTIPLY), 1)
+                    Pair(MULTIPLY, 1)
 
                 DIVIDE.matchesFirst(tokenSymbol) ->
-                    Pair(TypedNode(DIVIDE), 1)
+                    Pair(DIVIDE, 1)
 
                 OPENING_ROUND_BRACKET.matchesFirst(tokenSymbol) ->
-                    Pair(TypedNode(OPENING_ROUND_BRACKET), 1)
+                    Pair(OPENING_ROUND_BRACKET, 1)
 
                 CLOSING_ROUND_BRACKET.matchesFirst(tokenSymbol) ->
-                    Pair(TypedNode(CLOSING_ROUND_BRACKET), 1)
+                    Pair(CLOSING_ROUND_BRACKET, 1)
 
                 else -> throw RuntimeException(
                     "Not a valid terminal symbol: $tokenSymbol"
@@ -93,8 +88,13 @@ enum class Production : Reducer<Production> {
     /**
      *  Literal symbol that is acting as an ID for something.
      *
-     *  Currently, an ID always gets reduced to [CS_SYMBOL]. If the token does
-     *  not represent a known c/s symbol, an exception is raised.
+     *  Currently, an ID can get reduced to one of the following.
+     *      - [ATOM_SYMBOL_METRIC]
+     *      - [ATOM_SYMBOL_NONMETRIC]
+     *      - [PREFIX_SYMBOL]
+     *
+     *  If the token does not represent a known c/s symbol, an exception is
+     *  raised.
      */
     ID {
         override fun matchesFirst(token: String): Boolean =
@@ -103,9 +103,9 @@ enum class Production : Reducer<Production> {
             ) in token
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             val tokenSymbol = parseStack
                 .last()
@@ -120,13 +120,13 @@ enum class Production : Reducer<Production> {
                     parseStack,
                     lookaheadSymbol
                 ) ->
-                    Pair(TypedNode(PREFIX_SYMBOL), 1)
+                    Pair(PREFIX_SYMBOL, 1)
 
                 ATOM_SYMBOL_METRIC.matchesFirst(tokenSymbol) ->
-                    Pair(TypedNode(ATOM_SYMBOL_METRIC), 1)
+                    Pair(ATOM_SYMBOL_METRIC, 1)
 
                 ATOM_SYMBOL_NONMETRIC.matchesFirst(tokenSymbol) ->
-                    Pair(TypedNode(ATOM_SYMBOL_NONMETRIC), 1)
+                    Pair(ATOM_SYMBOL_NONMETRIC, 1)
 
                 else -> throw RuntimeException(
                     "Unknown UCUM c/s symbol: $tokenSymbol"
@@ -139,7 +139,7 @@ enum class Production : Reducer<Production> {
          */
         private val metricUnitLookaheadMatcher: ProductionMatcher<Production>
         by lazy {
-            ProductionMatcher<Production>(listOf(ID), ATOM_SYMBOL_METRIC)
+            ProductionMatcher(listOf(ID), ATOM_SYMBOL_METRIC)
         }
     },
 
@@ -151,9 +151,9 @@ enum class Production : Reducer<Production> {
             token == "("
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             return null
         }
@@ -167,9 +167,9 @@ enum class Production : Reducer<Production> {
             token == ")"
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             if (!componentMatcher.matches(parseStack, null)) {
                 throw RuntimeException(
@@ -178,15 +178,16 @@ enum class Production : Reducer<Production> {
                 )
             }
 
-            return Pair(TypedNode(COMPONENT), 3)
+            return Pair(COMPONENT, 3)
         }
 
         /**
          *  Production matcher for [COMPONENT] in the context of
          *  [CLOSING_ROUND_BRACKET].
          */
-        private val componentMatcher: ProductionMatcher<Production> by lazy {
-            ProductionMatcher<Production>(
+        private val componentMatcher: ProductionMatcher<Production>
+        by lazy {
+            ProductionMatcher(
                 listOf(OPENING_ROUND_BRACKET, TERM, CLOSING_ROUND_BRACKET),
                 null
             )
@@ -203,9 +204,9 @@ enum class Production : Reducer<Production> {
             token == "."
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             val lookaheadSymbol = lookahead
                 ?.getUserData(userDataKey) as String?
@@ -223,8 +224,9 @@ enum class Production : Reducer<Production> {
         /**
          *  Production matcher for [TERM] in the context of [MULTIPLY].
          */
-        private val termMatcher: ProductionMatcher<Production> by lazy {
-            ProductionMatcher<Production>(listOf(TERM, MULTIPLY), COMPONENT)
+        private val termMatcher: ProductionMatcher<Production>
+        by lazy {
+            ProductionMatcher(listOf(TERM, MULTIPLY), COMPONENT)
         }
     },
 
@@ -238,9 +240,9 @@ enum class Production : Reducer<Production> {
             token == "/"
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             val lookaheadSymbol = lookahead
                 ?.getUserData(userDataKey) as String?
@@ -261,15 +263,17 @@ enum class Production : Reducer<Production> {
         /**
          *  Production matcher for [TERM] in the context of [DIVIDE].
          */
-        private val termMatcher: ProductionMatcher<Production> by lazy {
-            ProductionMatcher<Production>(listOf(TERM, DIVIDE), COMPONENT)
+        private val termMatcher: ProductionMatcher<Production>
+        by lazy {
+            ProductionMatcher(listOf(TERM, DIVIDE), COMPONENT)
         }
 
         /**
          *  Production matcher for [MAIN_TERM] in the context of [DIVIDE].
          */
-        private val mainTermMatcher: ProductionMatcher<Production> by lazy {
-            ProductionMatcher<Production>(listOf(DIVIDE), TERM)
+        private val mainTermMatcher: ProductionMatcher<Production>
+        by lazy {
+            ProductionMatcher(listOf(DIVIDE), TERM)
         }
     },
 
@@ -278,15 +282,15 @@ enum class Production : Reducer<Production> {
             token in listOf("+", "-")
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             return null
         }
 
-        override fun colorFill(node: TypedNode<Production>) {
-            super.colorFill(node)
+        override fun fill(node: ParseNode<Production>) {
+            super.fill(node)
 
             node.setUserData(
                 userDataKey,
@@ -298,12 +302,12 @@ enum class Production : Reducer<Production> {
 
     DIGIT {
         override fun matchesFirst(token: String): Boolean =
-            token in (0..9).map { it.toString() }
+            Regex("^\\d$") in token
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             val lookaheadSymbol = lookahead
                 ?.getUserData(userDataKey) as String?
@@ -313,12 +317,12 @@ enum class Production : Reducer<Production> {
                     null
 
                 else ->
-                    Pair(TypedNode(DIGITS), 1)
+                    Pair(DIGITS, 1)
             }
         }
 
-        override fun colorFill(node: TypedNode<Production>) {
-            super.colorFill(node)
+        override fun fill(node: ParseNode<Production>) {
+            super.fill(node)
 
             node.setUserData(
                 userDataKey,
@@ -333,7 +337,7 @@ enum class Production : Reducer<Production> {
          */
         private val digitsLookaheadMatcher: ProductionMatcher<Production>
         by lazy {
-            ProductionMatcher<Production>(listOf(DIGIT), DIGITS)
+            ProductionMatcher(listOf(DIGIT), DIGITS)
         }
     },
 
@@ -342,27 +346,27 @@ enum class Production : Reducer<Production> {
             DIGIT.matchesFirst(token)
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             return when {
                 digitsMatcher.matches(parseStack, null) ->
-                    Pair(TypedNode(DIGITS), 2)
+                    Pair(DIGITS, 2)
 
                 precededBySign.matches(parseStack, null) ->
-                    Pair(TypedNode(EXPONENT), 2)
+                    Pair(EXPONENT, 2)
 
                 precededBySimpleUnit.matches(parseStack, null) ->
-                    Pair(TypedNode(EXPONENT), 1)
+                    Pair(EXPONENT, 1)
 
                 else ->
-                    Pair(TypedNode(FACTOR), 1)
+                    Pair(FACTOR, 1)
             }
         }
 
-        override fun colorFill(node: TypedNode<Production>) {
-            super.colorFill(node)
+        override fun fill(node: ParseNode<Production>) {
+            super.fill(node)
 
             node.setUserData(
                 userDataKey,
@@ -376,16 +380,18 @@ enum class Production : Reducer<Production> {
             )
         }
 
-        private val digitsMatcher: ProductionMatcher<Production> by lazy {
-            ProductionMatcher<Production>(listOf(DIGIT, DIGITS), null)
+        private val digitsMatcher: ProductionMatcher<Production>
+        by lazy {
+            ProductionMatcher(listOf(DIGIT, DIGITS), null)
         }
 
         /**
          *  Production matcher for [EXPONENT] in the context of [DIGITS]
          *  with a preceding [SIGN].
          */
-        private val precededBySign: ProductionMatcher<Production> by lazy {
-            ProductionMatcher<Production>(listOf(SIGN, DIGITS), null)
+        private val precededBySign: ProductionMatcher<Production>
+        by lazy {
+            ProductionMatcher(listOf(SIGN, DIGITS), null)
         }
 
         /**
@@ -394,7 +400,7 @@ enum class Production : Reducer<Production> {
          */
         private val precededBySimpleUnit: ProductionMatcher<Production>
         by lazy {
-            ProductionMatcher<Production>(listOf(SIMPLE_UNIT, DIGITS), null)
+            ProductionMatcher(listOf(SIMPLE_UNIT, DIGITS), null)
         }
     },
 
@@ -403,15 +409,15 @@ enum class Production : Reducer<Production> {
             DIGITS.matchesFirst(token)
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
-            return Pair(TypedNode(COMPONENT), 1)
+            return Pair(COMPONENT, 1)
         }
 
-        override fun colorFill(node: TypedNode<Production>) {
-            super.colorFill(node)
+        override fun fill(node: ParseNode<Production>) {
+            super.fill(node)
 
             val digitsAsInt =
                 (
@@ -435,9 +441,9 @@ enum class Production : Reducer<Production> {
             DIGITS.matchesFirst(token)
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             if (!annotatableMatcher.matches(parseStack, null)) {
                 throw RuntimeException(
@@ -445,11 +451,11 @@ enum class Production : Reducer<Production> {
                 )
             }
 
-            return Pair(TypedNode(ANNOTATABLE), 2)
+            return Pair(ANNOTATABLE, 2)
         }
 
-        override fun colorFill(node: TypedNode<Production>) {
-            super.colorFill(node)
+        override fun fill(node: ParseNode<Production>) {
+            super.fill(node)
 
             var exponent =
                 (node.lastChild!!.getUserData(userDataKey) as String)
@@ -471,7 +477,7 @@ enum class Production : Reducer<Production> {
          */
         private val annotatableMatcher: ProductionMatcher<Production>
         by lazy {
-            ProductionMatcher<Production>(
+            ProductionMatcher(
                 listOf(SIMPLE_UNIT, EXPONENT),
                 null
             )
@@ -483,21 +489,25 @@ enum class Production : Reducer<Production> {
             UnitPrefix.isPrefix(token)
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             return null
         }
 
-        override fun colorFill(node: TypedNode<Production>) {
-            super.colorFill(node)
+        override fun fill(node: ParseNode<Production>) {
+            super.fill(node)
 
             val prefixCs = node
                 .firstChild!!
                 .getUserData(userDataKey) as String
 
-            node.setUserData(userDataKey, UnitPrefix.getValue(prefixCs), null)
+            node.setUserData(
+                userDataKey,
+                UnitPrefix.getValue(prefixCs),
+                null
+            )
         }
     },
 
@@ -509,9 +519,9 @@ enum class Production : Reducer<Production> {
             UnitOfMeasure.isMetric(token)
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             val childCount =
                 if (precededByPrefix.matches(parseStack, null)) {
@@ -520,17 +530,17 @@ enum class Production : Reducer<Production> {
                     1
                 }
 
-            return Pair(TypedNode(SIMPLE_UNIT), childCount)
+            return Pair(SIMPLE_UNIT, childCount)
         }
 
-        override fun colorFill(node: TypedNode<Production>) {
-            super.colorFill(node)
+        override fun fill(node: ParseNode<Production>) {
+            super.fill(node)
 
             val unitAtomCs = node
                 .firstChild!!
                 .getUserData(userDataKey) as String
 
-            val unitAtom = Production.createUnitAtom(unitAtomCs)
+            val unitAtom = UnitOfMeasure.parse(unitAtomCs)
 
             node.setUserData(userDataKey, unitAtom, null)
         }
@@ -539,8 +549,9 @@ enum class Production : Reducer<Production> {
          *  Production matcher for determining whether the metric unit is
          *  preceded by a prefix.
          */
-        private val precededByPrefix: ProductionMatcher<Production> by lazy {
-            ProductionMatcher<Production>(
+        private val precededByPrefix: ProductionMatcher<Production>
+        by lazy {
+            ProductionMatcher(
                 listOf(PREFIX_SYMBOL, ATOM_SYMBOL_METRIC),
                 null
             )
@@ -552,25 +563,25 @@ enum class Production : Reducer<Production> {
      */
     ATOM_SYMBOL_NONMETRIC {
         override fun matchesFirst(token: String): Boolean =
-            UnitOfMeasure.isUnit(token) &&
+            UnitOfMeasure.isUnitAtom(token) &&
             !UnitOfMeasure.isMetric(token)
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
-            return Pair(TypedNode(SIMPLE_UNIT), 1)
+            return Pair(SIMPLE_UNIT, 1)
         }
 
-        override fun colorFill(node: TypedNode<Production>) {
-            super.colorFill(node)
+        override fun fill(node: ParseNode<Production>) {
+            super.fill(node)
 
             val unitAtomCs = node
                 .firstChild!!
                 .getUserData(userDataKey) as String
 
-            val unitAtom = Production.createUnitAtom(unitAtomCs)
+            val unitAtom = UnitOfMeasure.parse(unitAtomCs)
 
             node.setUserData(userDataKey, unitAtom, null)
         }
@@ -583,9 +594,9 @@ enum class Production : Reducer<Production> {
             ATOM_SYMBOL_NONMETRIC.matchesFirst(token)
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             val lookaheadSymbol = lookahead
                 ?.getUserData(userDataKey) as String?
@@ -595,12 +606,12 @@ enum class Production : Reducer<Production> {
                     null
 
                 else ->
-                    Pair(TypedNode(ANNOTATABLE), 1)
+                    Pair(ANNOTATABLE, 1)
             }
         }
 
-        override fun colorFill(node: TypedNode<Production>) {
-            super.colorFill(node)
+        override fun fill(node: ParseNode<Production>) {
+            super.fill(node)
 
             val unitAtom = node
                 .lastChild!!
@@ -634,7 +645,7 @@ enum class Production : Reducer<Production> {
          */
         private val annotatableMatcher: ProductionMatcher<Production>
         by lazy {
-            ProductionMatcher<Production>(listOf(SIMPLE_UNIT), EXPONENT)
+            ProductionMatcher(listOf(SIMPLE_UNIT), EXPONENT)
         }
     },
 
@@ -643,15 +654,15 @@ enum class Production : Reducer<Production> {
             SIMPLE_UNIT.matchesFirst(token)
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
-            return Pair(TypedNode(COMPONENT), 1)
+            return Pair(COMPONENT, 1)
         }
 
-        override fun colorFill(node: TypedNode<Production>) {
-            super.colorFill(node)
+        override fun fill(node: ParseNode<Production>) {
+            super.fill(node)
 
             val simpleUnit = node
                 .firstChild!!
@@ -686,24 +697,24 @@ enum class Production : Reducer<Production> {
             OPENING_ROUND_BRACKET.matchesFirst(token)
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             return when {
                 termMultiplyMatcher.matches(parseStack, null) ->
-                    Pair(TypedNode(TERM), 3)
+                    Pair(TERM, 3)
 
                 termDivideMatcher.matches(parseStack, null) ->
-                    Pair(TypedNode(TERM), 3)
+                    Pair(TERM, 3)
 
                 else ->
-                    Pair(TypedNode(TERM), 1)
+                    Pair(TERM, 1)
             }
         }
 
-        override fun colorFill(node: TypedNode<Production>) {
-            super.colorFill(node)
+        override fun fill(node: ParseNode<Production>) {
+            super.fill(node)
 
             val component = when (node.firstChild!!.type) {
                 ANNOTATABLE, FACTOR ->
@@ -728,7 +739,7 @@ enum class Production : Reducer<Production> {
          */
         private val termMultiplyMatcher: ProductionMatcher<Production>
         by lazy {
-            ProductionMatcher<Production>(
+            ProductionMatcher(
                 listOf(TERM, MULTIPLY, COMPONENT),
                 null
             )
@@ -740,7 +751,7 @@ enum class Production : Reducer<Production> {
          */
         private val termDivideMatcher: ProductionMatcher<Production>
         by lazy {
-            ProductionMatcher<Production>(
+            ProductionMatcher(
                 listOf(TERM, DIVIDE, COMPONENT),
                 null
             )
@@ -752,9 +763,9 @@ enum class Production : Reducer<Production> {
             COMPONENT.matchesFirst(token)
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             val lookaheadSymbol = lookahead
                 ?.getUserData(userDataKey) as String?
@@ -764,7 +775,7 @@ enum class Production : Reducer<Production> {
                     null
 
                 precededByDivide.matches(parseStack, null) ->
-                    Pair(TypedNode(MAIN_TERM), 2)
+                    Pair(MAIN_TERM, 2)
 
                 followedByMultiply.matches(parseStack, lookaheadSymbol) ->
                     null
@@ -773,12 +784,12 @@ enum class Production : Reducer<Production> {
                     null
 
                 else ->
-                    Pair(TypedNode(MAIN_TERM), 1)
+                    Pair(MAIN_TERM, 1)
             }
         }
 
-        override fun colorFill(node: TypedNode<Production>) {
-            super.colorFill(node)
+        override fun fill(node: ParseNode<Production>) {
+            super.fill(node)
 
             val result = if (node.childNodes.count() == 1) {
                 node.firstChild!!.getUserData(userDataKey)
@@ -812,7 +823,7 @@ enum class Production : Reducer<Production> {
          */
         private val precededByOpeningParen: ProductionMatcher<Production>
         by lazy {
-            ProductionMatcher<Production>(
+            ProductionMatcher(
                 listOf(OPENING_ROUND_BRACKET, TERM),
                 null
             )
@@ -824,7 +835,7 @@ enum class Production : Reducer<Production> {
          */
         private val precededByDivide: ProductionMatcher<Production>
         by lazy {
-            ProductionMatcher<Production>(listOf(DIVIDE, TERM), null)
+            ProductionMatcher(listOf(DIVIDE, TERM), null)
         }
 
         /**
@@ -832,7 +843,7 @@ enum class Production : Reducer<Production> {
          */
         private val followedByMultiply: ProductionMatcher<Production>
         by lazy {
-            ProductionMatcher<Production>(listOf(TERM), MULTIPLY)
+            ProductionMatcher(listOf(TERM), MULTIPLY)
         }
 
         /**
@@ -840,7 +851,7 @@ enum class Production : Reducer<Production> {
          */
         private val followedByDivide: ProductionMatcher<Production>
         by lazy {
-            ProductionMatcher<Production>(listOf(TERM), DIVIDE)
+            ProductionMatcher(listOf(TERM), DIVIDE)
         }
     },
 
@@ -852,15 +863,15 @@ enum class Production : Reducer<Production> {
             TERM.matchesFirst(token)
 
         override fun reduce(
-            parseStack: List<TypedNode<Production>>,
-            lookahead: TypedNode<Production>?
-        ): Pair<TypedNode<Production>, Int>?
+            parseStack: List<ParseNode<Production>>,
+            lookahead: ParseNode<Production>?
+        ): Pair<Production, Int>?
         {
             return null
         }
 
-        override fun colorFill(node: TypedNode<Production>) {
-            super.colorFill(node)
+        override fun fill(node: ParseNode<Production>) {
+            super.fill(node)
 
             val operand = node
                 .lastChild!!
@@ -905,29 +916,13 @@ enum class Production : Reducer<Production> {
      *      Node to color. Node type must match the enum constant that is being
      *      called.
      */
-    open fun colorFill(node: TypedNode<Production>) {
+    override fun fill(node: ParseNode<Production>) {
         if (node.type != this) {
             throw IllegalArgumentException(
                 "Node type does not match the enum constant."
             )
         }
     }
-
-    private object FriendKey : visaccess.FriendKey()
-
-    open class FriendAccess(key: visaccess.FriendKey) :
-        visaccess.FriendAccess
-    {
-        init {
-            if (key != FriendKey) {
-                throw IllegalArgumentException(
-                    "Invalid friend key."
-                )
-            }
-        }
-    }
-
-    protected object Friendship : FriendAccess(FriendKey)
 
     companion object {
         /**
@@ -936,42 +931,5 @@ enum class Production : Reducer<Production> {
          */
         @JvmField
         val userDataKey: String = "production-value"
-
-        /**
-         *  JSON of UCUM base units parsed by Gson.
-         */
-        protected val baseUnits: Map<String, Map<String, Any>> by lazy {
-            UnitOfMeasure.baseUnits(Friendship)
-        }
-
-        /**
-         *  JSON of UCUM derived units parsed by Gson.
-         */
-        protected val derivedUnits: Map<String, Map<String, Any>> by lazy {
-            UnitOfMeasure.derivedUnits(Friendship)
-        }
-
-        /**
-         *  Creates a [UnitOfMeasure] from the UCUM c/s symbol of a unit atom.
-         *
-         *  @param unitAtomCs
-         *      UCUM c/s symbol of a unit atom.
-         */
-        protected fun createUnitAtom(unitAtomCs: String): UnitOfMeasure =
-            if (baseUnits.contains(unitAtomCs)) {
-                UnitOfMeasure(unitAtomCs)
-            } else if (derivedUnits.contains(unitAtomCs)) {
-                val defValue =
-                    derivedUnits[unitAtomCs]!!["definition-value"] as Double
-
-                val defUnitText =
-                    derivedUnits[unitAtomCs]!!["definition-unit"] as String
-
-                UnitOfMeasure.parse(defUnitText) * defValue
-            } else {
-                throw IllegalArgumentException(
-                    "Unknown unit atom: $unitAtomCs"
-                )
-            }
     }
 }

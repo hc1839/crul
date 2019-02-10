@@ -16,6 +16,8 @@
 
 package measure.unit
 
+import measure.dimension.BaseDimension
+
 /**
  *  Factory for the Hartree atomic unit system.
  *
@@ -37,15 +39,37 @@ package measure.unit
  */
 class AtomicUnitSystemFactory : UnitSystemBuilder {
     constructor() {
-        val atomicTimeUnit = UnitOfMeasure("s") * 2.418884326505e-17
+        val atomicTimeUnit =
+            UnitOfMeasure(BaseUnit.SECOND) * 2.418884326505e-17
 
-        set("L", UnitOfMeasure("m") * 5.2917721092e-11)
-        set("M", UnitOfMeasure.parse("kg") * 9.10938291e-31)
-        set("T", atomicTimeUnit)
-        set("I", UnitOfMeasure("C") * 1.602176565e-19 / atomicTimeUnit)
-        set("Th", UnitOfMeasure("K") * 3.1577464e5)
-        set("N", UnitOfMeasure("mol"))
-        set("J", UnitOfMeasure("cd") * 671.2146654428731)
+        set(
+            BaseDimension.LENGTH,
+            UnitOfMeasure(BaseUnit.METER) * 5.2917721092e-11
+        )
+        set(
+            BaseDimension.MASS,
+            UnitOfMeasure.parse("kg") * 9.10938291e-31
+        )
+        set(
+            BaseDimension.TIME,
+            atomicTimeUnit
+        )
+        set(
+            BaseDimension.ELECTRIC_CURRENT,
+            UnitOfMeasure(BaseUnit.COULOMB) * 1.602176565e-19 / atomicTimeUnit
+        )
+        set(
+            BaseDimension.THERMODYNAMIC_TEMPERATURE,
+            UnitOfMeasure(BaseUnit.KELVIN) * 3.1577464e5
+        )
+        set(
+            BaseDimension.AMOUNT_OF_SUBSTANCE,
+            UnitOfMeasure.parse("mol")
+        )
+        set(
+            BaseDimension.LUMINOUS_INTENSITY,
+            UnitOfMeasure(BaseUnit.CANDELA) * 671.2146654428731
+        )
     }
 
     /**

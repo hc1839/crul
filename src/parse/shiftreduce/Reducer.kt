@@ -16,7 +16,7 @@
 
 package parse.shiftreduce
 
-import hierarchy.tree.TypedNode
+import parse.ParseNode
 
 /**
  *  Performer of an individual reduce step corresponding to the node type of
@@ -26,7 +26,7 @@ import hierarchy.tree.TypedNode
  *  implementor is expected to be an enum constant that represents a node type.
  *
  *  @param T
- *      Enum type of the node types in the parse tree.
+ *      Enum type of node types in the parse tree.
  */
 interface Reducer<T : Enum<T>> {
     /**
@@ -50,9 +50,9 @@ interface Reducer<T : Enum<T>> {
      *
      *  @param parseStack
      *      Parse stack of scanned tokens. The most recently shifted token is
-     *      the rightmost (last) element whose node type corresponds to this
-     *      implementer. Nodes are not cloned and, therefore, should not be
-     *      modified.
+     *      the rightmost (last) element whose node type corresponds to the
+     *      implementing class. Nodes are not cloned and, therefore, should not
+     *      be modified.
      *
      *  @param lookahead
      *      Current lookahead symbol; `null` if the last token in the stream
@@ -64,13 +64,12 @@ interface Reducer<T : Enum<T>> {
      *      to the parse stack, and the second value is the number of the
      *      rightmost nodes in `parseStack` that will be removed and become
      *      children of the new parent; `null` if the parse stack cannot be
-     *      further reduced. If a pair is returned, the new parent node is
-     *      cloned along with the user data, and any descendants are ignored.
-     *      The number of rightmost nodes in the parse stack to become its
-     *      children must be positive.
+     *      further reduced. The returned parent node is cloned along with the
+     *      user data without descendant nodes. The number of rightmost nodes
+     *      in the parse stack to become its children must be positive.
      */
     fun reduce(
-        parseStack: List<TypedNode<T>>,
-        lookahead: TypedNode<T>?
-    ): Pair<TypedNode<T>, Int>?
+        parseStack: List<ParseNode<T>>,
+        lookahead: ParseNode<T>?
+    ): Pair<T, Int>?
 }

@@ -16,7 +16,8 @@
 
 package parse.shiftreduce
 
-import hierarchy.tree.TypedNode
+import parse.ColorFiller
+import parse.ParseNode
 
 /**
  *  Actuator that executes a sequence of shift-reduce steps.
@@ -28,12 +29,13 @@ import hierarchy.tree.TypedNode
  */
 class Actuator<T>
     where T : Enum<T>,
-          T : Reducer<T>
+          T : Reducer<T>,
+          T : ColorFiller<T>
 {
     /**
-     *  Tokens in the stream.
+     *  Tokens in the stream as an iterator.
      */
-    private val tokens: Iterator<TypedNode<T>>
+    private val tokens: Iterator<ParseNode<T>>
 
     /**
      *  Whether this actuator has previously run.
@@ -47,7 +49,7 @@ class Actuator<T>
      *      retrieved and cloned along with the user data. Any descendants are
      *      ignored. The sequence must not be empty.
      */
-    constructor(tokens: Sequence<TypedNode<T>>) {
+    constructor(tokens: Sequence<ParseNode<T>>) {
         this.tokens = tokens.iterator()
     }
 
@@ -56,11 +58,14 @@ class Actuator<T>
      *  of the parse tree.
      *
      *  For each reduce step, [Reducer.reduce] of the node type of the
-     *  rightmost node in the parse stack is called. The new parent node that
-     *  is returned becomes the rightmost node in the parse stack, causing the
-     *  previously rightmost node(s) to become its children and the parse stack
-     *  to become reduced. The reduction repeats with the successively
-     *  rightmost node until `null` is returned.
+     *  rightmost node in the parse stack is called. The returned node is
+     *  cloned (along with the user data without descendant nodes) and becomes
+     *  the parent of the rightmost node(s) (where the number depends on the
+     *  returned integer) in the parse stack, removing the said rightmost
+     *  node(s) from parse stack and appending the new parent node.  The new
+     *  parent node is sent to the color filler associated with the node type.
+     *  The reduction repeats with the successively rightmost node until `null`
+     *  is returned.
      *
      *  The parse stack at the end of the sequence of shift-reduce steps must
      *  contain exactly one node, which is the root node of the completed parse
@@ -72,7 +77,7 @@ class Actuator<T>
      *      Root node of the completed parse tree. It must be a node type that
      *      represents an accepting state.
      */
-    fun actuate(): TypedNode<T> {
+    fun actuate(): ParseNode<T> {
         if (hasRun) {
             throw RuntimeException(
                 "Actuator has previously run."
@@ -81,7 +86,7 @@ class Actuator<T>
             hasRun = true
         }
 
-        var parseStack: List<TypedNode<T>> = listOf()
+        var parseStack: List<ParseNode<T>> = listOf()
 
         // There must be at least one lookahead symbol.
         if (!tokens.hasNext()) {
@@ -90,7 +95,7 @@ class Actuator<T>
             )
         }
 
-        var lookahead: TypedNode<T>? = tokens.next().cloneNode(false, true)
+        var lookahead: ParseNode<T>? = tokens.next().cloneNode(false, true)
 
         // Actuate the sequence of shift-reduce steps.
         do {
@@ -113,10 +118,7 @@ class Actuator<T>
                     break
                 }
 
-                val parentNode = parentChildCountPair
-                    .first
-                    .cloneNode(false, true)
-
+                val parentNode = ParseNode(parentChildCountPair.first)
                 val childCount = parentChildCountPair.second
 
                 if (childCount < 1) {
@@ -130,6 +132,7 @@ class Actuator<T>
                 }
 
                 parseStack = parseStack.dropLast(childCount) + parentNode
+                parentNode.type.fill(parentNode)
             }
         } while (lookahead != null)
 

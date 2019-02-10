@@ -33,7 +33,10 @@ abstract class UnitSystemBuilder {
      *  Base units to use for building a [UnitSystem].
      */
     protected val baseUnits: MutableMap<BaseDimension, UnitOfMeasure> =
-        siBaseUnits.toMutableMap()
+        enumValues<BaseDimension>()
+            .asIterable()
+            .associateWith { it.siUnit }
+            .toMutableMap()
 
     /**
      *  Sets the base unit of a base dimension.
@@ -53,37 +56,14 @@ abstract class UnitSystemBuilder {
         baseUnit: UnitOfMeasure
     ): UnitSystemBuilder
     {
-        if (!baseUnit.isCommensurable(siBaseUnits[baseDimension]!!)) {
+        if (!baseUnit.isCommensurable(baseDimension.siUnit)) {
             throw IllegalArgumentException(
                 "New base unit is not commensurable with the " +
-                "corresponding SI base unit of '${baseDimension.name}'."
+                "corresponding SI base unit of '${baseDimension}'."
             )
         }
 
         baseUnits[baseDimension] = baseUnit
-
-        return this
-    }
-
-    /**
-     *  Sets the base unit of a base dimension using its symbol.
-     *
-     *  @param baseDimensionSymbol
-     *      Symbol of the base dimension whose base unit is to be set.
-     *
-     *  @param baseUnit
-     *      New base unit for `baseDimension`. It must be commensurable with
-     *      the corresponding SI base unit.
-     *
-     *  @return
-     *      `this`.
-     */
-    protected fun set(
-        baseDimensionSymbol: String,
-        baseUnit: UnitOfMeasure
-    ): UnitSystemBuilder
-    {
-        set(enumValueOf<BaseDimension>(baseDimensionSymbol), baseUnit)
 
         return this
     }
@@ -105,12 +85,4 @@ abstract class UnitSystemBuilder {
      *  Factory function specific to a unit system.
      */
     abstract fun create(): UnitSystem
-
-    companion object {
-        /**
-         *  SI base units associated by base dimensions.
-         */
-        private val siBaseUnits: Map<BaseDimension, UnitOfMeasure> =
-            UnitSystem().baseUnits.toMap()
-    }
 }

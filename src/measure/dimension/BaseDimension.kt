@@ -16,45 +16,113 @@
 
 package measure.dimension
 
+import measure.unit.BaseUnit
+import measure.unit.UnitOfMeasure
+
 /**
  *  Base dimension according to the International System of Quantities (ISQ).
- *
- *  Enum names are the dimension symbols except thermodynamic temperature,
- *  which is represented by the romanized version of uppercase theta.
  */
-enum class BaseDimension() {
+enum class BaseDimension {
     /**
      *  Length.
      */
-    L,
+    LENGTH {
+        override val symbol: String = "L"
+
+        override val siUnit: UnitOfMeasure =
+            UnitOfMeasure(BaseUnit.METER)
+    },
 
     /**
      * Mass.
      */
-    M,
+    MASS {
+        override val symbol: String = "M"
+
+        override val siUnit: UnitOfMeasure =
+            UnitOfMeasure.parse("kg")
+    },
 
     /**
      *  Time.
      */
-    T,
+    TIME {
+        override val symbol: String = "T"
+
+        override val siUnit: UnitOfMeasure =
+            UnitOfMeasure(BaseUnit.SECOND)
+    },
 
     /**
      *  Electric current.
      */
-    I,
+    ELECTRIC_CURRENT {
+        override val symbol: String = "I"
+
+        override val siUnit: UnitOfMeasure =
+            UnitOfMeasure.parse("A")
+    },
 
     /**
      *  Thermodynamic temperature.
      */
-    Th,
+    THERMODYNAMIC_TEMPERATURE {
+        override val symbol: String = "Th"
+
+        override val siUnit: UnitOfMeasure =
+            UnitOfMeasure(BaseUnit.KELVIN)
+    },
 
     /**
      *  Amount of substance.
      */
-    N,
+    AMOUNT_OF_SUBSTANCE {
+        override val symbol: String = "N"
+
+        override val siUnit: UnitOfMeasure =
+            UnitOfMeasure.parse("mol")
+    },
 
     /**
      *  Luminous intensity.
      */
-    J
+    LUMINOUS_INTENSITY {
+        override val symbol: String = "J"
+
+        override val siUnit: UnitOfMeasure =
+            UnitOfMeasure(BaseUnit.CANDELA)
+    };
+
+    /**
+     *  Letter symbol.
+     *
+     *  Symbols are the same as that specified by ISQ except thermodynamic
+     *  temperature, which is represented by the romanized version of uppercase
+     *  theta, '`Th`'.
+     */
+    abstract val symbol: String
+
+    /**
+     *  SI unit.
+     */
+    abstract val siUnit: UnitOfMeasure
+
+    companion object {
+        /**
+         *  Gets a base dimension by its letter symbol.
+         *
+         *  Returns `null` if there is no such base dimension.
+         */
+        fun getBySymbol(symbol: String): BaseDimension? =
+            when (symbol) {
+                "L" -> LENGTH
+                "M" -> MASS
+                "T" -> TIME
+                "I" -> ELECTRIC_CURRENT
+                "Th" -> THERMODYNAMIC_TEMPERATURE
+                "N" -> AMOUNT_OF_SUBSTANCE
+                "J" -> LUMINOUS_INTENSITY
+                else -> null
+            }
+    }
 }

@@ -16,13 +16,13 @@
 
 package measure.unit.parse
 
-import hierarchy.tree.TypedNode
 import measure.unit.UnitOfMeasure
 import measure.unit.UnitPrefix
 import parse.AbstractTokenIterator
+import parse.ParseNode
 
 /**
- *  Iterator of tokens as nodes of a UCUM unit.
+ *  Iterator of tokens of a UCUM unit.
  *
  *  The possible node types produced by this iterator are
  *      - [Production.ID]
@@ -68,7 +68,7 @@ class TokenIterator : AbstractTokenIterator<Production> {
         val nextToken = when {
             idRegex in currString -> {
                 val matchResult = idRegex.find(currString)!!
-                val node = TypedNode(Production.ID)
+                val node = ParseNode(Production.ID)
 
                 // Determine whether it is a prefix preceding a metric unit.
                 if (
@@ -100,7 +100,7 @@ class TokenIterator : AbstractTokenIterator<Production> {
             terminalRegex in currString -> {
                 val matchResult = terminalRegex.find(currString)!!
 
-                val node = TypedNode(Production.TERMINAL)
+                val node = ParseNode(Production.TERMINAL)
                 node.setUserData(
                     Production.userDataKey,
                     matchResult.value,

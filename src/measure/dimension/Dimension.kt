@@ -20,6 +20,9 @@ import kotlin.math.pow
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
+import measure.dimension.parse.Production
+import measure.dimension.parse.TokenIterator
+import parse.shiftreduce.Actuator
 import serialize.BinarySerializable
 
 /**
@@ -43,16 +46,16 @@ class Dimension : BinarySerializable {
         get() = _exponents.filter { (_, exp) -> exp != 0 }
 
     /**
-     *  Dimensionless instance.
-     */
-    constructor()
-
-    /**
      *  Base dimension raised to the power of 1.
      */
     constructor(baseDimension: BaseDimension) {
         _exponents[baseDimension] = 1
     }
+
+    /**
+     *  Dimensionless instance.
+     */
+    constructor()
 
     /**
      *  Initializes from a MessagePack map.
@@ -73,9 +76,9 @@ class Dimension : BinarySerializable {
                 .asMapValue()
                 .map()
                 .map { (key, value) ->
-                    val baseDim = enumValueOf<BaseDimension>(
+                    val baseDim = BaseDimension.getBySymbol(
                         key.asStringValue().toString()
-                    )
+                    )!!
                     val exp = value.asIntegerValue().toInt()
 
                     Pair(baseDim, exp)
@@ -125,7 +128,7 @@ class Dimension : BinarySerializable {
 
         for ((baseDim, exp) in exponentsBuf) {
             packer
-                .packString(baseDim.name)
+                .packString(baseDim.symbol)
                 .packInt(exp)
         }
 
@@ -160,7 +163,7 @@ class Dimension : BinarySerializable {
         for ((baseDim, exp) in _exponents) {
             if (exp % n != 0) {
                 throw IllegalArgumentException(
-                    "Exponent of ${baseDim.name}, $exp, " +
+                    "Exponent of $baseDim, $exp, " +
                     "is not divisible by $n."
                 )
             }
@@ -217,20 +220,26 @@ class Dimension : BinarySerializable {
 
     companion object {
         /**
-         *  Convenience function for creating a dimension from several base
-         *  dimensions using dimension symbols according to ISQ.
+         *  Whether a letter symbol represents a base dimension.
          */
         @JvmStatic
-        fun create(exponents: Map<String, Int>): Dimension =
-            if (exponents.count() == 0) {
-                Dimension()
+        fun isBase(symbol: String): Boolean =
+            BaseDimension.getBySymbol(symbol) != null
+
+        /**
+         *  Creates a [Dimension] by parsing a text that specifies a dimension
+         *  according to [Production].
+         */
+        @JvmStatic
+        fun parse(dimensionText: String): Dimension =
+            if (isBase(dimensionText)) {
+                Dimension(BaseDimension.getBySymbol(dimensionText)!!)
             } else {
-                exponents
-                    .map { (baseDimSymbol, exp) ->
-                        Dimension(enumValueOf<BaseDimension>(baseDimSymbol))
-                            .pow(exp)
-                    }
-                    .reduce { acc, item -> acc * item }
+                val tokens = TokenIterator(dimensionText)
+                val actuator = Actuator(tokens.asSequence())
+                val parseRoot = actuator.actuate()
+
+                parseRoot.getUserData(Production.userDataKey) as Dimension
             }
     }
 }

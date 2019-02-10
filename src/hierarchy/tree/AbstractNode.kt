@@ -25,6 +25,9 @@ import java.lang.ref.WeakReference as WeakRef
  *
  *  @param D
  *      Type of user data.
+ *
+ *  @param N
+ *      Type of node to use in parameters and returns.
  */
 abstract class AbstractNode<D, N> : Node<D, N>
     where D : Any,
