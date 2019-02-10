@@ -22,32 +22,23 @@ import java.lang.ref.WeakReference as WeakRef
  *  Skeletal implementation of [Node].
  *
  *  Implementations only need to implement [Node.cloneNode].
- *
- *  @param D
- *      Type of user data.
- *
- *  @param N
- *      Type of node to use in parameters and returns.
  */
-abstract class AbstractNode<D, N> : Node<D, N>
-    where D : Any,
-          N : AbstractNode<D, N>
-{
+abstract class AbstractNode : Node {
     /**
      *  Backing property for keys associated with user data and handlers.
      */
     protected val _userData:
-        MutableMap<String, Pair<D, UserDataHandler<D, N>?>> = mutableMapOf()
+        MutableMap<String, Pair<Any, UserDataHandler?>> = mutableMapOf()
 
     /**
      *  Backing property for list of children.
      */
-    private val _childNodes: MutableList<N> = mutableListOf()
+    private val _childNodes: MutableList<Node> = mutableListOf()
 
     /**
      *  Weak reference to the parent node if any.
      */
-    private var parentWeakRef: WeakRef<N>? = null
+    private var parentWeakRef: WeakRef<Node>? = null
 
     /**
      *  Constructs a new node with no parent.
@@ -71,7 +62,7 @@ abstract class AbstractNode<D, N> : Node<D, N>
      *      duplicated node.
      */
     constructor(
-        other: AbstractNode<D, N>,
+        other: AbstractNode,
         deep: Boolean = false,
         includeUserData: Boolean = false
     ) {
@@ -94,19 +85,19 @@ abstract class AbstractNode<D, N> : Node<D, N>
     override val depth: Int
         get() = ancestorNodes(false).count()
 
-    override val childNodes: List<N>
+    override val childNodes: List<Node>
         get() = _childNodes.toList()
 
     override fun hasChildNodes(): Boolean =
         !_childNodes.isEmpty()
 
-    override val firstChild: N?
+    override val firstChild: Node?
         get() = _childNodes.firstOrNull()
 
-    override val lastChild: N?
+    override val lastChild: Node?
         get() = _childNodes.lastOrNull()
 
-    override val parentNode: N?
+    override val parentNode: Node?
         get() =
             if (parentWeakRef == null) {
                 null
@@ -114,31 +105,29 @@ abstract class AbstractNode<D, N> : Node<D, N>
                 parentWeakRef!!.get()
             }
 
-    override val firstSibling: N
+    override val firstSibling: Node
         get() {
             val parent = parentNode
 
             return if (parent != null) {
                 parent.childNodes.first()
             } else {
-                @Suppress("UNCHECKED_CAST")
-                this as N
+                this
             }
         }
 
-    override val lastSibling: N
+    override val lastSibling: Node
         get() {
             val parent = parentNode
 
             return if (parent != null) {
                 parent.childNodes.last()
             } else {
-                @Suppress("UNCHECKED_CAST")
-                this as N
+                this
             }
         }
 
-    override val nextSibling: N?
+    override val nextSibling: Node?
         get() {
             val parent = parentNode
 
@@ -158,7 +147,7 @@ abstract class AbstractNode<D, N> : Node<D, N>
             }
         }
 
-    override val previousSibling: N?
+    override val previousSibling: Node?
         get() {
             val parent = parentNode
 
@@ -178,12 +167,12 @@ abstract class AbstractNode<D, N> : Node<D, N>
             }
         }
 
-    override val rootNode: N
+    override val rootNode: Node
         get() = ancestorNodes(true).last()
 
-    override fun descendants(includeSelf: Boolean): Sequence<N> {
-        val iterator = object: AbstractIterator<N>() {
-            private var nextNode: N? = firstChild
+    override fun descendants(includeSelf: Boolean): Sequence<Node> {
+        val iterator = object: AbstractIterator<Node>() {
+            private var nextNode: Node? = firstChild
 
             override fun computeNext() {
                 if (nextNode == null) {
@@ -202,7 +191,7 @@ abstract class AbstractNode<D, N> : Node<D, N>
                 } else {
                     // Reference node in the subtree that changes during
                     // traversal.
-                    var refNode: N = currNode
+                    var refNode: Node = currNode
 
                     // Find the nearest ancestor or self with respect to the
                     // reference node in this subtree that has a next sibling.
@@ -220,16 +209,15 @@ abstract class AbstractNode<D, N> : Node<D, N>
         }
 
         return if (includeSelf) {
-            @Suppress("UNCHECKED_CAST")
-            listOf(this as N).asSequence() + iterator.asSequence()
+            listOf<Node>(this).asSequence() + iterator.asSequence()
         } else {
             iterator.asSequence()
         }
     }
 
-    override fun ancestorNodes(includeSelf: Boolean): Sequence<N> {
-        val iterator = object: AbstractIterator<N>() {
-            private var nextNode: N? = parentNode
+    override fun ancestorNodes(includeSelf: Boolean): Sequence<Node> {
+        val iterator = object: AbstractIterator<Node>() {
+            private var nextNode: Node? = parentNode
 
             override fun computeNext() {
                 if (nextNode == null) {
@@ -244,14 +232,15 @@ abstract class AbstractNode<D, N> : Node<D, N>
         }
 
         return if (includeSelf) {
-            @Suppress("UNCHECKED_CAST")
-            listOf(this as N).asSequence() + iterator.asSequence()
+            listOf<Node>(this).asSequence() + iterator.asSequence()
         } else {
             iterator.asSequence()
         }
     }
 
-    override fun appendChild(newChild: N): N {
+    override fun appendChild(newChild: Node): Node {
+        newChild as AbstractNode
+
         // Check that the node to be added is not this node or an ancestor.
         if (ancestorNodes(true).any { it === newChild }) {
             throw IllegalArgumentException(
@@ -262,14 +251,15 @@ abstract class AbstractNode<D, N> : Node<D, N>
         newChild.parentNode?.removeChild(newChild)
         _childNodes.add(newChild)
 
-        newChild.parentWeakRef =
-            @Suppress("UNCHECKED_CAST")
-            WeakRef(this as N)
+        newChild.parentWeakRef = WeakRef(this)
 
         return newChild
     }
 
-    override fun insertBefore(newChild: N, refChild: N): N {
+    override fun insertBefore(newChild: Node, refChild: Node): Node {
+        newChild as AbstractNode
+        refChild as AbstractNode
+
         // Check that the node to be added is not this node or an ancestor.
         if (ancestorNodes(true).any { it === newChild }) {
             throw IllegalArgumentException(
@@ -299,14 +289,14 @@ abstract class AbstractNode<D, N> : Node<D, N>
 
         _childNodes.add(refChildIndex, newChild)
 
-        newChild.parentWeakRef =
-            @Suppress("UNCHECKED_CAST")
-            WeakRef(this as N)
+        newChild.parentWeakRef = WeakRef(this)
 
         return newChild
     }
 
-    override fun removeChild(oldChild: N): N {
+    override fun removeChild(oldChild: Node): Node {
+        oldChild as AbstractNode
+
         if (oldChild.parentNode == null) {
             return oldChild
         }
@@ -342,14 +332,14 @@ abstract class AbstractNode<D, N> : Node<D, N>
         return oldChild
     }
 
-    override fun getUserData(key: String): D? =
+    override fun getUserData(key: String): Any? =
         _userData[key]?.first
 
     override fun setUserData(
         key: String,
-        userData: D?,
-        handler: UserDataHandler<D, N>?
-    ): D?
+        userData: Any?,
+        handler: UserDataHandler?
+    ): Any?
     {
         val prevUserData = getUserData(key)
 

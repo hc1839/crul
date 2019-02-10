@@ -19,21 +19,10 @@ package hierarchy.tree
 /**
  *  Node with type.
  *
- *  @param D
- *      Type of user data.
- *
  *  @param T
  *      Enum type representing node type.
- *
- *  @param N
- *      Type of node to use in parameters and returns.
  */
-open class TypedNode<D, T, N> :
-    AbstractNode<D, N>
-    where D : Any,
-          T : Enum<T>,
-          N : TypedNode<D, T, N>
-{
+open class TypedNode<T : Enum<T>> : AbstractNode {
     /**
      *  Node type as an enum constant.
      */
@@ -51,7 +40,7 @@ open class TypedNode<D, T, N> :
      *  Copy constructor.
      */
     constructor(
-        other: TypedNode<D, T, N>,
+        other: TypedNode<T>,
         deep: Boolean = false,
         includeUserData: Boolean = false
     ): super(other, deep, includeUserData)
@@ -62,7 +51,7 @@ open class TypedNode<D, T, N> :
     override fun cloneNode(
         deep: Boolean,
         includeUserData: Boolean
-    ): N
+    ): TypedNode<T>
     {
         val clonedNode = TypedNode(this, deep, includeUserData)
 
@@ -75,13 +64,12 @@ open class TypedNode<D, T, N> :
                     UserDataHandler.Operation.CLONED,
                     key,
                     userData,
-                    @Suppress("UNCHECKED_CAST") (this as N),
-                    @Suppress("UNCHECKED_CAST") (clonedNode as N)
+                    this,
+                    clonedNode
                 )
             }
         }
 
-        @Suppress("UNCHECKED_CAST")
-        return clonedNode as N
+        return clonedNode
     }
 }

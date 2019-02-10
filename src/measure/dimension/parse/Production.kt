@@ -402,7 +402,7 @@ enum class Production :
                         .lastChild!!
                         .getUserData(userDataKey) as Dimension
 
-                    if (node.childNodes[1].type != MULTIPLY) {
+                    if ((node.childNodes[1] as ParseNode<*>).type != MULTIPLY) {
                         throw RuntimeException(
                             "Not a multiplication of two 'TERM'."
                         )

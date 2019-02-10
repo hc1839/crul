@@ -25,7 +25,7 @@ import hierarchy.tree.UserDataHandler
  *  @param T
  *      Enum type representing node type.
  */
-class ParseNode<T : Enum<T>> : TypedNode<Any, T, ParseNode<T>> {
+class ParseNode<T : Enum<T>> : TypedNode<T> {
     /**
      *  @param type
      *      Node type.

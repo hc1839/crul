@@ -716,7 +716,7 @@ enum class Production :
         override fun fill(node: ParseNode<Production>) {
             super.fill(node)
 
-            val component = when (node.firstChild!!.type) {
+            val component = when ((node.firstChild!! as ParseNode<*>).type) {
                 ANNOTATABLE, FACTOR ->
                     node.firstChild!!.getUserData(userDataKey)
 
@@ -802,7 +802,7 @@ enum class Production :
                     .lastChild!!
                     .getUserData(userDataKey) as UnitOfMeasure
 
-                when (node.childNodes[1].type) {
+                when ((node.childNodes[1] as ParseNode<*>).type) {
                     MULTIPLY -> firstOperand * secondOperand
 
                     DIVIDE -> firstOperand / secondOperand
@@ -881,7 +881,7 @@ enum class Production :
                 1 -> operand
 
                 2 -> {
-                    if (node.firstChild!!.type != DIVIDE) {
+                    if ((node.firstChild!! as ParseNode<*>).type != DIVIDE) {
                         throw RuntimeException(
                             "[Internal Error] " +
                             "'MAIN_TERM' has two child nodes, " +

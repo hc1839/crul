@@ -21,11 +21,8 @@ package hierarchy.tree
  *  to call when the node is modified according to [Operation].
  *
  *  It is inspired by `org.w3c.dom.UserDataHandler`.
- *
- *  @param D
- *      Type of user data.
  */
-interface UserDataHandler<D : Any, N : Node<D, N>> {
+interface UserDataHandler {
     /**
      *  Function to call after the node is modified.
      *
@@ -47,9 +44,9 @@ interface UserDataHandler<D : Any, N : Node<D, N>> {
     fun handle(
         operation: Operation,
         key: String,
-        userData: D,
-        src: N?,
-        dst: N?
+        userData: Any,
+        src: Node?,
+        dst: Node?
     )
 
     /**

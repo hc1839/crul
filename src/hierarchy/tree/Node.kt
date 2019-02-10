@@ -22,14 +22,8 @@ package hierarchy.tree
  *  Order of child nodes is significant.
  *
  *  It is inspired by `org.w3c.dom.Node`.
- *
- *  @param D
- *      Type of user data.
- *
- *  @param N
- *      Type of node to use in parameters and returns.
  */
-interface Node<D : Any, N : Node<D, N>> {
+interface Node {
     /**
      *  Depth of this node with respect to the root node.
      *
@@ -40,7 +34,7 @@ interface Node<D : Any, N : Node<D, N>> {
     /**
      *  List of child nodes, or empty list if there are none.
      */
-    val childNodes: List<N>
+    val childNodes: List<Node>
 
     /**
      *  Whether this node has any children.
@@ -50,46 +44,46 @@ interface Node<D : Any, N : Node<D, N>> {
     /**
      *  First child node, or `null` if there is no such node.
      */
-    val firstChild: N?
+    val firstChild: Node?
 
     /**
      *  Last child node, or `null` if there is no such node.
      */
-    val lastChild: N?
+    val lastChild: Node?
 
     /**
      *  Parent node, or `null` if there is no such node.
      */
-    val parentNode: N?
+    val parentNode: Node?
 
     /**
      *  Sibling of this node that is first in order, or itself if there are
      *  none.
      */
-    val firstSibling: N
+    val firstSibling: Node
 
     /**
      *  Sibling of this node that is last in order, or itself if there are
      *  none.
      */
-    val lastSibling: N
+    val lastSibling: Node
 
     /**
      *  Sibling of this node that is next in order, or `null` if there are
      *  none.
      */
-    val nextSibling: N?
+    val nextSibling: Node?
 
     /**
      *  Sibling of this node that is previous in order, or `null` if there are
      *  none.
      */
-    val previousSibling: N?
+    val previousSibling: Node?
 
     /**
      *  Root node.
      */
-    val rootNode: N
+    val rootNode: Node
 
     /**
      *  Descendants of this node in depth-first order.
@@ -97,7 +91,7 @@ interface Node<D : Any, N : Node<D, N>> {
      *  @param includeSelf
      *      Whether to include this node at the beginning of the traversal.
      */
-    fun descendants(includeSelf: Boolean): Sequence<N>
+    fun descendants(includeSelf: Boolean): Sequence<Node>
 
     /**
      *  Ancestors of this node in order of decreasing depth.
@@ -105,7 +99,7 @@ interface Node<D : Any, N : Node<D, N>> {
      *  @param includeSelf
      *      Whether to include this node at the beginning of the traversal.
      */
-    fun ancestorNodes(includeSelf: Boolean): Sequence<N>
+    fun ancestorNodes(includeSelf: Boolean): Sequence<Node>
 
     /**
      *  Adds a node to the end of the list of children of this node.
@@ -121,7 +115,7 @@ interface Node<D : Any, N : Node<D, N>> {
      *  @return
      *      Node that is added.
      */
-    fun appendChild(newChild: N): N
+    fun appendChild(newChild: Node): Node
 
     /**
      *  Inserts a node as a child before an existing child.
@@ -142,7 +136,7 @@ interface Node<D : Any, N : Node<D, N>> {
      *  @return
      *      Node that is inserted.
      */
-    fun insertBefore(newChild: N, refChild: N): N
+    fun insertBefore(newChild: Node, refChild: Node): Node
 
     /**
      *  Removes a child node.
@@ -153,7 +147,7 @@ interface Node<D : Any, N : Node<D, N>> {
      *  @return
      *      Node that is removed.
      */
-    fun removeChild(oldChild: N): N
+    fun removeChild(oldChild: Node): Node
 
     /**
      *  Duplicates this node.
@@ -171,7 +165,7 @@ interface Node<D : Any, N : Node<D, N>> {
      *  @return
      *      Duplicated node.
      */
-    fun cloneNode(deep: Boolean, includeUserData: Boolean): N
+    fun cloneNode(deep: Boolean, includeUserData: Boolean): Node
 
     /**
      *  Retrieves the object associated by a key on this node.
@@ -186,7 +180,7 @@ interface Node<D : Any, N : Node<D, N>> {
      *      Object that is associated by `key`, or `null` if `key` does not
      *      exist.
      */
-    fun getUserData(key: String): D?
+    fun getUserData(key: String): Any?
 
     /**
      *  Associates an object by a key on this node.
@@ -208,7 +202,7 @@ interface Node<D : Any, N : Node<D, N>> {
      */
     fun setUserData(
         key: String,
-        userData: D?,
-        handler: UserDataHandler<D, N>?
-    ): D?
+        userData: Any?,
+        handler: UserDataHandler?
+    ): Any?
 }
