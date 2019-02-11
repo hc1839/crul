@@ -18,6 +18,13 @@ package hierarchy.tree
 
 import java.lang.ref.WeakReference as WeakRef
 
+import hierarchy.tree.traversal.DefaultNodeIterator
+import hierarchy.tree.traversal.DefaultTreeWalker
+import hierarchy.tree.traversal.NodeAcceptance
+import hierarchy.tree.traversal.NodeIterator
+import hierarchy.tree.traversal.TraversalOrder
+import hierarchy.tree.traversal.TreeWalker
+
 /**
  *  Skeletal implementation of [Node].
  *
@@ -105,28 +112,6 @@ abstract class AbstractNode : Node {
                 parentWeakRef!!.get()
             }
 
-    override val firstSibling: Node
-        get() {
-            val parent = parentNode
-
-            return if (parent != null) {
-                parent.childNodes.first()
-            } else {
-                this
-            }
-        }
-
-    override val lastSibling: Node
-        get() {
-            val parent = parentNode
-
-            return if (parent != null) {
-                parent.childNodes.last()
-            } else {
-                this
-            }
-        }
-
     override val nextSibling: Node?
         get() {
             val parent = parentNode
@@ -170,51 +155,6 @@ abstract class AbstractNode : Node {
     override val rootNode: Node
         get() = ancestorNodes(true).last()
 
-    override fun descendants(includeSelf: Boolean): Sequence<Node> {
-        val iterator = object: AbstractIterator<Node>() {
-            private var nextNode: Node? = firstChild
-
-            override fun computeNext() {
-                if (nextNode == null) {
-                    done()
-                    return
-                }
-
-                setNext(nextNode!!)
-
-                // What was the next node is now the current node, which is
-                // used to determine the new next node.
-                val currNode = nextNode!!
-
-                if (currNode.hasChildNodes()) {
-                    nextNode = currNode.firstChild
-                } else {
-                    // Reference node in the subtree that changes during
-                    // traversal.
-                    var refNode: Node = currNode
-
-                    // Find the nearest ancestor or self with respect to the
-                    // reference node in this subtree that has a next sibling.
-                    while (refNode !== this@AbstractNode) {
-                        if (refNode.nextSibling != null) {
-                            break
-                        }
-
-                        refNode = refNode.parentNode!!
-                    }
-
-                    nextNode = refNode.nextSibling
-                }
-            }
-        }
-
-        return if (includeSelf) {
-            listOf<Node>(this).asSequence() + iterator.asSequence()
-        } else {
-            iterator.asSequence()
-        }
-    }
-
     override fun ancestorNodes(includeSelf: Boolean): Sequence<Node> {
         val iterator = object: AbstractIterator<Node>() {
             private var nextNode: Node? = parentNode
@@ -237,6 +177,20 @@ abstract class AbstractNode : Node {
             iterator.asSequence()
         }
     }
+
+    override fun createTreeWalker(
+        filter: ((Node) -> NodeAcceptance)?
+    ): TreeWalker =
+        DefaultTreeWalker(this, filter)
+
+    override fun createNodeIterator(
+        order: TraversalOrder,
+        filter: ((Node) -> NodeAcceptance)?
+    ): NodeIterator =
+        when (order) {
+            TraversalOrder.PREORDER_DEPTH ->
+                DefaultNodeIterator(this, filter)
+        }
 
     override fun appendChild(newChild: Node): Node {
         newChild as AbstractNode

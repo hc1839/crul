@@ -16,6 +16,11 @@
 
 package hierarchy.tree
 
+import hierarchy.tree.traversal.NodeAcceptance
+import hierarchy.tree.traversal.NodeIterator
+import hierarchy.tree.traversal.TraversalOrder
+import hierarchy.tree.traversal.TreeWalker
+
 /**
  *  Node in a tree.
  *
@@ -57,18 +62,6 @@ interface Node {
     val parentNode: Node?
 
     /**
-     *  Sibling of this node that is first in order, or itself if there are
-     *  none.
-     */
-    val firstSibling: Node
-
-    /**
-     *  Sibling of this node that is last in order, or itself if there are
-     *  none.
-     */
-    val lastSibling: Node
-
-    /**
      *  Sibling of this node that is next in order, or `null` if there are
      *  none.
      */
@@ -86,20 +79,27 @@ interface Node {
     val rootNode: Node
 
     /**
-     *  Descendants of this node in depth-first order.
-     *
-     *  @param includeSelf
-     *      Whether to include this node at the beginning of the traversal.
-     */
-    fun descendants(includeSelf: Boolean): Sequence<Node>
-
-    /**
      *  Ancestors of this node in order of decreasing depth.
      *
      *  @param includeSelf
      *      Whether to include this node at the beginning of the traversal.
      */
     fun ancestorNodes(includeSelf: Boolean): Sequence<Node>
+
+    /**
+     *  Creates a [TreeWalker] over the subtree rooted at this node.
+     */
+    fun createTreeWalker(
+        filter: ((Node) -> NodeAcceptance)?
+    ): TreeWalker
+
+    /**
+     *  Creates a [NodeIterator] over the subtree rooted at this node.
+     */
+    fun createNodeIterator(
+        order: TraversalOrder,
+        filter: ((Node) -> NodeAcceptance)?
+    ): NodeIterator
 
     /**
      *  Adds a node to the end of the list of children of this node.
