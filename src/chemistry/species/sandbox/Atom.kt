@@ -24,7 +24,10 @@ import math.coordsys.Vector3D
  *
  *  An atom is a singleton [Species].
  */
-interface Atom : Species, Cloneable {
+interface Atom :
+    Species,
+    Cloneable
+{
     /**
      *  Element.
      */

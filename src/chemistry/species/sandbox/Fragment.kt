@@ -22,7 +22,10 @@ package chemistry.species.sandbox
  *  @param A
  *      Type of atoms in this fragment.
  */
-interface Fragment<A : Atom> : Complex<A>, Cloneable {
+interface Fragment<A : Atom> :
+    Complex<A>,
+    Cloneable
+{
     override fun iterator(): Iterator<A> =
         @Suppress("UNCHECKED_CAST") (
             atoms() as Iterator<A>

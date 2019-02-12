@@ -35,7 +35,7 @@ open class BondBuilder<B, A>
         private set
 
     /**
-     *  Configures one of the two atoms.
+     *  Configures the first atom.
      *
      *  It must be set before [build] is called.
      */
@@ -48,7 +48,7 @@ open class BondBuilder<B, A>
         private set
 
     /**
-     *  Configures the other atom.
+     *  Configures the second atom.
      *
      *  It must be set before [build] is called.
      */

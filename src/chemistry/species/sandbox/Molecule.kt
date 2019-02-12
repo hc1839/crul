@@ -21,6 +21,9 @@ package chemistry.species.sandbox
  *  names and has every pair of atoms connected by bonds (directly or
  *  indirectly).
  *
+ *  When comparing atoms, referential equality is used. If two different [Atom]
+ *  objects have the same name, they are not allowed in the same molecule.
+ *
  *  @param A
  *      Type of atoms in this molecule.
  */
@@ -33,33 +36,25 @@ interface Molecule<A : Atom> : Fragment<A> {
     /**
      *  Gets the bonds that an atom is participating in.
      *
-     *  @param atomName
-     *      [Atom.name] of an atom.
+     *  @return
+     *      The given atom is the first atom in the returned set of [Bond].
      */
-    fun getBondsByAtom(atomName: String): Set<Bond<A>>
+    fun getBondsByAtom(atom: A): Set<Bond<A>>
 
     /**
      *  Gets the bond between two atoms, or `null` if there is no such bond.
      *
-     *  If no such atom with the given name exists, an exception is raised.
+     *  If a given atom does not exist in this molecule, an exception is
+     *  raised.
      *
-     *  @param atom1Name
-     *      [Atom.name] of one of the two atoms.
+     *  @param atom1
+     *      First atom.
      *
-     *  @param atom2Name
-     *      [Atom.name] of the other atom.
-     */
-    fun getBond(atom1Name: String, atom2Name: String): Bond<A>?
-
-    /**
-     *  Gets the atoms that are directly bonded to a given atom.
-     *
-     *  @param atomName
-     *      [Atom.name] of the atom. If there is no such atom, an exception is
-     *      raised.
+     *  @param atom2
+     *      Second atom.
      *
      *  @return
-     *      For a molecule of one atom, an empty list is returned.
+     *      The atoms in the returned bond are in the same order as given.
      */
-    fun getAtomsBondedTo(atomName: String): Set<A>
+    fun getBond(atom1: A, atom2: A): Bond<A>?
 }

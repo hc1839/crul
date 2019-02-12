@@ -22,7 +22,10 @@ package chemistry.species.sandbox
  *  @param A
  *      Type of atoms in the molecules.
  */
-interface MoleculeComplex<A : Atom> : Complex<Molecule<A>>, Cloneable {
+interface MoleculeComplex<A : Atom> :
+    Complex<Molecule<A>>,
+    Cloneable
+{
     override fun iterator(): Iterator<Molecule<A>> =
         molecules()
 
@@ -46,12 +49,8 @@ interface MoleculeComplex<A : Atom> : Complex<Molecule<A>>, Cloneable {
     /**
      *  Gets the molecule that contains a given atom, or `null` if there is no
      *  such molecule.
-     *
-     *  @param atomName
-     *      [Atom.name] of the atom. If there is no such atom, an exception is
-     *      raised.
      */
-    fun getMoleculeWithAtom(atomName: String): Molecule<A>?
+    fun getMoleculeWithAtom(atom: A): Molecule<A>?
 
     /**
      *  Clones this complex along with its molecules.

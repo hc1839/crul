@@ -24,7 +24,10 @@ import math.coordsys.Vector3D
  *  @param S
  *      Type of subspecies in this complex.
  */
-interface Complex<S : Species> : Species, Set<S> {
+interface Complex<S : Species> :
+    Species,
+    Set<S>
+{
     override val size: Int
         get() = iterator().asSequence().count()
 

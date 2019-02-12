@@ -19,8 +19,9 @@ package chemistry.species.sandbox
 /**
  *  Interface for a bond in a molecule.
  *
- *  Order of the atoms should not be regarded as important. However, the atoms
- *  must be returned in the same order when using destructuring declaration.
+ *  Semantically, the order of the atoms is not important. Technically, the
+ *  first and second of the given atoms are represented by the first and second
+ *  components, respectively, when using destructuring declaration.
  *
  *  @param A
  *      Type of atoms in this bond.
@@ -34,7 +35,13 @@ interface Bond<A : Atom> : Fragment<A> {
      */
     val order: String
 
+    /**
+     *  First of the given atoms.
+     */
     operator fun component1(): A
 
+    /**
+     *  Second of the given atoms.
+     */
     operator fun component2(): A
 }

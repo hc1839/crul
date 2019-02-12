@@ -36,10 +36,10 @@ internal class BondImpl<A : Atom> : Bond<A> {
 
     /**
      *  @param atom1
-     *      One of the two atoms.
+     *      First atom.
      *
      *  @param atom2
-     *      Other atom.
+     *      Second atom.
      *
      *  @param order
      *      Bond order as an arbitrary string.
