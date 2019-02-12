@@ -19,14 +19,14 @@ package hierarchy.tree
 /**
  *  Default implementation of [Node].
  */
-class DefaultNode : AbstractNode {
+internal class NodeImpl : AbstractNode {
     constructor(): super()
 
     /**
      *  Copy constructor.
      */
     constructor(
-        other: DefaultNode,
+        other: NodeImpl,
         deep: Boolean = false,
         includeUserData: Boolean = false
     ): super(other, deep, includeUserData)
@@ -34,9 +34,9 @@ class DefaultNode : AbstractNode {
     override fun cloneNode(
         deep: Boolean,
         includeUserData: Boolean
-    ): DefaultNode
+    ): Node
     {
-        val clonedNode = DefaultNode(this, deep, includeUserData)
+        val clonedNode = NodeImpl(this, deep, includeUserData)
 
         // Call the handlers.
         for (key in _userData.keys) {

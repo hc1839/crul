@@ -18,17 +18,17 @@ package hierarchy.tree
 
 import java.lang.ref.WeakReference as WeakRef
 
-import hierarchy.tree.traversal.DefaultNodeIterator
-import hierarchy.tree.traversal.DefaultTreeWalker
 import hierarchy.tree.traversal.NodeAcceptance
 import hierarchy.tree.traversal.NodeIterator
+import hierarchy.tree.traversal.NodeIteratorBuilder
 import hierarchy.tree.traversal.TraversalOrder
 import hierarchy.tree.traversal.TreeWalker
+import hierarchy.tree.traversal.TreeWalkerBuilder
 
 /**
  *  Skeletal implementation of [Node].
  *
- *  Implementations only need to implement [Node.cloneNode].
+ *  Only [Node.cloneNode] needs to be implemented.
  */
 abstract class AbstractNode : Node {
     /**
@@ -181,16 +181,22 @@ abstract class AbstractNode : Node {
     override fun createTreeWalker(
         filter: ((Node) -> NodeAcceptance)?
     ): TreeWalker =
-        DefaultTreeWalker(this, filter)
+        TreeWalkerBuilder
+            .create()
+            .root(this)
+            .filter(filter)
+            .build()
 
     override fun createNodeIterator(
         order: TraversalOrder,
         filter: ((Node) -> NodeAcceptance)?
     ): NodeIterator =
-        when (order) {
-            TraversalOrder.PREORDER_DEPTH ->
-                DefaultNodeIterator(this, filter)
-        }
+        NodeIteratorBuilder
+            .create()
+            .root(this)
+            .filter(filter)
+            .order(order)
+            .build()
 
     override fun appendChild(newChild: Node): Node {
         newChild as AbstractNode

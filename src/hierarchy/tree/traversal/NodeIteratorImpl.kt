@@ -22,7 +22,10 @@ import hierarchy.tree.Node
  *  Default implementation of [NodeIterator] that iterates in pre-order
  *  depth-first traversal.
  */
-class DefaultNodeIterator : AbstractIterator<Node>, NodeIterator {
+internal class NodeIteratorImpl :
+    AbstractIterator<Node>,
+    NodeIterator
+{
     /**
      *  Tree walker that is used to determine the next node.
      */
@@ -45,7 +48,11 @@ class DefaultNodeIterator : AbstractIterator<Node>, NodeIterator {
         filter: ((Node) -> NodeAcceptance)?
     ): super()
     {
-        this.treeWalker = DefaultTreeWalker(root, filter)
+        this.treeWalker = TreeWalkerBuilder
+            .create()
+            .root(root)
+            .filter(filter)
+            .build()
     }
 
     /**

@@ -21,7 +21,7 @@ import hierarchy.tree.Node
 /**
  *  Default implementation of [TreeWalker].
  */
-class DefaultTreeWalker : TreeWalker {
+internal class TreeWalkerImpl : TreeWalker {
     override val root: Node
 
     override val filter: ((Node) -> NodeAcceptance)?
