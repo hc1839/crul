@@ -37,8 +37,8 @@ abstract class AbstractTokenIterator<T : Enum<T>> :
      *      Staging area for strings that will turn into tokens by the
      *      subclass.
      */
-    constructor(stage: Sequence<String>) {
-        this.stage = stage.iterator()
+    constructor(stage: Iterator<String>) {
+        this.stage = stage
     }
 
     /**

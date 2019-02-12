@@ -53,7 +53,12 @@ internal class TreeWalkerImpl : TreeWalker {
 
     override fun ancestorNode(): Node? {
         // Verify that the current node is below the root.
-        if (!currentNode.ancestorNodes(false).any { it === root }) {
+        if (
+            !currentNode
+                .ancestorNodes(false)
+                .asSequence()
+                .any { it === root }
+        ) {
             return null
         }
 
@@ -92,7 +97,12 @@ internal class TreeWalkerImpl : TreeWalker {
             when (filterDecorator(child)) {
                 NodeAcceptance.ACCEPT, NodeAcceptance.ACCEPT_SELF -> {
                     // Verify that the found node is within the subtree.
-                    if (child.ancestorNodes(true).any { it === root }) {
+                    if (
+                        child
+                            .ancestorNodes(true)
+                            .asSequence()
+                            .any { it === root }
+                    ) {
                         currentNode = child
                         return child
                     } else {
@@ -126,7 +136,12 @@ internal class TreeWalkerImpl : TreeWalker {
             when (filterDecorator(child)) {
                 NodeAcceptance.ACCEPT, NodeAcceptance.ACCEPT_SELF -> {
                     // Verify that the found node is within the subtree.
-                    if (child.ancestorNodes(true).any { it === root }) {
+                    if (
+                        child
+                            .ancestorNodes(true)
+                            .asSequence()
+                            .any { it === root }
+                    ) {
                         currentNode = child
                         return child
                     } else {
@@ -145,7 +160,12 @@ internal class TreeWalkerImpl : TreeWalker {
 
     override fun previousSibling(): Node? {
         // Verify that the current node is within the subtree.
-        if (!currentNode.ancestorNodes(true).any { it === root }) {
+        if (
+            !currentNode
+                .ancestorNodes(true)
+                .asSequence()
+                .any { it === root }
+        ) {
             return null
         }
 
@@ -169,7 +189,12 @@ internal class TreeWalkerImpl : TreeWalker {
 
     override fun nextSibling(): Node? {
         // Verify that the current node is within the subtree.
-        if (!currentNode.ancestorNodes(true).any { it === root }) {
+        if (
+            !currentNode
+                .ancestorNodes(true)
+                .asSequence()
+                .any { it === root }
+            ) {
             return null
         }
 

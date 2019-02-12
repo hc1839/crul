@@ -84,7 +84,7 @@ interface Node {
      *  @param includeSelf
      *      Whether to include this node at the beginning of the traversal.
      */
-    fun ancestorNodes(includeSelf: Boolean): Sequence<Node>
+    fun ancestorNodes(includeSelf: Boolean): Iterator<Node>
 
     /**
      *  Creates a [TreeWalker] over the subtree rooted at this node.

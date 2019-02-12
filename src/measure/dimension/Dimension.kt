@@ -236,7 +236,7 @@ class Dimension : BinarySerializable {
                 Dimension(BaseDimension.getBySymbol(dimensionText)!!)
             } else {
                 val tokens = TokenIterator(dimensionText)
-                val actuator = Actuator(tokens.asSequence())
+                val actuator = Actuator(tokens)
                 val parseRoot = actuator.actuate()
 
                 parseRoot.getUserData(Production.userDataKey) as Dimension

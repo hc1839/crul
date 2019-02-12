@@ -42,7 +42,7 @@ class TokenIterator : AbstractTokenIterator<Production> {
      *      Input string representing a UCUM unit. It cannot contain
      *      intervening newlines.
      */
-    constructor(input: String): super(listOf(input.trim()).asSequence()) {
+    constructor(input: String): super(listOf(input.trim()).iterator()) {
         this.input = input.trim()
 
         if (Regex("\\n") in this.input) {

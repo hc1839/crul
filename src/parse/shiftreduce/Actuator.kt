@@ -49,8 +49,8 @@ class Actuator<T>
      *      retrieved and cloned along with the user data. Any descendants are
      *      ignored. The sequence must not be empty.
      */
-    constructor(tokens: Sequence<ParseNode<T>>) {
-        this.tokens = tokens.iterator()
+    constructor(tokens: Iterator<ParseNode<T>>) {
+        this.tokens = tokens
     }
 
     /**

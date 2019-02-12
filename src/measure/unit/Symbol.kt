@@ -440,7 +440,7 @@ class UnitOfMeasure : BinarySerializable {
                 parse(defUnitText) * defValue
             } else {
                 val tokens = TokenIterator(unitText)
-                val actuator = Actuator(tokens.asSequence())
+                val actuator = Actuator(tokens)
                 val parseRoot = actuator.actuate()
 
                 parseRoot.getUserData(Production.userDataKey) as UnitOfMeasure

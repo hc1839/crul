@@ -90,7 +90,7 @@ abstract class AbstractNode : Node {
     }
 
     override val depth: Int
-        get() = ancestorNodes(false).count()
+        get() = ancestorNodes(false).asSequence().count()
 
     override val childNodes: List<Node>
         get() = _childNodes.toList()
@@ -153,9 +153,9 @@ abstract class AbstractNode : Node {
         }
 
     override val rootNode: Node
-        get() = ancestorNodes(true).last()
+        get() = ancestorNodes(true).asSequence().last()
 
-    override fun ancestorNodes(includeSelf: Boolean): Sequence<Node> {
+    override fun ancestorNodes(includeSelf: Boolean): Iterator<Node> {
         val iterator = object: AbstractIterator<Node>() {
             private var nextNode: Node? = parentNode
 
@@ -172,9 +172,10 @@ abstract class AbstractNode : Node {
         }
 
         return if (includeSelf) {
-            listOf<Node>(this).asSequence() + iterator.asSequence()
+            (listOf<Node>(this).asSequence() + iterator.asSequence())
+                .iterator()
         } else {
-            iterator.asSequence()
+            iterator
         }
     }
 
@@ -202,7 +203,7 @@ abstract class AbstractNode : Node {
         newChild as AbstractNode
 
         // Check that the node to be added is not this node or an ancestor.
-        if (ancestorNodes(true).any { it === newChild }) {
+        if (ancestorNodes(true).asSequence().any { it === newChild }) {
             throw IllegalArgumentException(
                 "Node to be added is this node or an ancestor of it."
             )
@@ -221,7 +222,7 @@ abstract class AbstractNode : Node {
         refChild as AbstractNode
 
         // Check that the node to be added is not this node or an ancestor.
-        if (ancestorNodes(true).any { it === newChild }) {
+        if (ancestorNodes(true).asSequence().any { it === newChild }) {
             throw IllegalArgumentException(
                 "Node to be added is this node or an ancestor of it."
             )
