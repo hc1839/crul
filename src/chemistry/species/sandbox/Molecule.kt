@@ -17,8 +17,8 @@
 package chemistry.species.sandbox
 
 /**
- *  Interface for a molecule, which is a [Fragment] that contains at least one
- *  atom and has every pair of atoms connected by bonds (directly or
+ *  Interface for a molecule, which is a non-empty [Fragment] with unique atom
+ *  names and has every pair of atoms connected by bonds (directly or
  *  indirectly).
  *
  *  @param A
@@ -28,7 +28,7 @@ interface Molecule<A : Atom> : Fragment<A> {
     /**
      *  Bonds that are in this molecule.
      */
-    val bonds: Sequence<Bond<A>>
+    val bonds: Iterator<Bond<A>>
 
     /**
      *  Gets the bonds that an atom is participating in.
@@ -36,7 +36,7 @@ interface Molecule<A : Atom> : Fragment<A> {
      *  @param atomName
      *      [Atom.name] of an atom.
      */
-    fun getBondsByAtom(atomName: String): Sequence<Bond<A>>
+    fun getBondsByAtom(atomName: String): Set<Bond<A>>
 
     /**
      *  Gets the bond between two atoms, or `null` if there is no such bond.
@@ -52,7 +52,7 @@ interface Molecule<A : Atom> : Fragment<A> {
     fun getBond(atom1Name: String, atom2Name: String): Bond<A>?
 
     /**
-     *  Gets the atoms that are bonded to a given atom.
+     *  Gets the atoms that are directly bonded to a given atom.
      *
      *  @param atomName
      *      [Atom.name] of the atom. If there is no such atom, an exception is
@@ -61,5 +61,5 @@ interface Molecule<A : Atom> : Fragment<A> {
      *  @return
      *      For a molecule of one atom, an empty list is returned.
      */
-    fun getAtomsBondedTo(atomName: String): Sequence<A>
+    fun getAtomsBondedTo(atomName: String): Set<A>
 }

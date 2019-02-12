@@ -32,7 +32,7 @@ abstract class AbstractFragment<A : AbstractAtom> :
 {
     protected val _atoms: MutableList<A>
 
-    override fun iterator(): Iterator<A> =
+    override fun atoms(): Iterator<A> =
         _atoms.iterator()
 
     /**
@@ -58,10 +58,8 @@ abstract class AbstractFragment<A : AbstractAtom> :
         @Suppress("UNCHECKED_CAST")
         other
             .atoms()
-            .map {
-                it as A
-                it.clone() as A
-            }
+            .asSequence()
+            .map { it.clone() as A }
             .iterator()
     )
 

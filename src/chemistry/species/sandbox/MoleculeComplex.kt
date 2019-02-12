@@ -22,7 +22,10 @@ package chemistry.species.sandbox
  *  @param A
  *      Type of atoms in the molecules.
  */
-interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
+interface MoleculeComplex<A : Atom> : Complex<Molecule<A>>, Cloneable {
+    override fun iterator(): Iterator<Molecule<A>> =
+        molecules()
+
     /**
      *  Formal charge of this complex, which is the sum of the formal charges
      *  of the molecules.
@@ -31,14 +34,14 @@ interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
      */
     val formalCharge: Double
         get() = molecules()
+            .asSequence()
             .map { it.formalCharge }
             .reduce { acc, item -> acc + item }
 
     /**
      *  Molecules in this complex.
      */
-    fun molecules(): Sequence<Molecule<A>> =
-        iterator().asSequence()
+    fun molecules(): Iterator<Molecule<A>>
 
     /**
      *  Gets the molecule that contains a given atom, or `null` if there is no
@@ -49,4 +52,9 @@ interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
      *      raised.
      */
     fun getMoleculeWithAtom(atomName: String): Molecule<A>?
+
+    /**
+     *  Clones this complex along with its molecules.
+     */
+    public abstract override fun clone(): MoleculeComplex<A>
 }

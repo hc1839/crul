@@ -87,5 +87,5 @@ interface Complex<S : Species> : Species, Set<S> {
      *  in the same order between calls. A subinterface or an implementation,
      *  however, is allowed to make specified guarantees.
      */
-    fun atoms(): Sequence<Atom>
+    fun atoms(): Iterator<Atom>
 }

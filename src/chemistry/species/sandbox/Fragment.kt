@@ -23,8 +23,10 @@ package chemistry.species.sandbox
  *      Type of atoms in this fragment.
  */
 interface Fragment<A : Atom> : Complex<A>, Cloneable {
-    override fun atoms(): Sequence<Atom> =
-        iterator().asSequence()
+    override fun iterator(): Iterator<A> =
+        @Suppress("UNCHECKED_CAST") (
+            atoms() as Iterator<A>
+        )
 
     /**
      *  Formal charge of this fragment, which is the sum of the formal charges
@@ -34,6 +36,7 @@ interface Fragment<A : Atom> : Complex<A>, Cloneable {
      */
     val formalCharge: Double
         get() = atoms()
+            .asSequence()
             .map { it.formalCharge }
             .reduce { acc, item -> acc + item }
 
@@ -45,7 +48,9 @@ interface Fragment<A : Atom> : Complex<A>, Cloneable {
      */
     fun getAtomByName(atomName: String): A? =
         @Suppress("UNCHECKED_CAST") (
-            atoms().firstOrNull { it.name == atomName } as A?
+            atoms()
+                .asSequence()
+                .firstOrNull { it.name == atomName } as A?
         )
 
     /**

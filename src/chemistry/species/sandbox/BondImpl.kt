@@ -66,7 +66,7 @@ internal class BondImpl<A : Atom> : Bond<A> {
     override fun clone(): Fragment<A> =
         BondImpl(this)
 
-    override fun iterator(): Iterator<A> =
+    override fun atoms(): Iterator<A> =
         atomPair.toList().iterator()
 
     override fun component1(): A =
