@@ -52,7 +52,7 @@ open class Vector : Spatial {
     /**
      *  Magnitude.
      */
-    fun magnitude() =
+    fun magnitude(): Double =
         when (dimensionality) {
             0 -> 0.0
             else -> kotlin.math.sqrt(this.dot(this))
@@ -112,26 +112,26 @@ open class Vector : Spatial {
         return this / magnitude
     }
 
-    open operator fun plus(other: Vector) =
+    open operator fun plus(other: Vector): Vector =
         Vector(
             components.zip(other.components) { first, second ->
                 first + second
             }
         )
 
-    open operator fun unaryMinus() =
+    open operator fun unaryMinus(): Vector =
         Vector(components.map { -it })
 
-    open operator fun minus(other: Vector) =
+    open operator fun minus(other: Vector): Vector =
         Vector(
             components.zip(other.components) { first, second ->
                 first - second
             }
         )
 
-    open operator fun times(other: Double) =
+    open operator fun times(other: Double): Vector =
         Vector(components.map { it * other })
 
-    open operator fun div(other: Double) =
+    open operator fun div(other: Double): Vector =
         Vector(components.map { it / other })
 }

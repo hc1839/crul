@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package chemistry.species.sandbox
+package chemistry.species
 
 /**
  *  Mutable builder for [Bond].

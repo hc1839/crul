@@ -16,16 +16,100 @@
 
 package chemistry.species
 
+import chemistry.species.Element
+import math.coordsys.Vector3D
+
 /**
  *  Mutable builder for [Atom].
+ *
+ *  To construct an instance of this class, use [create].
  */
-class AtomBuilder : AbstractAtomBuilder<Atom, AtomBuilder> {
-    constructor(): super()
+open class AtomBuilder<B : AtomBuilder<B>> {
+    @Suppress("UNCHECKED_CAST")
+    protected val _this: B = this as B
 
-    override fun build(): Atom =
-        if (name == null) {
-            Atom(element!!, centroid!!, formalCharge!!)
-        } else {
-            Atom(element!!, centroid!!, formalCharge!!, name!!)
+    protected constructor()
+
+    protected var _element: Element? = null
+        private set
+
+    /**
+     *  Configures the element.
+     *
+     *  It must be set before [build] is called.
+     */
+    fun element(value: Element): B {
+        _element = value
+        return _this
+    }
+
+    protected var _name: String? = null
+        private set
+
+    /**
+     *  Configures the name.
+     *
+     *  If `null`, the default argument is used.
+     */
+    fun name(value: String?): B {
+        _name = value
+        return _this
+    }
+
+    protected var _position: Vector3D? = null
+        private set
+
+    /**
+     *  Configures the position.
+     *
+     *  It must be set before [build] is called.
+     */
+    fun position(value: Vector3D): B {
+        _position = value
+        return _this
+    }
+
+    protected var _formalCharge: Double? = null
+        private set
+
+    /**
+     *  Configures the formal charge.
+     *
+     *  It must be set before [build] is called.
+     */
+    fun formalCharge(value: Double): B {
+        _formalCharge = value
+        return _this
+    }
+
+    /**
+     *  Constructs an [Atom] from the data in this builder.
+     */
+    open fun build(): Atom =
+        object : AbstractAtom(
+            _element!!,
+            _position!!,
+            _formalCharge!!,
+            _name ?: uuid.Generator.inNCName()
+        ) {
+            override fun clone(): Atom =
+                AtomBuilder
+                    .create()
+                    .element(this.element)
+                    .position(this.position)
+                    .formalCharge(this.formalCharge)
+                    .name(this.name)
+                    .build()
         }
+
+    companion object {
+        private class AtomBuilderImpl(): AtomBuilder<AtomBuilderImpl>()
+
+        /**
+         *  Creates an instance of [AtomBuilder].
+         */
+        @JvmStatic
+        fun create(): AtomBuilder<*> =
+            AtomBuilderImpl()
+    }
 }

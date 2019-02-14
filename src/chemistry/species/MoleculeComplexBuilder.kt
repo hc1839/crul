@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package chemistry.species.sandbox
+package chemistry.species
 
 import hypergraph.Edge
 import hypergraph.Graph
@@ -33,6 +33,8 @@ import hypergraph.Vertex
  *
  *  This builder can be cloned, which is useful in building complexes that
  *  differ from each other only in some regions.
+ *
+ *  To construct an instance of this class, use [create].
  */
 open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> :
     Cloneable

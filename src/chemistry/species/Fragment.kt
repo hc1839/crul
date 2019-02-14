@@ -16,39 +16,53 @@
 
 package chemistry.species
 
-import chemistry.species.base.Atom as AtomIntf
-import chemistry.species.base.Fragment as FragmentIntf
-
 /**
- *  Template instantiation of [AbstractFragment].
+ *  Interface for a fragment, which is a non-emtpy [Complex] of [Atom].
+ *
+ *  @param A
+ *      Type of atoms in this fragment.
  */
-class Fragment<A : AbstractAtom<A>> :
-    AbstractFragment<A, Fragment<A>>
+interface Fragment<A : Atom> :
+    Complex<A>,
+    Cloneable
 {
-    /**
-     *  See [AbstractFragment] for a description of the arguments.
-     */
-    @JvmOverloads
-    constructor(
-        atoms: Iterable<A>,
-        name: String = uuid.Generator.inNCName()
-    ): super(atoms, name)
+    abstract override fun atoms(): Iterator<A>
+
+    override fun iterator(): Iterator<A> =
+        atoms()
 
     /**
-     *  Copy constructor.
+     *  Formal charge of this fragment, which is the sum of the formal charges
+     *  of the atoms.
      *
-     *  Atoms are cloned.
+     *  If [atoms] is empty, an exception is raised.
      */
-    constructor(other: Fragment<A>): super(other)
+    val formalCharge: Double
+        get() = atoms()
+            .asSequence()
+            .map { it.formalCharge }
+            .reduce { acc, item -> acc + item }
 
     /**
-     *  Deserialization constructor.
+     *  Whether an atom exists in this fragment.
      */
-    constructor(
-        msgpack: ByteArray,
-        atomFactory: (ByteArray) -> A
-    ): super(msgpack, atomFactory)
+    fun containsAtom(atom: A): Boolean
 
-    override fun clone(): Fragment<A> =
-        Fragment<A>(this)
+    /**
+     *  Gets an atom by its name, or `null` if there is no such atom.
+     *
+     *  If this fragment has more than one atom with the same given name, the
+     *  first one encountered is returned.
+     */
+    fun getAtomByName(atomName: String): A? =
+        @Suppress("UNCHECKED_CAST") (
+            atoms()
+                .asSequence()
+                .firstOrNull { it.name == atomName }
+        )
+
+    /**
+     *  Clones this fragment along with its atoms.
+     */
+    public abstract override fun clone(): Fragment<A>
 }

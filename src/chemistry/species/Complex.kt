@@ -16,51 +16,79 @@
 
 package chemistry.species
 
-import chemistry.species.base.Complex as ComplexIntf
-import chemistry.species.base.Fragment as FragmentIntf
-import chemistry.species.graph.ComplexGraphFactory
+import math.coordsys.Vector3D
 
 /**
- *  Implementation of [chemistry.species.base.Complex].
+ *  Interface for a complex, which is a species that is also set of subspecies.
+ *
+ *  @param S
+ *      Type of subspecies in this complex.
  */
-open class Complex<A, F> :
-    BasicComplex<A, F>,
-    ComplexIntf<A, F>
-    where A : AbstractAtom<A>,
-          F : AbstractFragment<A, F>
+interface Complex<S : Species> :
+    Species,
+    Set<S>
 {
-    protected constructor(
-        fragments: Iterable<F>,
-        name: String,
-        indexerFactory: ComplexGraphFactory
-    ): super(fragments, name, indexerFactory)
+    override val size: Int
+        get() = iterator().asSequence().count()
 
-    @JvmOverloads
-    constructor(
-        fragments: Iterable<F>,
-        name: String = uuid.Generator.inNCName()
-    ): this(
-        fragments,
-        name,
-        ComplexGraphFactory()
-    )
+    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+    override fun contains(species: S): Boolean =
+        iterator().asSequence().contains(species)
+
+    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+    override fun containsAll(speciesCollection: Collection<S>): Boolean =
+        speciesCollection.all { contains(it) }
+
+    override fun isEmpty(): Boolean =
+        iterator().asSequence().count() == 0
 
     /**
-     *  Copy constructor.
+     *  Centroid of [atoms].
      *
-     *  Fragments and atoms are cloned.
+     *  Setting the centroid is equivalent to translating the atoms such that
+     *  the new centroid is the given centroid.
+     *
+     *  For the getter, an exception is raised if [atoms] is empty.
      */
-    constructor(other: Complex<A, F>): super(other)
+    var centroid: Vector3D
+        get() {
+            val atomIter = atoms().iterator()
+            var positionSum = Vector3D(0.0, 0.0, 0.0)
+            var atomCount = 0
+
+            while (atomIter.hasNext()) {
+                val atom = atomIter.next()
+
+                positionSum += atom.position
+                ++atomCount
+            }
+
+            if (atomCount == 0) {
+                throw RuntimeException(
+                    "No atoms in this complex."
+                )
+            }
+
+            return positionSum / atomCount.toDouble()
+        }
+        set(value) {
+            val atomIter = atoms().iterator()
+            val centroidDisplacement = value - centroid
+
+            while (atomIter.hasNext()) {
+                val atom = atomIter.next()
+
+                atom.position += centroidDisplacement
+            }
+        }
 
     /**
-     *  Deserialization constructor.
+     *  Atoms in this complex.
+     *
+     *  Sequence must not be empty. The atoms in the sequence are not
+     *  guaranteed to be in any particular order and are not guaranteed to be
+     *  in the same order between calls. A subinterface or an implementation,
+     *  however, is allowed to make specified guarantees.
      */
-    constructor(
-        msgpack: ByteArray,
-        atomFactory: (ByteArray) -> A,
-        fragmentFactory: (ByteArray, (ByteArray) -> A) -> F
-    ): super(msgpack, atomFactory, fragmentFactory)
-
-    override fun clone(): Complex<A, F> =
-        Complex<A, F>(this)
+    fun atoms(): Iterator<Atom>
 }

@@ -43,18 +43,18 @@ open class Vector3D : Vector {
     operator fun component2() = this.components[1]
     operator fun component3() = this.components[2]
 
-    override fun plus(other: Vector) =
+    override fun plus(other: Vector): Vector3D =
         Vector3D(super.plus(other).components)
 
-    override fun unaryMinus() =
+    override fun unaryMinus(): Vector3D =
         Vector3D(super.unaryMinus().components)
 
-    override fun minus(other: Vector) =
+    override fun minus(other: Vector): Vector3D =
         Vector3D(super.minus(other).components)
 
-    override fun times(other: Double) =
+    override fun times(other: Double): Vector3D =
         Vector3D(super.times(other).components)
 
-    override fun div(other: Double) =
+    override fun div(other: Double): Vector3D =
         Vector3D(super.div(other).components)
 }

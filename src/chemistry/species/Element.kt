@@ -122,6 +122,16 @@ class Element : BinarySerializable {
             @Suppress("UNCHECKED_CAST")
             ElementStore.json[symbol]!!["radius"] as Double
 
+    override fun hashCode(): Int =
+        listOf(symbol).hashCode()
+
+    override fun equals(other: Any?): Boolean =
+        other is Element &&
+        this::class == other::class &&
+        (
+            symbol == other.symbol
+        )
+
     /**
      *  MessagePack serialization.
      */
@@ -142,14 +152,4 @@ class Element : BinarySerializable {
 
         return packer.toByteArray()
     }
-
-    override fun hashCode() =
-        listOf(symbol).hashCode()
-
-    override fun equals(other: Any?): Boolean =
-        other is Element &&
-        this::class == other::class &&
-        (
-            symbol == other.symbol
-        )
 }

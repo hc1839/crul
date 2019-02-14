@@ -20,51 +20,73 @@ import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
 import chemistry.species.Element
-import chemistry.species.base.Atom as AtomIntf
 import math.coordsys.Vector3D
 import serialize.BinarySerializable
 
 /**
- *  Skeletal implementation of [chemistry.species.base.Atom].
+ *  Skeletal implementation of [Atom].
  *
- *  All properties and member functions are concrete.
- *
- *  @param A
- *      Type parameter that is to be instantiated by a subclass.
+ *  Only [Atom.clone] needs to be implemented.
  */
-abstract class AbstractAtom<A : AbstractAtom<A>> :
-    AbstractBasicAtom<A>,
-    AtomIntf<A>
+abstract class AbstractAtom :
+    Atom,
+    BinarySerializable
 {
-    override var centroid: Vector3D
+    override val element: Element
+
+    override val name: String
+
+    override var position: Vector3D
 
     override var formalCharge: Double
 
+    /**
+     *  @param element
+     *      Element of the atom.
+     *
+     *  @param position
+     *      Position of the center of the atom.
+     *
+     *  @param formalCharge
+     *      Formal charge of the atom.
+     *
+     *  @param name
+     *      Name of the atom. It must conform to XML NCName production.
+     */
     @JvmOverloads
     constructor(
         element: Element,
-        centroid: Vector3D,
+        position: Vector3D,
         formalCharge: Double,
         name: String = uuid.Generator.inNCName()
-    ): super(element, name)
-    {
-        this.centroid = centroid
+    ) {
+        if (!xml.Datatype.isNCName(name)) {
+            throw IllegalArgumentException(
+                "Name does not conform to XML NCName production: $name"
+            )
+        }
+
+        this.element = element
+        this.position = position
         this.formalCharge = formalCharge
+        this.name = name
     }
 
     /**
      *  Copy constructor.
      */
-    constructor(other: AbstractAtom<A>): super(other) {
-        this.centroid = other.centroid
+    constructor(other: AbstractAtom) {
+        this.element = other.element
+        this.position = other.position
         this.formalCharge = other.formalCharge
+        this.name = other.name
     }
 
     /**
      *  Copy constructor using a different atom name.
      */
-    constructor(other: AbstractAtom<A>, name: String):
-        this(other.element, other.centroid, other.formalCharge, name)
+    constructor(other: AbstractAtom, name: String):
+        this(other.element, other.position, other.formalCharge, name)
 
     /**
      *  Initializes from a MessagePack map.
@@ -75,16 +97,20 @@ abstract class AbstractAtom<A : AbstractAtom<A>> :
      *  @param msgpack
      *      MessagePack map for the entire inheritance tree.
      */
-    private constructor(unpackedMap: Map<String, Value>, msgpack: ByteArray):
-        super(msgpack)
-    {
-        this.centroid = Vector3D(
-            unpackedMap["centroid"]!!.asBinaryValue().asByteArray()
-        )
-
-        this.formalCharge =
-            unpackedMap["formal-charge"]!!.asFloatValue().toDouble()
-    }
+    private constructor(
+        unpackedMap: Map<String, Value>,
+        @Suppress("UNUSED_PARAMETER")
+        msgpack: ByteArray
+    ): this(
+        Element(
+            unpackedMap["element"]!!.asBinaryValue().asByteArray()
+        ),
+        Vector3D(
+            unpackedMap["position"]!!.asBinaryValue().asByteArray()
+        ),
+        unpackedMap["formal-charge"]!!.asFloatValue().toDouble(),
+        unpackedMap["name"]!!.asStringValue().toString()
+    )
 
     /**
      *  Deserialization constructor.
@@ -97,21 +123,48 @@ abstract class AbstractAtom<A : AbstractAtom<A>> :
         msgpack
     )
 
+    override fun hashCode(): Int =
+        listOf(element.hashCode(), name.hashCode()).hashCode()
+
+    override fun equals(other: Any?): Boolean =
+        other is AbstractAtom &&
+        this::class == other::class &&
+        (
+            element == other.element &&
+            name == other.name
+        )
+
     /**
-     *  Message serialization.
+     *  MessagePack serialization.
      */
     override fun serialize(): ByteArray {
         val packer = MessagePack.newDefaultBufferPacker()
 
-        packer.packMapHeader(2)
-
-        val centroidAsBytes = centroid.serialize()
+        packer.packMapHeader(1)
 
         packer
-            .packString("centroid")
-            .packBinaryHeader(centroidAsBytes.count())
+            .packString(this::class.qualifiedName)
+            .packMapHeader(4)
 
-        packer.writePayload(centroidAsBytes)
+        val elementAsBytes = element.serialize()
+
+        packer
+            .packString("element")
+            .packBinaryHeader(elementAsBytes.count())
+
+        packer.writePayload(elementAsBytes)
+
+        packer
+            .packString("name")
+            .packString(name)
+
+        val positionAsBytes = position.serialize()
+
+        packer
+            .packString("position")
+            .packBinaryHeader(positionAsBytes.count())
+
+        packer.writePayload(positionAsBytes)
 
         packer
             .packString("formal-charge")
@@ -119,10 +172,6 @@ abstract class AbstractAtom<A : AbstractAtom<A>> :
 
         packer.close()
 
-        return BinarySerializable.addKeyValueEntry(
-            super<AbstractBasicAtom>.serialize(),
-            this::class.qualifiedName!!,
-            packer.toByteArray()
-        )
+        return packer.toByteArray()
     }
 }

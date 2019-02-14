@@ -20,35 +20,33 @@ import chemistry.species.Element
 import math.coordsys.Vector3D
 
 /**
- *  Template instantiation of [AbstractAtom].
+ *  Interface for an atom.
+ *
+ *  An atom is a singleton [Species].
  */
-class Atom : AbstractAtom<Atom> {
+interface Atom :
+    Species,
+    Cloneable
+{
     /**
-     *  See [AbstractAtom] for description of the arguments.
+     *  Element.
      */
-    @JvmOverloads
-    constructor(
-        element: Element,
-        centroid: Vector3D,
-        formalCharge: Double,
-        name: String = uuid.Generator.inNCName()
-    ): super(element, centroid, formalCharge, name)
+    val element: Element
 
     /**
-     *  Copy constructor.
+     *  Position of the center.
      */
-    constructor(other: Atom): super(other)
+    var position: Vector3D
 
     /**
-     *  Copy constructor using a different atom name.
+     *  Formal charge.
      */
-    constructor(other: Atom, name: String): super(other, name)
+    var formalCharge: Double
 
     /**
-     *  Deserialization constructor.
+     *  Arbitrary name.
      */
-    constructor(msgpack: ByteArray): super(msgpack)
+    val name: String
 
-    override fun clone(): Atom =
-        Atom(this)
+    public abstract override fun clone(): Atom
 }

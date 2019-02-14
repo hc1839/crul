@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package chemistry.species.sandbox
+package chemistry.species
 
 import hypergraph.Edge
 import hypergraph.Graph
