@@ -43,12 +43,12 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> :
     /**
      *  Backing property for the bonds in the complex.
      */
-    protected val _bonds: MutableSet<Bond<Atom>> = mutableSetOf()
+    private val _bonds: MutableSet<Bond<Atom>> = mutableSetOf()
 
     /**
      *  Backing property for the atoms as singleton molecules in the complex.
      */
-    protected val _singletons: MutableSet<Atom> = mutableSetOf()
+    private val _singletons: MutableSet<Atom> = mutableSetOf()
 
     constructor()
 
@@ -74,7 +74,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> :
      *        atom with a different name compared to one of the atoms in the
      *        given bond.
      */
-    fun addBond(newBond: Bond<Atom>): B {
+    open fun addBond(newBond: Bond<Atom>): B {
         if (_bonds.contains(newBond)) {
             return _this
         }
@@ -129,7 +129,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> :
     /**
      *  Removes a bond.
      */
-    fun removeBond(oldBond: Bond<Atom>): B {
+    open fun removeBond(oldBond: Bond<Atom>): B {
         _bonds.remove(oldBond)
 
         return _this
@@ -142,7 +142,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> :
      *  name exists (as a singleton molecule or as one of the atoms in a bond),
      *  an exception is raised.
      */
-    fun addAtom(newAtom: Atom): B {
+    open fun addAtom(newAtom: Atom): B {
         // All atoms in the complex.
         val existingAtomsAll =
             (
@@ -185,7 +185,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> :
      *  If an unequal atom with the same name or an equal atom with a different
      *  name exists (only as a singleton molecule), an exception is raised.
      */
-    fun removeAtom(oldAtom: Atom): B {
+    open fun removeAtom(oldAtom: Atom): B {
         val existingAtomOfSameName = _singletons
             .find { it.name == oldAtom.name }
 
@@ -361,7 +361,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> :
     }
 
     /**
-     *  Shallowly clones this builder.
+     *  Clones this builder.
      *
      *  Atoms and bonds are cloned.
      */

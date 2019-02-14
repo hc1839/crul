@@ -19,23 +19,23 @@ package hierarchy.tree.traversal
 import hierarchy.tree.Node
 
 /**
- *  Acceptance of a node indicated by a node filter.
+ *  Acceptance of a subtree indicated by a node filter.
  *
  *  A filter determines the visibility of a node and its children.
  */
-enum class NodeAcceptance {
+enum class FilterState {
     /**
      *  Node is accepted and visible, and its children are considered.
      */
-    ACCEPT,
-
-    /**
-     *  Node is rejected and not visible, and its children are not considered.
-     */
-    REJECT,
+    ACCEPT_SUBTREE,
 
     /**
      *  Node is accepted and visible, and its children are not considered.
      */
-    ACCEPT_SELF
+    ACCEPT_SELF_ONLY,
+
+    /**
+     *  Node is rejected and not visible, and its children are not considered.
+     */
+    REJECT_SUBTREE
 }

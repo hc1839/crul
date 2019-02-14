@@ -42,13 +42,13 @@ open class NodeIteratorBuilder<B : NodeIteratorBuilder<B>> {
         return _this
     }
 
-    protected var _filter: ((Node) -> NodeAcceptance)? = null
+    protected var _filter: ((Node) -> FilterState)? = null
         private set
 
     /**
      *  Configures the filter.
      */
-    fun filter(value: ((Node) -> NodeAcceptance)?): B {
+    fun filter(value: ((Node) -> FilterState)?): B {
         _filter = value
         return _this
     }

@@ -18,7 +18,7 @@ package hierarchy.tree
 
 import java.lang.ref.WeakReference as WeakRef
 
-import hierarchy.tree.traversal.NodeAcceptance
+import hierarchy.tree.traversal.FilterState
 import hierarchy.tree.traversal.NodeIterator
 import hierarchy.tree.traversal.NodeIteratorBuilder
 import hierarchy.tree.traversal.TraversalOrder
@@ -180,7 +180,7 @@ abstract class AbstractNode : Node {
     }
 
     override fun createTreeWalker(
-        filter: ((Node) -> NodeAcceptance)?
+        filter: ((Node) -> FilterState)?
     ): TreeWalker =
         TreeWalkerBuilder
             .create()
@@ -190,7 +190,7 @@ abstract class AbstractNode : Node {
 
     override fun createNodeIterator(
         order: TraversalOrder,
-        filter: ((Node) -> NodeAcceptance)?
+        filter: ((Node) -> FilterState)?
     ): NodeIterator =
         NodeIteratorBuilder
             .create()

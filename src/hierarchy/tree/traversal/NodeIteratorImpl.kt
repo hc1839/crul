@@ -45,7 +45,7 @@ internal class NodeIteratorImpl :
      */
     constructor(
         root: Node,
-        filter: ((Node) -> NodeAcceptance)?
+        filter: ((Node) -> FilterState)?
     ): super()
     {
         this.treeWalker = TreeWalkerBuilder
@@ -56,11 +56,11 @@ internal class NodeIteratorImpl :
     }
 
     /**
-     *  Filter decorator that returns [NodeAcceptance.ACCEPT] if there is no
-     *  filter.
+     *  Filter decorator that returns [FilterState.ACCEPT_SUBTREE] if there is
+     *  no filter.
      */
-    private fun filterDecorator(node: Node): NodeAcceptance =
-        filter?.invoke(node) ?: NodeAcceptance.ACCEPT
+    private fun filterDecorator(node: Node): FilterState =
+        filter?.invoke(node) ?: FilterState.ACCEPT_SUBTREE
 
     override val order: TraversalOrder =
         TraversalOrder.PREORDER_DEPTH
@@ -68,18 +68,19 @@ internal class NodeIteratorImpl :
     override val root: Node
         get() = treeWalker.root
 
-    override val filter: ((Node)-> NodeAcceptance)?
+    override val filter: ((Node)-> FilterState)?
         get() = treeWalker.filter
 
     override fun computeNext() {
         if (isBegin) {
             // Bootstrap the iteration.
             when (filterDecorator(treeWalker.currentNode)) {
-                NodeAcceptance.ACCEPT, NodeAcceptance.ACCEPT_SELF -> {
+                FilterState.ACCEPT_SUBTREE,
+                FilterState.ACCEPT_SELF_ONLY -> {
                     setNext(treeWalker.currentNode)
                 }
 
-                NodeAcceptance.REJECT -> {
+                FilterState.REJECT_SUBTREE -> {
                     done()
                 }
             }

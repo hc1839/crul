@@ -32,7 +32,7 @@ interface NodeIterator : Iterator<Node> {
     /**
      *  Filter used to screen nodes.
      */
-    val filter: ((Node) -> NodeAcceptance)?
+    val filter: ((Node) -> FilterState)?
 
     /**
      *  Traversal order.

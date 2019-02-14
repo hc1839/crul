@@ -16,7 +16,7 @@
 
 package hierarchy.tree
 
-import hierarchy.tree.traversal.NodeAcceptance
+import hierarchy.tree.traversal.FilterState
 import hierarchy.tree.traversal.NodeIterator
 import hierarchy.tree.traversal.TraversalOrder
 import hierarchy.tree.traversal.TreeWalker
@@ -90,7 +90,7 @@ interface Node {
      *  Creates a [TreeWalker] over the subtree rooted at this node.
      */
     fun createTreeWalker(
-        filter: ((Node) -> NodeAcceptance)?
+        filter: ((Node) -> FilterState)?
     ): TreeWalker
 
     /**
@@ -98,7 +98,7 @@ interface Node {
      */
     fun createNodeIterator(
         order: TraversalOrder,
-        filter: ((Node) -> NodeAcceptance)?
+        filter: ((Node) -> FilterState)?
     ): NodeIterator
 
     /**

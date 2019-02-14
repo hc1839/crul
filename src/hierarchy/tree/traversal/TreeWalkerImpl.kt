@@ -24,7 +24,7 @@ import hierarchy.tree.Node
 internal class TreeWalkerImpl : TreeWalker {
     override val root: Node
 
-    override val filter: ((Node) -> NodeAcceptance)?
+    override val filter: ((Node) -> FilterState)?
 
     override var currentNode: Node
 
@@ -37,7 +37,7 @@ internal class TreeWalkerImpl : TreeWalker {
      */
     constructor(
         root: Node,
-        filter: ((Node) -> NodeAcceptance)?
+        filter: ((Node) -> FilterState)?
     ) {
         this.root = root
         this.filter = filter
@@ -45,11 +45,11 @@ internal class TreeWalkerImpl : TreeWalker {
     }
 
     /**
-     *  Filter decorator that returns [NodeAcceptance.ACCEPT] if there is no
-     *  filter.
+     *  Filter decorator that returns [FilterState.ACCEPT_SUBTREE] if there is
+     *  no filter.
      */
-    private fun filterDecorator(node: Node): NodeAcceptance =
-        filter?.invoke(node) ?: NodeAcceptance.ACCEPT
+    private fun filterDecorator(node: Node): FilterState =
+        filter?.invoke(node) ?: FilterState.ACCEPT_SUBTREE
 
     override fun ancestorNode(): Node? {
         // Verify that the current node is below the root.
@@ -66,7 +66,8 @@ internal class TreeWalkerImpl : TreeWalker {
 
         while (ancestor != null && ancestor !== root) {
             when (filterDecorator(ancestor)) {
-                NodeAcceptance.ACCEPT, NodeAcceptance.ACCEPT_SELF -> {
+                FilterState.ACCEPT_SUBTREE,
+                FilterState.ACCEPT_SELF_ONLY -> {
                     currentNode = ancestor
                     return ancestor
                 }
@@ -84,7 +85,8 @@ internal class TreeWalkerImpl : TreeWalker {
         // Apply filter to current node to decide whether to proceed in the
         // specified direction.
         when (filterDecorator(currentNode)) {
-            NodeAcceptance.REJECT, NodeAcceptance.ACCEPT_SELF -> {
+            FilterState.REJECT_SUBTREE,
+            FilterState.ACCEPT_SELF_ONLY -> {
                 return null
             }
 
@@ -95,7 +97,8 @@ internal class TreeWalkerImpl : TreeWalker {
 
         while (child != null) {
             when (filterDecorator(child)) {
-                NodeAcceptance.ACCEPT, NodeAcceptance.ACCEPT_SELF -> {
+                FilterState.ACCEPT_SUBTREE,
+                FilterState.ACCEPT_SELF_ONLY -> {
                     // Verify that the found node is within the subtree.
                     if (
                         child
@@ -123,7 +126,8 @@ internal class TreeWalkerImpl : TreeWalker {
         // Apply filter to current node to decide whether to proceed in the
         // specified direction.
         when (filterDecorator(currentNode)) {
-            NodeAcceptance.REJECT, NodeAcceptance.ACCEPT_SELF -> {
+            FilterState.REJECT_SUBTREE,
+            FilterState.ACCEPT_SELF_ONLY -> {
                 return null
             }
 
@@ -134,7 +138,8 @@ internal class TreeWalkerImpl : TreeWalker {
 
         while (child != null) {
             when (filterDecorator(child)) {
-                NodeAcceptance.ACCEPT, NodeAcceptance.ACCEPT_SELF -> {
+                FilterState.ACCEPT_SUBTREE,
+                FilterState.ACCEPT_SELF_ONLY -> {
                     // Verify that the found node is within the subtree.
                     if (
                         child
@@ -173,7 +178,8 @@ internal class TreeWalkerImpl : TreeWalker {
 
         while (sibling != null) {
             when (filterDecorator(sibling)) {
-                NodeAcceptance.ACCEPT, NodeAcceptance.ACCEPT_SELF -> {
+                FilterState.ACCEPT_SUBTREE,
+                FilterState.ACCEPT_SELF_ONLY -> {
                     currentNode = sibling
                     return sibling
                 }
@@ -202,7 +208,8 @@ internal class TreeWalkerImpl : TreeWalker {
 
         while (sibling != null) {
             when (filterDecorator(sibling)) {
-                NodeAcceptance.ACCEPT, NodeAcceptance.ACCEPT_SELF -> {
+                FilterState.ACCEPT_SUBTREE,
+                FilterState.ACCEPT_SELF_ONLY -> {
                     currentNode = sibling
                     return sibling
                 }

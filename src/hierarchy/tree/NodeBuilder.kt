@@ -16,7 +16,6 @@
 
 package hierarchy.tree
 
-import hierarchy.tree.traversal.NodeAcceptance
 import hierarchy.tree.traversal.NodeIterator
 import hierarchy.tree.traversal.TraversalOrder
 import hierarchy.tree.traversal.TreeWalker

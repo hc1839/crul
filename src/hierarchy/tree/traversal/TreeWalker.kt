@@ -32,7 +32,7 @@ interface TreeWalker {
     /**
      *  Filter used to screen nodes.
      */
-    val filter: ((Node) -> NodeAcceptance)?
+    val filter: ((Node) -> FilterState)?
 
     /**
      *  Current node that this walker is positioned.
@@ -45,8 +45,8 @@ interface TreeWalker {
      *  node by applying the filter in the specified direction without regard
      *  to whether the encountered nodes are within the subtree. If the
      *  specified direction is down the tree, the filter is applied to the
-     *  current node before proceeding, since [NodeAcceptance.REJECT] or
-     *  [NodeAcceptance.ACCEPT_SELF] does not have visible children. If the
+     *  current node before proceeding, since [FilterState.REJECT_SUBTREE] or
+     *  [FilterState.ACCEPT_SELF_ONLY] does not have visible children. If the
      *  first visible node that is found is not within the subtree, the
      *  traversal in the specified direction is considered not possible, and
      *  the current node is not changed
