@@ -19,9 +19,10 @@ package chemistry.species.sandbox
 /**
  *  Interface for a bond in a molecule.
  *
- *  Semantically, the order of the atoms is not important. Technically, the
- *  first and second of the given atoms are represented by the first and second
- *  components, respectively, when using destructuring declaration.
+ *  Atoms in a bond must not be equal to each other and must not have the same
+ *  name. Semantically, the order of the atoms is not important. Technically,
+ *  the order of the given atoms is preserved, and the atoms are returned as
+ *  such.
  *
  *  @param A
  *      Type of atoms in this bond.
@@ -36,12 +37,15 @@ interface Bond<A : Atom> : Fragment<A> {
     val order: String
 
     /**
-     *  First of the given atoms.
+     *  Atoms as a pair in the given order.
      */
-    operator fun component1(): A
+    fun toAtomPair(): Pair<A, A>
 
     /**
-     *  Second of the given atoms.
+     *  Iterator over the two atoms in the given order.
      */
-    operator fun component2(): A
+    override fun atoms(): Iterator<A> =
+        toAtomPair().toList().iterator()
+
+    abstract override fun clone(): Bond<A>
 }

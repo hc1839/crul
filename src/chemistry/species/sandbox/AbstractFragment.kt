@@ -22,14 +22,14 @@ import org.msgpack.value.Value
 import serialize.BinarySerializable
 
 /**
- *  Skeletal implementation of [chemistry.species.Fragment].
+ *  Skeletal implementation of [Fragment].
  *
  *  Only [Fragment.clone] needs to be implemented.
  */
-abstract class AbstractFragment<A : AbstractAtom> :
-    Fragment<A>,
-    BinarySerializable
-{
+abstract class AbstractFragment<A : Atom> : Fragment<A> {
+    /**
+     *  Mutable list of atoms for access by a subclass during instantiation.
+     */
     protected val _atoms: MutableList<A>
 
     override fun atoms(): Iterator<A> =
@@ -62,75 +62,4 @@ abstract class AbstractFragment<A : AbstractAtom> :
             .map { it.clone() as A }
             .iterator()
     )
-
-    /**
-     *  Initializes from a MessagePack map.
-     *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
-     *
-     *  @param atomFactory
-     *      Factory function for the atoms.
-     *
-     *  @param msgpack
-     *      MessagePack map for the entire inheritance tree.
-     */
-    private constructor(
-        unpackedMap: Map<String, Value>,
-        atomFactory: (ByteArray) -> A,
-        @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray
-    ): this(
-        unpackedMap["atoms"]!!
-            .asArrayValue()
-            .list()
-            .map {
-                atomFactory(it.asBinaryValue().asByteArray())
-            }
-            .iterator()
-    )
-
-    /**
-     *  Deserialization constructor.
-     */
-    constructor(
-        msgpack: ByteArray,
-        atomFactory: (ByteArray) -> A
-    ): this(
-        BinarySerializable.getInnerMap(
-            msgpack,
-            AbstractFragment::class.qualifiedName!!
-        ),
-        atomFactory,
-        msgpack
-    )
-
-    /**
-     *  MessagePack serialization.
-     */
-    override fun serialize(): ByteArray {
-        val packer = MessagePack.newDefaultBufferPacker()
-
-        packer.packMapHeader(1)
-
-        packer
-            .packString(this::class.qualifiedName)
-            .packMapHeader(1)
-
-        packer
-            .packString("atoms")
-            .packArrayHeader(_atoms.count())
-
-        for (atom in _atoms) {
-            val atomAsBytes = atom.serialize()
-
-            packer
-                .packBinaryHeader(atomAsBytes.count())
-                .writePayload(atomAsBytes)
-        }
-
-        packer.close()
-
-        return packer.toByteArray()
-    }
 }

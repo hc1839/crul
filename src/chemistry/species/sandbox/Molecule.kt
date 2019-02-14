@@ -21,28 +21,42 @@ package chemistry.species.sandbox
  *  names and has every pair of atoms connected by bonds (directly or
  *  indirectly).
  *
- *  When comparing atoms, referential equality is used. If two different [Atom]
- *  objects have the same name, they are not allowed in the same molecule.
+ *  Equality operator, `==`, is used for comparing atoms. Within the same
+ *  molecule, two equal atoms must have the same name and vice versa.
  *
  *  @param A
  *      Type of atoms in this molecule.
  */
 interface Molecule<A : Atom> : Fragment<A> {
     /**
-     *  Bonds that are in this molecule.
+     *  Bonds that are in this molecule, or an empty iterator if this molecule
+     *  is a singleton.
      */
-    val bonds: Iterator<Bond<A>>
+    fun bonds(): Iterator<Bond<A>>
 
     /**
      *  Gets the bonds that an atom is participating in.
      *
+     *  By default, [bonds] is used. An implementation may override this for a
+     *  more efficient method.
+     *
+     *  If a given atom does not exist in this molecule, an exception is
+     *  raised.
+     *
      *  @return
      *      The given atom is the first atom in the returned set of [Bond].
      */
-    fun getBondsByAtom(atom: A): Set<Bond<A>>
+    fun getBondsByAtom(atom: A): Set<Bond<A>> =
+        bonds()
+            .asSequence()
+            .filter { it.containsAtom(atom) }
+            .toSet()
 
     /**
      *  Gets the bond between two atoms, or `null` if there is no such bond.
+     *
+     *  By default, [bonds] is used. An implementation may override this for a
+     *  more efficient method.
      *
      *  If a given atom does not exist in this molecule, an exception is
      *  raised.
@@ -56,5 +70,14 @@ interface Molecule<A : Atom> : Fragment<A> {
      *  @return
      *      The atoms in the returned bond are in the same order as given.
      */
-    fun getBond(atom1: A, atom2: A): Bond<A>?
+    fun getBond(atom1: A, atom2: A): Bond<A>? =
+        bonds()
+            .asSequence()
+            .filter {
+                it.containsAtom(atom1) &&
+                it.containsAtom(atom2)
+            }
+            .singleOrNull()
+
+    abstract override fun clone(): Molecule<A>
 }

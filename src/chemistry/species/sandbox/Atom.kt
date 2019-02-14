@@ -34,13 +34,6 @@ interface Atom :
     val element: Element
 
     /**
-     *  Arbitrary name.
-     *
-     *  It must conform to XML NCName production.
-     */
-    val name: String
-
-    /**
      *  Position of the center.
      */
     var position: Vector3D
@@ -49,6 +42,11 @@ interface Atom :
      *  Formal charge.
      */
     var formalCharge: Double
+
+    /**
+     *  Arbitrary name.
+     */
+    val name: String
 
     public abstract override fun clone(): Atom
 }

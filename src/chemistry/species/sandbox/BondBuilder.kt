@@ -18,20 +18,14 @@ package chemistry.species.sandbox
 
 /**
  *  Mutable builder for [Bond].
- *
- *  @param A
- *      Type of atoms in this bond.
  */
-open class BondBuilder<B, A>
-    where B : BondBuilder<B, A>,
-          A : Atom
-{
+open class BondBuilder<B : BondBuilder<B>> {
     @Suppress("UNCHECKED_CAST")
     protected val _this: B = this as B
 
     protected constructor()
 
-    protected var _atom1: A? = null
+    protected var _atom1: Atom? = null
         private set
 
     /**
@@ -39,12 +33,12 @@ open class BondBuilder<B, A>
      *
      *  It must be set before [build] is called.
      */
-    fun atom1(value: A): B {
+    fun atom1(value: Atom): B {
         _atom1 = value
         return _this
     }
 
-    protected var _atom2: A? = null
+    protected var _atom2: Atom? = null
         private set
 
     /**
@@ -52,7 +46,7 @@ open class BondBuilder<B, A>
      *
      *  It must be set before [build] is called.
      */
-    fun atom2(value: A): B {
+    fun atom2(value: Atom): B {
         _atom2 = value
         return _this
     }
@@ -72,19 +66,28 @@ open class BondBuilder<B, A>
 
     /**
      *  Constructs a [Bond] from the data in this builder.
+     *
+     *  @param A
+     *      Type of atoms in this bond. The given atoms are casted to this type
+     *      during construction.
      */
-    open fun build(): Bond<A> =
-        BondImpl(_atom1!!, _atom2!!, _order!!)
+    open fun <A : Atom> build(): Bond<A> =
+        @Suppress("UNCHECKED_CAST")
+        BondImpl<A>(
+            _atom1!! as A,
+            _atom2!! as A,
+            _order!!
+        )
 
     companion object {
-        private class BondBuilderImpl<A : Atom>() :
-            BondBuilder<BondBuilderImpl<A>, A>()
+        private class BondBuilderImpl() :
+            BondBuilder<BondBuilderImpl>()
 
         /**
          *  Creates an instance of [BondBuilder].
          */
         @JvmStatic
-        fun <A : Atom> create(): BondBuilder<*, A> =
-            BondBuilderImpl<A>()
+        fun create(): BondBuilder<*> =
+            BondBuilderImpl()
     }
 }

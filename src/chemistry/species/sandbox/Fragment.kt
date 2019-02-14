@@ -17,7 +17,7 @@
 package chemistry.species.sandbox
 
 /**
- *  Interface for a fragment, which is a [Complex] of [Atom].
+ *  Interface for a fragment, which is a non-emtpy [Complex] of [Atom].
  *
  *  @param A
  *      Type of atoms in this fragment.
@@ -26,10 +26,10 @@ interface Fragment<A : Atom> :
     Complex<A>,
     Cloneable
 {
+    abstract override fun atoms(): Iterator<A>
+
     override fun iterator(): Iterator<A> =
-        @Suppress("UNCHECKED_CAST") (
-            atoms() as Iterator<A>
-        )
+        atoms()
 
     /**
      *  Formal charge of this fragment, which is the sum of the formal charges
@@ -44,6 +44,11 @@ interface Fragment<A : Atom> :
             .reduce { acc, item -> acc + item }
 
     /**
+     *  Whether an atom exists in this fragment.
+     */
+    fun containsAtom(atom: A): Boolean
+
+    /**
      *  Gets an atom by its name, or `null` if there is no such atom.
      *
      *  If this fragment has more than one atom with the same given name, the
@@ -53,7 +58,7 @@ interface Fragment<A : Atom> :
         @Suppress("UNCHECKED_CAST") (
             atoms()
                 .asSequence()
-                .firstOrNull { it.name == atomName } as A?
+                .firstOrNull { it.name == atomName }
         )
 
     /**
