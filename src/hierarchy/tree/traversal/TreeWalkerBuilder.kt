@@ -21,7 +21,7 @@ import hierarchy.tree.Node
 /**
  *  Mutable builder for [TreeWalker].
  *
- *  To create an instance, use [create].
+ *  To construct an instance of this class, use [create].
  */
 open class TreeWalkerBuilder<B : TreeWalkerBuilder<B>> {
     @Suppress("UNCHECKED_CAST")

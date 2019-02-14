@@ -21,7 +21,7 @@ import hierarchy.tree.Node
 /**
  *  Mutable builder for [NodeIterator].
  *
- *  To create an instance, use [create].
+ *  To construct an instance of this class, use [create].
  */
 open class NodeIteratorBuilder<B : NodeIteratorBuilder<B>> {
     @Suppress("UNCHECKED_CAST")

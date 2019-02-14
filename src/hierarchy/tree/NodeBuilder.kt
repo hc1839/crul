@@ -23,7 +23,7 @@ import hierarchy.tree.traversal.TreeWalker
 /**
  *  Mutable builder for [Node].
  *
- *  To create an instance, use [create].
+ *  To construct an instance of this class, use [create].
  */
 open class NodeBuilder<B : NodeBuilder<B>> {
     @Suppress("UNCHECKED_CAST")
