@@ -209,12 +209,6 @@ class Edge :
 
             val memberVertices = vertexIndexer.constructs
 
-            if (memberVertices.count() == 0) {
-                throw RuntimeException(
-                    "Edge does not contain any vertices."
-                )
-            }
-
             return memberVertices
         }
 
@@ -259,10 +253,8 @@ class Edge :
             return edgeRef.get()!!.removeVertex(vertex)
         }
 
-        if (vertexIndexer.constructs.count() == 1) {
-            throw RuntimeException(
-                "Edge must have at least one vertex."
-            )
+        if (vertexIndexer.constructs.isEmpty()) {
+            return
         }
 
         vertex as Vertex
@@ -346,8 +338,10 @@ class Edge :
                         otherProxy
                     )
 
-                thisProxy == null ->
+                thisProxy == null -> {
+                    other.proxy = null
                     proxy = otherProxy
+                }
             }
         }
 
@@ -383,7 +377,7 @@ class Edge :
 
         return when (message) {
             is VertexRedirected -> {
-                vertexIndexer.remove(message.fromId)
+                vertexIndexer.reindex(message.fromId)
                 vertexIndexer.reindex(message.toId)
 
                 Response(BasicSignal.ACKNOWLEDGED)

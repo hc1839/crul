@@ -22,6 +22,8 @@ import hypergraph.compare.Hashing
 import hypergraph.indexer.*
 import hypergraph.notify.*
 
+import hypergraph.compare.VertexSetElement
+
 /**
  *  Graph that acts a container for vertices and edges.
  */

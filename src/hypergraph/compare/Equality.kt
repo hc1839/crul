@@ -31,6 +31,8 @@ object Equality {
      */
     @JvmStatic
     fun graphs(lhs: Graph, rhs: Graph): Boolean = (
+        lhs === rhs
+    ) || (
         lhs.graphSystem == rhs.graphSystem &&
         lhs.id == rhs.id
     )
@@ -41,6 +43,8 @@ object Equality {
      */
     @JvmStatic
     fun constructIdentities(lhs: Construct, rhs: Construct): Boolean = (
+        lhs === rhs
+    ) || (
         Equality.graphs(lhs.graph, rhs.graph) &&
         lhs.id == rhs.id
     )
@@ -53,8 +57,12 @@ object Equality {
      */
     @JvmStatic
     fun vertices(lhs: Vertex, rhs: Vertex): Boolean = (
-        Equality.graphs(lhs.graph, rhs.graph) &&
-        lhs.names.intersect(rhs.names).count() > 0 &&
+        lhs === rhs
+    ) || (
+        Equality.graphs(lhs.graph, rhs.graph) && (
+            lhs.names == rhs.names ||
+            lhs.names.intersect(rhs.names).count() > 0
+        ) &&
         if (lhs.proxied != null && rhs.proxied != null) {
             constructIdentities(lhs.proxied!!, rhs.proxied!!)
         } else {
@@ -70,6 +78,8 @@ object Equality {
      */
     @JvmStatic
     fun edges(lhs: Edge, rhs: Edge): Boolean = (
+        lhs === rhs
+    ) || (
         Equality.graphs(lhs.graph, rhs.graph) &&
         Equality.vertices(lhs.type, rhs.type) &&
         lhs.vertices.map { VertexSetElement(it) }.toSet() ==
@@ -85,6 +95,8 @@ object Equality {
      */
     @JvmStatic
     fun properties(lhs: Property, rhs: Property): Boolean = (
+        lhs === rhs
+    ) || (
         Equality.graphs(lhs.graph, rhs.graph) &&
         Equality.vertices(
             lhs.parent as Vertex,
