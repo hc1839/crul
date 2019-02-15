@@ -19,55 +19,79 @@ package permute.variation
 /**
  *  Sequence of variators.
  *
- *  There must be at least one variator in the sequence. To access the
- *  individual variators, treat this class as an `Iterable`.
+ *  Instances of this class are iterable over the individual variators.
  *
- *  @param variators
- *      Variators of the sequence.
- *
- *  @param bigEndian
- *      Whether the incrementation/decrementation occurs fastest at the
- *      rightmost (highest index) variator in the sequence.
+ *  @param V
+ *      Type of variators in this sequence.
  */
-class VariatorSequence<T> @JvmOverloads constructor(
-    variators: Iterable<VariatorCollection<T>>,
-    val bigEndian: Boolean = true
-) : VariatorCollection<T>
+class VariatorSequence<V : Variator<V>> :
+    Variator<VariatorSequence<V>>,
+    Iterable<V>
 {
-    init {
-        if (variators.count() < 1) {
-            throw IllegalArgumentException(
-                "Number of variators must be at least one."
-            )
-        }
-    }
-
     /**
      *  Variators of this sequence.
      */
-    private val variators = variators.map {
-        if (it.count() == 1) {
-            it.first()
-        } else {
-            it
+    private val variators: List<V>
+
+    /**
+     *  Whether the incrementation/decrementation occurs fastest at the
+     *  rightmost (highest index) variator in the sequence.
+     */
+    val bigEndian: Boolean
+
+    /**
+     *  Constructs a variator positioned at the current positions of the
+     *  individual variators.
+     *
+     *  @param variators
+     *      Variators of the sequence. There must be at least one variator.
+     *
+     *  @param bigEndian
+     *      Whether the incrementation/decrementation occurs fastest at the
+     *      rightmost (highest index) variator in the sequence.
+     */
+    @JvmOverloads
+    constructor(variators: Iterable<V>, bigEndian: Boolean = true) {
+        if (variators.count() < 1) {
+            throw IllegalArgumentException(
+                "Number of variators is less than one."
+            )
         }
+
+        this.variators = variators.toList()
+        this.bigEndian = bigEndian
     }
 
-    override fun iterator() = variators.iterator()
+    override fun iterator(): Iterator<V> =
+        variators.iterator()
 
-    override fun isBegin() =
+    /**
+     *  Returns itself.
+     */
+    override fun value(): VariatorSequence<V> =
+        this
+
+    override fun isBegin(): Boolean =
         variators.all { it.isBegin() }
 
-    override fun isEnd() =
+    override fun isEnd(): Boolean =
         variators.all { it.isEnd() }
 
-    override fun begin() =
-        VariatorSequence(variators.map { it.begin() }, bigEndian)
+    override fun begin(): VariatorSequence<V> =
+        @Suppress("UNCHECKED_CAST")
+        VariatorSequence(
+            variators.map { it.begin() as V },
+            bigEndian
+        )
 
-    override fun end() =
-        VariatorSequence(variators.map { it.end() }, bigEndian)
+    override fun end(): VariatorSequence<V> =
+        @Suppress("UNCHECKED_CAST")
+        VariatorSequence(
+            variators.map { it.end() as V },
+            bigEndian
+        )
 
-    override fun inc(): VariatorCollection<T> {
+    override fun inc(): VariatorSequence<V> {
         val orderedVariators =
             if (bigEndian) {
                 variators.reversed().toMutableList()
@@ -75,26 +99,34 @@ class VariatorSequence<T> @JvmOverloads constructor(
                 variators.toMutableList()
             }
 
-        for (idx in orderedVariators.indices) {
-            if (orderedVariators[idx].isEnd()) {
-                orderedVariators[idx] = orderedVariators[idx].begin()
+        for (index in orderedVariators.indices) {
+            if (orderedVariators[index].isEnd()) {
+                @Suppress("UNCHECKED_CAST")
+                orderedVariators[index] =
+                    orderedVariators[index].begin() as V
             } else {
-                ++orderedVariators[idx]
+                @Suppress("UNCHECKED_CAST")
+                orderedVariators[index] =
+                    orderedVariators[index].inc() as V
+
                 break
             }
         }
 
-        return VariatorSequence(
+        val incrementedVariators =
             if (bigEndian) {
                 orderedVariators.reversed()
             } else {
                 orderedVariators
-            },
+            }
+
+        return VariatorSequence(
+            incrementedVariators,
             bigEndian
         )
     }
 
-    override fun dec(): VariatorCollection<T> {
+    override fun dec(): VariatorSequence<V> {
         val orderedVariators =
             if (bigEndian) {
                 variators.reversed().toMutableList()
@@ -102,21 +134,29 @@ class VariatorSequence<T> @JvmOverloads constructor(
                 variators.toMutableList()
             }
 
-        for (idx in orderedVariators.indices) {
-            if (orderedVariators[idx].isBegin()) {
-                orderedVariators[idx] = orderedVariators[idx].end()
+        for (index in orderedVariators.indices) {
+            if (orderedVariators[index].isBegin()) {
+                @Suppress("UNCHECKED_CAST")
+                orderedVariators[index] =
+                    orderedVariators[index].end() as V
             } else {
-                --orderedVariators[idx]
+                @Suppress("UNCHECKED_CAST")
+                orderedVariators[index] =
+                    orderedVariators[index].dec() as V
+
                 break
             }
         }
 
-        return VariatorSequence(
+        val decrementedVariators =
             if (bigEndian) {
                 orderedVariators.reversed()
             } else {
                 orderedVariators
-            },
+            }
+
+        return VariatorSequence(
+            decrementedVariators,
             bigEndian
         )
     }

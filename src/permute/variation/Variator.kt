@@ -17,42 +17,47 @@
 package permute.variation
 
 /**
- *  Variators as a collection.
+ *  Variator over a sequence of elements.
  */
-interface VariatorCollection<out T> : Iterable<VariatorCollection<T>> {
+interface Variator<out E> {
     /**
-     *  Whether all variators are at the beginning.
+     *  Element that this variator is at.
+     */
+    fun value(): E
+
+    /**
+     *  Whether this variator is at the beginning.
      */
     fun isBegin(): Boolean
 
     /**
-     *  Whether all variators are at the end.
+     *  Whether this variator is at the end.
      */
     fun isEnd(): Boolean
 
     /**
-     *  New variator collection with all variators at the beginning.
+     *  Variator at the beginning.
      */
-    fun begin(): VariatorCollection<T>
+    fun begin(): Variator<E>
 
     /**
-     *  New variator collection with all variators at the end.
+     *  Variator at the end.
      */
-    fun end(): VariatorCollection<T>
+    fun end(): Variator<E>
 
     /**
-     *  Increments the variator collection.
+     *  Incremented variator.
      *
      *  The meaning of incrementation depends on the class implementing this
      *  interface.
      */
-    operator fun inc(): VariatorCollection<T>
+    operator fun inc(): Variator<E>
 
     /**
-     *  Decrements the variator collection.
+     *  Decremented variator.
      *
      *  The meaning of decrementation depends on the class implementing this
      *  interface.
      */
-    operator fun dec(): VariatorCollection<T>
+    operator fun dec(): Variator<E>
 }

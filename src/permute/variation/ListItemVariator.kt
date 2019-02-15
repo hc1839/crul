@@ -19,39 +19,51 @@ package permute.variation
 /**
  *  Uses the values from an `Iterable` as the values to variate over in order.
  *
- *  @param items
- *      Values to variate over. The first element is defined as the beginning.
- *      It cannot be empty.
+ *  @param E
+ *      Type of elements being iterated over.
  */
-class ListItemVariator<T>(items: Iterable<T>) : VariatorSingle<T> {
-    private val items = items.toList()
+class ListItemVariator<E> : Variator<E> {
+    /**
+     *  Values being iterated over.
+     */
+    private val items: List<E>
 
-    init {
+    /**
+     *  Constructs a variator positioned at the first element of a given
+     *  iterable.
+     *
+     *  @param items
+     *      Values to variate over. The first element is defined as the
+     *      beginning. It cannot be empty.
+     */
+    constructor(items: Iterable<E>) {
         if (items.count() < 1) {
             throw IllegalArgumentException(
                 "Number of items being varied over must be at least one."
             )
         }
+
+        this.items = items.toList()
     }
 
     /**
      *  Index of where the variator is currently at.
      */
-    private var currIndex = 0
+    private var currIndex: Int = 0
 
-    override fun value() =
+    override fun value(): E =
         items[currIndex]
 
-    override fun isBegin() =
+    override fun isBegin(): Boolean =
         currIndex == 0
 
-    override fun isEnd() =
+    override fun isEnd(): Boolean =
         currIndex == items.count() - 1
 
-    override fun begin() =
+    override fun begin(): ListItemVariator<E> =
         ListItemVariator(items)
 
-    override fun end(): ListItemVariator<T> {
+    override fun end(): ListItemVariator<E> {
         val newVariator = ListItemVariator(items)
 
         newVariator.currIndex = items.count() - 1
@@ -59,7 +71,7 @@ class ListItemVariator<T>(items: Iterable<T>) : VariatorSingle<T> {
         return newVariator
     }
 
-    override fun inc(): ListItemVariator<T> {
+    override fun inc(): ListItemVariator<E> {
         val newVariator = ListItemVariator(items)
 
         newVariator.currIndex =
@@ -72,7 +84,7 @@ class ListItemVariator<T>(items: Iterable<T>) : VariatorSingle<T> {
         return newVariator
     }
 
-    override fun dec(): ListItemVariator<T> {
+    override fun dec(): ListItemVariator<E> {
         val newVariator = ListItemVariator(items)
 
         newVariator.currIndex =

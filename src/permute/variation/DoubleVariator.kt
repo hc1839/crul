@@ -18,47 +18,60 @@ package permute.variation
 
 /**
  *  Variator over `Double` values.
- *
- *  @property start
- *      Starting value.
- *
- *  @property step
- *      Difference between successive values.
- *
- *  @property count
- *      Number of values to variate over. It must be at least 1.
- *
- *  @constructor
  */
-class DoubleVariator(
-    val start: Double,
-    val step: Double,
+class DoubleVariator : Variator<Double> {
+    /**
+     *  Starting value.
+     */
+    val start: Double
+
+    /**
+     *  Difference between successive values.
+     */
+    val step: Double
+
+    /**
+     *  Number of values being iterated over.
+     */
     val count: Int
-) : VariatorSingle<Double>
-{
-    init {
+
+    /**
+     *  @param start
+     *      Starting value.
+     *
+     *  @param step
+     *      Difference between successive values.
+     *
+     *  @param count
+     *      Number of values to iterate over.
+     */
+    constructor(start: Double, step: Double, count: Int) {
         if (count < 1) {
             throw IllegalArgumentException(
                 "Number of values being varied over is not at least one."
             )
         }
+
+        this.start = start
+        this.step = step
+        this.count = count
     }
 
     /**
      *  Index of where the variator is currently at.
      */
-    private var currIndex = 0
+    private var currIndex: Int = 0
 
-    override fun value() =
+    override fun value(): Double =
         start + step * currIndex.toDouble()
 
-    override fun isBegin() =
+    override fun isBegin(): Boolean =
         currIndex == 0
 
-    override fun isEnd() =
+    override fun isEnd(): Boolean =
         currIndex == count - 1
 
-    override fun begin() =
+    override fun begin(): DoubleVariator =
         DoubleVariator(start, step, count)
 
     override fun end(): DoubleVariator {
