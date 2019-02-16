@@ -58,8 +58,20 @@ class Element : BinarySerializable {
      */
     val symbol: String
 
+    /**
+     *  @param symbol
+     *      Symbol of the element.
+     */
     constructor(symbol: String) {
         this.symbol = symbol
+    }
+
+    /**
+     *  @param atomicNumber
+     *      Atomic number of the element.
+     */
+    constructor(atomicNumber: Int) {
+        this.symbol = getSymbolByNumber(atomicNumber)
     }
 
     /**
@@ -151,5 +163,32 @@ class Element : BinarySerializable {
         packer.close()
 
         return packer.toByteArray()
+    }
+
+    companion object {
+        /**
+         *  Gets the symbol of an element by its atomic number.
+         *
+         *  If there is no such atomic number, an exception is raised.
+         */
+        @JvmStatic
+        fun getSymbolByNumber(atomicNumber: Int): String {
+            val symbol = ElementStore
+                .json
+                .entries
+                .filter { (_, info) ->
+                    (info["number"] as Double).toInt() == atomicNumber
+                }
+                .singleOrNull()
+                ?.key
+
+            return if (symbol != null) {
+                symbol
+            } else {
+                throw IllegalArgumentException(
+                    "No such atomic number: $atomicNumber"
+                )
+            }
+        }
     }
 }
