@@ -14,42 +14,28 @@
  *  under the License.
  */
 
-package chemistry.species
+package chemistry.species.impl
 
-import chemistry.species.Element
-import math.coordsys.Vector3D
+import chemistry.species.AbstractComplex
+import chemistry.species.Species
 
 /**
- *  Interface for an atom.
+ *  Default implementation of [Complex].
  *
- *  An atom is a singleton [Species].
+ *  @param S
+ *      Type of subspecies in this complex.
  */
-interface Atom : Species {
-    /**
-     *  Iterator over itself.
-     */
-    override fun atoms(): Iterator<Atom> =
-        listOf(this).iterator()
+internal class ComplexImpl<S : Species> : AbstractComplex<S> {
+    constructor(species: Iterable<S>): super(species)
 
     /**
-     *  Element.
+     *  Copy constructor.
      */
-    val element: Element
+    constructor(other: ComplexImpl<S>): super(other)
 
     /**
-     *  Position of the center.
+     *  Clones this complex along with its subspecies.
      */
-    var position: Vector3D
-
-    /**
-     *  Formal charge.
-     */
-    var formalCharge: Double
-
-    /**
-     *  Arbitrary name.
-     */
-    val name: String
-
-    abstract override fun clone(): Atom
+    override fun clone(): ComplexImpl<S> =
+        ComplexImpl(this)
 }

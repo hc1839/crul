@@ -27,8 +27,6 @@ import hierarchy.tree.traversal.TreeWalkerBuilder
 
 /**
  *  Skeletal implementation of [Node].
- *
- *  Only [Node.cloneNode] needs to be implemented.
  */
 abstract class AbstractNode : Node {
     /**

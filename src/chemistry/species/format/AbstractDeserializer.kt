@@ -31,29 +31,29 @@ abstract class AbstractDeserializer<B : AbstractDeserializer<B>> {
     protected val _this: B = this as B
 
     /**
-     *  Builder for the atoms.
+     *  Builder for constructing atoms.
      */
     protected val atomBuilder: AtomBuilder<*>
 
     /**
-     *  Builder for the bonds.
+     *  Builder for constructing bonds.
      */
     protected val bondBuilder: BondBuilder<*>
 
     /**
-     *  Builder for the complex.
+     *  Builder for constructing the complex.
      */
     protected val complexBuilder: MoleculeComplexBuilder<*>
 
     /**
      *  @param atomBuilder
-     *      Builder for the atoms that are constructed.
+     *      Builder for constructing atoms.
      *
      *  @param bondBuilder
-     *      Builder for the bonds that are constructed.
+     *      Builder for constructing bonds.
      *
      *  @param complexBuilder
-     *      Builder for the complex that is constructed.
+     *      Builder for constructing the complex.
      */
     constructor(
         atomBuilder: AtomBuilder<*>,

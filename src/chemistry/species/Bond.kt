@@ -41,11 +41,5 @@ interface Bond<A : Atom> : Fragment<A> {
      */
     fun toAtomPair(): Pair<A, A>
 
-    /**
-     *  Iterator over the two atoms in the given order.
-     */
-    override fun atoms(): Iterator<A> =
-        toAtomPair().toList().iterator()
-
     abstract override fun clone(): Bond<A>
 }

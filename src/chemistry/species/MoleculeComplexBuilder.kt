@@ -16,6 +16,8 @@
 
 package chemistry.species
 
+import chemistry.species.impl.MoleculeComplexImpl
+import chemistry.species.impl.MoleculeImpl
 import hypergraph.Edge
 import hypergraph.Graph
 import hypergraph.GraphSystem
@@ -36,9 +38,7 @@ import hypergraph.Vertex
  *
  *  To construct an instance of this class, use [create].
  */
-open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> :
-    Cloneable
-{
+open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
     @Suppress("UNCHECKED_CAST")
     protected val _this: B = this as B
 
@@ -220,9 +220,13 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> :
     }
 
     /**
-     *  Constructs a [MoleculeComplex] from the data in this builder.
+     *  Groups the bonds and atoms into a set of [Complex] of [Species], which
+     *  is either [Bond] or [Atom], respectively.
+     *
+     *  Each complex of species represents either the bonds or one atom of a
+     *  molecule that is used for constructing an [AbstractMolecule].
      */
-    open fun <A : Atom> build(): MoleculeComplex<A> {
+    protected fun groupSpecies(): Set<Complex<Species>> {
         val graphSystem = GraphSystem()
         val graph = graphSystem.createGraph(uuid.Generator.inNCName())
 
@@ -320,8 +324,11 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> :
             }
         }
 
-        // Construct the non-singleton molecules.
-        val nonsingletons = graph
+        // Use the same builder for all complex constructions.
+        val complexBuilder = ComplexBuilder.create()
+
+        // Construct a temporary sequence of complexes of bonds.
+        val bondComplexes = graph
             .getEdgesByType(fragmentEdgeType)
             .asSequence()
             .filter { fragmentEdge ->
@@ -334,19 +341,19 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> :
                 @Suppress("UNCHECKED_CAST")
                 val bonds = fragmentEdgeProxy.userData as Set<Bond<Atom>>
 
-                MoleculeImpl<A>(
-                    bonds
-                        .asSequence()
-                        .map {
-                            @Suppress("UNCHECKED_CAST")
-                            it as Bond<A>
-                        }
-                        .iterator()
-                )
+                complexBuilder.clear()
+
+                val complex = complexBuilder
+                    .addAll(bonds)
+                    .build<Species>()
+
+                complexBuilder.clear()
+
+                complex
             }
 
-        // Construct the singleton molecules.
-        val singletons = graph
+        // Construct a temporary sequence of complexes of atoms.
+        val atomComplexes = graph
             .getEdgesByType(fragmentEdgeType)
             .asSequence()
             .filter { fragmentEdge ->
@@ -356,11 +363,49 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> :
                 val atomVertex = fragmentEdge.vertices.single()
 
                 @Suppress("UNCHECKED_CAST")
-                MoleculeImpl(atomVertex.userData as A)
+                val atom = atomVertex.userData as Atom
+
+                complexBuilder.clear()
+
+                val complex = complexBuilder
+                    .add(atom)
+                    .build<Species>()
+
+                complexBuilder.clear()
+
+                complex
             }
 
-        return MoleculeComplexImpl((nonsingletons + singletons).iterator())
+        return (bondComplexes + atomComplexes).toSet()
     }
+
+    /**
+     *  Constructs a [MoleculeComplex] from the data in this builder.
+     */
+    open fun <A : Atom> build(): MoleculeComplex<A> =
+        MoleculeComplexImpl(
+            groupSpecies().map { speciesComplex ->
+                when (speciesComplex.first()) {
+                    is Bond<*> -> MoleculeImpl<A>(
+                        speciesComplex
+                            .map {
+                                @Suppress("UNCHECKED_CAST")
+                                it as Bond<A>
+                            }
+                            .toSet()
+                    )
+
+                    is Atom ->
+                        @Suppress("UNCHECKED_CAST")
+                        MoleculeImpl<A>(speciesComplex.first() as A)
+
+                    else -> throw RuntimeException(
+                        "[Internal Error] Unexpected subspecies type: " +
+                        "${speciesComplex.first()::class.qualifiedName}"
+                    )
+                }
+            }
+        )
 
     /**
      *  Clones this builder.

@@ -22,16 +22,16 @@ import hypergraph.GraphSystem
 import hypergraph.Vertex
 
 /**
- *  Default implementation of [Molecule].
+ *  Skeletal implementation of [Molecule].
  *
- *  Only [MoleculeComplexBuilder] should be instantiating this class, since it
- *  must be ensured that every pair of atoms in a molecule are connected by
- *  bonds.
+ *  Only a subclass of [MoleculeComplexBuilder] should be instantiating the
+ *  corresponding subclass of this class, since it must be ensured that every
+ *  pair of atoms in a molecule are connected by bonds.
  *
  *  @param A
  *      Type of atoms in this molecule.
  */
-internal class MoleculeImpl<A : Atom> :
+abstract class AbstractMolecule<A : Atom> :
     AbstractFragment<A>,
     Molecule<A>
 {
@@ -55,6 +55,12 @@ internal class MoleculeImpl<A : Atom> :
      *  Vertex acting as the property type for a bond order.
      */
     private val bondOrderPropertyType: Vertex
+
+    /**
+     *  Builder for constructing bonds, or `null` if this molecule is a
+     *  singleton.
+     */
+    protected val bondBuilder: BondBuilder<*>?
 
     /**
      *  Populates the graph with bond information.
@@ -130,28 +136,29 @@ internal class MoleculeImpl<A : Atom> :
 
     /**
      *  @param bonds
-     *      Bonds of the molecule as a set.
+     *      Bonds of the molecule. They are not checked for connectivity, which
+     *      is done by [MoleculeComplexBuilder].
+     *
+     *  @param bondBuilder
+     *      Builder for constructing bonds.
      */
-    constructor(bonds: Set<Bond<A>>): super(
+    constructor(
+        bonds: Set<Bond<A>>,
+        bondBuilder: BondBuilder<*> = BondBuilder.create()
+    ): super(
         bonds
-            .flatMap { it.atoms().asSequence().toList() }
+            .flatMap {
+                it.atoms().asSequence().distinct().toList()
+            }
             .toSet()
-            .iterator()
     ) {
         this.graphSystem.createGraph(uuid.Generator.inNCName())
-
         this.bondEdgeType = this.graph.createVertex()
         this.bondOrderPropertyType = this.graph.createVertex()
+        this.bondBuilder = bondBuilder
 
         initialize(bonds.iterator())
     }
-
-    /**
-     *  @param bonds
-     *      Bonds of the molecule as an iterator.
-     */
-    constructor(bonds: Iterator<Bond<A>>):
-        this(bonds.asSequence().toSet())
 
     /**
      *  Constructs a singleton molecule.
@@ -159,11 +166,11 @@ internal class MoleculeImpl<A : Atom> :
      *  @param atom
      *      Atom acting as a singleton molecule.
      */
-    constructor(atom: A): super(listOf(atom).iterator()) {
+    constructor(atom: A): super(listOf(atom)) {
         this.graphSystem.createGraph(uuid.Generator.inNCName())
-
         this.bondEdgeType = this.graph.createVertex()
         this.bondOrderPropertyType = this.graph.createVertex()
+        this.bondBuilder = null
 
         initialize(atom)
     }
@@ -171,11 +178,11 @@ internal class MoleculeImpl<A : Atom> :
     /**
      *  Copy constructor.
      */
-    constructor(other: MoleculeImpl<A>): super(other) {
+    constructor(other: AbstractMolecule<A>): super(other) {
         this.graphSystem.createGraph(uuid.Generator.inNCName())
-
         this.bondEdgeType = this.graph.createVertex()
         this.bondOrderPropertyType = this.graph.createVertex()
+        this.bondBuilder = other.bondBuilder
 
         if (other.bonds().asSequence().firstOrNull() == null) {
             initialize(other.atoms().asSequence().first())
@@ -185,9 +192,8 @@ internal class MoleculeImpl<A : Atom> :
 
         // Replace the other atom with the cloned version stored in the
         // superclass.
-        for (atom in _atoms) {
+        for (atom in _subspecies) {
             val atomVertex = this.graph.getVertexByName(atom.name)!!
-
             atomVertex.userData = atom
         }
     }
@@ -227,8 +233,7 @@ internal class MoleculeImpl<A : Atom> :
                     .value
 
                 setNext(
-                    BondBuilder
-                        .create()
+                    bondBuilder!!
                         .atom1(atoms[0])
                         .atom2(atoms[1])
                         .order(bondOrder)
@@ -267,8 +272,7 @@ internal class MoleculeImpl<A : Atom> :
                 .first()
                 .value
 
-            BondBuilder
-                .create()
+            bondBuilder!!
                 .atom1(atom)
                 .atom2(otherAtom)
                 .order(bondOrder)
@@ -308,15 +312,11 @@ internal class MoleculeImpl<A : Atom> :
                 .getPropertiesByType(bondOrderPropertyType)
                 .first().value
 
-            BondBuilder
-                .create()
+            bondBuilder!!
                 .atom1(atom1)
                 .atom2(atom2)
                 .order(bondOrder)
                 .build<A>()
         }
     }
-
-    override fun clone(): Molecule<A> =
-        MoleculeImpl(this)
 }

@@ -16,6 +16,8 @@
 
 package chemistry.species
 
+import chemistry.species.impl.BondImpl
+
 /**
  *  Mutable builder for [Bond].
  */
@@ -78,6 +80,24 @@ open class BondBuilder<B : BondBuilder<B>> {
             _atom2!! as A,
             _order!!
         )
+
+    /**
+     *  Deserializes from a MessagePack.
+     *
+     *  Data in this builder are ignored.
+     *
+     *  @param msgpack
+     *      MessagePack returned by [BinarySerializable.serialize] of a [Bond]
+     *      subclass.
+     *
+     *  @param atomBuilder
+     *      Builder for deserializing atoms.
+     */
+    open fun <A : Atom> deserialize(
+        msgpack: ByteArray,
+        atomBuilder: AtomBuilder<*>
+    ): Bond<A> =
+        BondImpl(msgpack, atomBuilder)
 
     companion object {
         private class BondBuilderImpl() :

@@ -22,15 +22,7 @@ package chemistry.species
  *  @param A
  *      Type of atoms in this fragment.
  */
-interface Fragment<A : Atom> :
-    Complex<A>,
-    Cloneable
-{
-    abstract override fun atoms(): Iterator<A>
-
-    override fun iterator(): Iterator<A> =
-        atoms()
-
+interface Fragment<A : Atom> : Complex<A> {
     /**
      *  Formal charge of this fragment, which is the sum of the formal charges
      *  of the atoms.
@@ -61,8 +53,13 @@ interface Fragment<A : Atom> :
                 .firstOrNull { it.name == atomName }
         )
 
+    override fun atoms(): Iterator<A> =
+        @Suppress("UNCHECKED_CAST") (
+            super.atoms() as Iterator<A>
+        )
+
     /**
      *  Clones this fragment along with its atoms.
      */
-    public abstract override fun clone(): Fragment<A>
+    abstract override fun clone(): Fragment<A>
 }

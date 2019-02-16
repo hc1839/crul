@@ -46,10 +46,10 @@ open class CmlDeserializer<B : CmlDeserializer<B>>:
 {
     /**
      *  @param atomBuilder
-     *      Builder for the atoms that are constructed.
+     *      Builder for constructing atoms.
      *
      *  @param complexBuilder
-     *      Builder for the complex that is constructed.
+     *      Builder for constructing the complex.
      */
     protected constructor(
         atomBuilder: AtomBuilder<*>,

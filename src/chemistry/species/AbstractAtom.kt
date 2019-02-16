@@ -25,8 +25,6 @@ import serialize.BinarySerializable
 
 /**
  *  Skeletal implementation of [Atom].
- *
- *  Only [Atom.clone] needs to be implemented.
  */
 abstract class AbstractAtom :
     Atom,

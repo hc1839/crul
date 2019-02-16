@@ -16,41 +16,35 @@
 
 package chemistry.species
 
-import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
-
-import serialize.BinarySerializable
-
 /**
- *  Skeletal implementation of [Fragment].
+ *  Skeletal implementation of [Complex].
+ *
+ *  @param S
+ *      Type of subspecies in this complex.
  */
-abstract class AbstractFragment<A : Atom> :
-    AbstractComplex<A>,
-    Fragment<A>
-{
+abstract class AbstractComplex<S : Species> : Complex<S> {
     /**
-     *  @param atoms
-     *      Atoms of the fragment.
+     *  Backing property for the subspecies in this complex.
      */
-    constructor(atoms: Iterable<A>): super(atoms) {
-        if (atoms.firstOrNull() == null) {
-            throw IllegalArgumentException(
-                "Fragment must have at least one atom."
-            )
-        }
+    protected val _subspecies: MutableList<S>
+
+    constructor(subspecies: Iterable<S>) {
+        this._subspecies = subspecies.toMutableList()
     }
 
     /**
      *  Copy constructor.
      *
-     *  Atoms are cloned.
+     *  Subspecies are cloned.
      */
-    constructor(other: AbstractFragment<A>): super(
+    constructor(other: AbstractComplex<S>) {
         @Suppress("UNCHECKED_CAST")
-        other
-            .atoms()
-            .asSequence()
-            .map { it.clone() as A }
-            .asIterable()
-    )
+        this._subspecies = other
+            ._subspecies
+            .map { it.clone() as S }
+            .toMutableList()
+    }
+
+    override fun iterator(): Iterator<S> =
+        _subspecies.iterator()
 }

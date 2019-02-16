@@ -22,13 +22,7 @@ package chemistry.species
  *  @param A
  *      Type of atoms in the molecules.
  */
-interface MoleculeComplex<A : Atom> :
-    Complex<Molecule<A>>,
-    Cloneable
-{
-    override fun iterator(): Iterator<Molecule<A>> =
-        molecules()
-
+interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
     /**
      *  Formal charge of this complex, which is the sum of the formal charges
      *  of the molecules.
@@ -44,7 +38,8 @@ interface MoleculeComplex<A : Atom> :
     /**
      *  Molecules in this complex.
      */
-    fun molecules(): Iterator<Molecule<A>>
+    fun molecules(): Iterator<Molecule<A>> =
+        iterator()
 
     /**
      *  Gets the molecule that contains a given atom, or `null` if there is no

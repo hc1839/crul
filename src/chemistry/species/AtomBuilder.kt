@@ -17,6 +17,7 @@
 package chemistry.species
 
 import chemistry.species.Element
+import chemistry.species.impl.AtomImpl
 import math.coordsys.Vector3D
 
 /**
@@ -86,24 +87,24 @@ open class AtomBuilder<B : AtomBuilder<B>> {
      *  Constructs an [Atom] from the data in this builder.
      */
     open fun build(): Atom =
-        object : AbstractAtom(
+        AtomImpl(
             _element!!,
             _position!!,
             _formalCharge!!,
             _name ?: uuid.Generator.inNCName()
-        ) {
-            override fun clone(): Atom =
-                AtomBuilder
-                    .create()
-                    .element(this.element)
-                    .position(this.position)
-                    .formalCharge(this.formalCharge)
-                    .name(this.name)
-                    .build()
-        }
+        )
+
+    /**
+     *  Deserializes from a MessagePack returned by [AbstractAtom.serialize].
+     *
+     *  Data in this builder are ignored.
+     */
+    open fun deserialize(msgpack: ByteArray): Atom =
+        AtomImpl(msgpack)
 
     companion object {
-        private class AtomBuilderImpl(): AtomBuilder<AtomBuilderImpl>()
+        private class AtomBuilderImpl():
+            AtomBuilder<AtomBuilderImpl>()
 
         /**
          *  Creates an instance of [AtomBuilder].

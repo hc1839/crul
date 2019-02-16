@@ -14,42 +14,42 @@
  *  under the License.
  */
 
-package chemistry.species
+package chemistry.species.impl
 
+import org.msgpack.core.MessagePack
+import org.msgpack.value.Value
+
+import chemistry.species.AbstractAtom
+import chemistry.species.Atom
 import chemistry.species.Element
 import math.coordsys.Vector3D
 
 /**
- *  Interface for an atom.
- *
- *  An atom is a singleton [Species].
+ *  Default implementation of [Atom].
  */
-interface Atom : Species {
-    /**
-     *  Iterator over itself.
-     */
-    override fun atoms(): Iterator<Atom> =
-        listOf(this).iterator()
+internal class AtomImpl : AbstractAtom {
+    constructor(
+        element: Element,
+        position: Vector3D,
+        formalCharge: Double,
+        name: String = uuid.Generator.inNCName()
+    ): super(
+        element,
+        position,
+        formalCharge,
+        name
+    )
 
     /**
-     *  Element.
+     *  Copy constructor.
      */
-    val element: Element
+    constructor(other: AtomImpl): super(other)
 
     /**
-     *  Position of the center.
+     *  Deserialization constructor.
      */
-    var position: Vector3D
+    constructor(msgpack: ByteArray): super(msgpack)
 
-    /**
-     *  Formal charge.
-     */
-    var formalCharge: Double
-
-    /**
-     *  Arbitrary name.
-     */
-    val name: String
-
-    abstract override fun clone(): Atom
+    override fun clone(): Atom =
+        AtomImpl(this)
 }

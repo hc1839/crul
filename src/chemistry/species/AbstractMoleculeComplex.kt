@@ -16,41 +16,37 @@
 
 package chemistry.species
 
-import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
-
-import serialize.BinarySerializable
+import hypergraph.Edge
+import hypergraph.Graph
+import hypergraph.GraphSystem
+import hypergraph.Vertex
 
 /**
- *  Skeletal implementation of [Fragment].
+ *  Skeletal implementation of [MoleculeComplex].
+ *
+ *  @param A
+ *      Type of atoms in this molecule.
  */
-abstract class AbstractFragment<A : Atom> :
-    AbstractComplex<A>,
-    Fragment<A>
+abstract class AbstractMoleculeComplex<A : Atom> :
+    AbstractComplex<Molecule<A>>,
+    MoleculeComplex<A>
 {
     /**
-     *  @param atoms
-     *      Atoms of the fragment.
+     *  @param molecules
+     *      Molecules of the complex.
      */
-    constructor(atoms: Iterable<A>): super(atoms) {
-        if (atoms.firstOrNull() == null) {
-            throw IllegalArgumentException(
-                "Fragment must have at least one atom."
-            )
-        }
-    }
+    constructor(molecules: Iterable<Molecule<A>>): super(molecules)
 
     /**
      *  Copy constructor.
      *
-     *  Atoms are cloned.
+     *  Molecules are cloned.
      */
-    constructor(other: AbstractFragment<A>): super(
-        @Suppress("UNCHECKED_CAST")
-        other
-            .atoms()
+    constructor(other: AbstractMoleculeComplex<A>): super(other)
+
+    override fun getMoleculeWithAtom(atom: A): Molecule<A>? =
+        molecules()
             .asSequence()
-            .map { it.clone() as A }
-            .asIterable()
-    )
+            .filter { it.containsAtom(atom) }
+            .singleOrNull()
 }

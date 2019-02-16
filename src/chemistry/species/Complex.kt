@@ -82,13 +82,14 @@ interface Complex<S : Species> :
             }
         }
 
+    override fun atoms(): Iterator<Atom> =
+        iterator()
+            .asSequence()
+            .flatMap { it.atoms().asSequence() }
+            .iterator()
+
     /**
-     *  Atoms in this complex.
-     *
-     *  Sequence must not be empty. The atoms in the sequence are not
-     *  guaranteed to be in any particular order and are not guaranteed to be
-     *  in the same order between calls. A subinterface or an implementation,
-     *  however, is allowed to make specified guarantees.
+     *  Clones this complex along with its subspecies.
      */
-    fun atoms(): Iterator<Atom>
+    abstract override fun clone(): Complex<S>
 }
