@@ -82,34 +82,36 @@ internal class BondImpl<A : Atom> :
     /**
      *  Initializes from a MessagePack returned by [serialize].
      */
-    @Suppress("UNCHECKED_CAST")
     private constructor(
         unpackedMap: Map<String, Value>,
-        atomBuilder: AtomBuilder<*>,
+        atomDeserializer: (ByteArray) -> A,
         @Suppress("UNUSED_PARAMETER")
         msgpack: ByteArray
     ): this(
-        atomBuilder.deserialize(
+        atomDeserializer(
             unpackedMap["atom1"]!!.asBinaryValue().asByteArray()
-        ) as A,
-        atomBuilder.deserialize(
+        ),
+        atomDeserializer(
             unpackedMap["atom2"]!!.asBinaryValue().asByteArray()
-        ) as A,
+        ),
         unpackedMap["order"]!!.asStringValue().toString()
     )
 
     /**
      *  Deserialization constructor.
      *
-     *  @param atomBuilder
-     *      Builder for deserializing atoms.
+     *  @param atomDeserializer
+     *      Deserializer for atoms.
      */
-    constructor(msgpack: ByteArray, atomBuilder: AtomBuilder<*>): this(
+    constructor(
+        msgpack: ByteArray,
+        atomDeserializer: (ByteArray) -> A
+    ): this(
         BinarySerializable.getInnerMap(
             msgpack,
             BondImpl::class.qualifiedName!!
         ),
-        atomBuilder,
+        atomDeserializer,
         msgpack
     )
 

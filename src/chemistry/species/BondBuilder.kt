@@ -90,14 +90,14 @@ open class BondBuilder<B : BondBuilder<B>> {
      *      MessagePack returned by [BinarySerializable.serialize] of a [Bond]
      *      subclass.
      *
-     *  @param atomBuilder
-     *      Builder for deserializing atoms.
+     *  @param atomDeserializer
+     *      Deserializer for atoms.
      */
     open fun <A : Atom> deserialize(
         msgpack: ByteArray,
-        atomBuilder: AtomBuilder<*>
+        atomDeserializer: (ByteArray) -> A
     ): Bond<A> =
-        BondImpl(msgpack, atomBuilder)
+        BondImpl(msgpack, atomDeserializer)
 
     companion object {
         private class BondBuilderImpl() :

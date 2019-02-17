@@ -16,15 +16,27 @@
 
 package measure.unit
 
+import measure.dimension.BaseDimension
+
 /**
  *  Factory for the SI unit system.
  */
-class SiUnitSystemFactory : UnitSystemBuilder {
-    constructor()
+class SiUnitSystemFactory {
+    /**
+     *  Builder for construction.
+     */
+    private val builder: UnitSystemBuilder =
+        UnitSystemBuilder()
+
+    constructor() {
+        for (baseDim in enumValues<BaseDimension>()) {
+            builder.baseUnit(baseDim, baseDim.siUnit)
+        }
+    }
 
     /**
      *  Constructs the SI unit system.
      */
-    override fun create(): UnitSystem =
-        build()
+    fun create(): UnitSystem =
+        builder.build()
 }

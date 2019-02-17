@@ -37,44 +37,51 @@ import measure.dimension.BaseDimension
  *  1 / 683 W/sr defines the atomic unit of luminous intensity, which is
  *  approximately 671.215 cd.
  */
-class AtomicUnitSystemFactory : UnitSystemBuilder {
+class AtomicUnitSystemFactory {
+    /**
+     *  Builder for construction.
+     */
+    private val builder: UnitSystemBuilder =
+        UnitSystemBuilder()
+
     constructor() {
         val atomicTimeUnit =
             UnitOfMeasure(BaseUnit.SECOND) * 2.418884326505e-17
 
-        set(
-            BaseDimension.LENGTH,
-            UnitOfMeasure(BaseUnit.METER) * 5.2917721092e-11
-        )
-        set(
-            BaseDimension.MASS,
-            UnitOfMeasure.parse("kg") * 9.10938291e-31
-        )
-        set(
-            BaseDimension.TIME,
-            atomicTimeUnit
-        )
-        set(
-            BaseDimension.ELECTRIC_CURRENT,
-            UnitOfMeasure(BaseUnit.COULOMB) * 1.602176565e-19 / atomicTimeUnit
-        )
-        set(
-            BaseDimension.THERMODYNAMIC_TEMPERATURE,
-            UnitOfMeasure(BaseUnit.KELVIN) * 3.1577464e5
-        )
-        set(
-            BaseDimension.AMOUNT_OF_SUBSTANCE,
-            UnitOfMeasure.parse("mol")
-        )
-        set(
-            BaseDimension.LUMINOUS_INTENSITY,
-            UnitOfMeasure(BaseUnit.CANDELA) * 671.2146654428731
-        )
+        builder
+            .baseUnit(
+                BaseDimension.LENGTH,
+                UnitOfMeasure(BaseUnit.METER) * 5.2917721092e-11
+            )
+            .baseUnit(
+                BaseDimension.MASS,
+                UnitOfMeasure.parse("kg") * 9.10938291e-31
+            )
+            .baseUnit(
+                BaseDimension.TIME,
+                atomicTimeUnit
+            )
+            .baseUnit(
+                BaseDimension.ELECTRIC_CURRENT,
+                UnitOfMeasure(BaseUnit.COULOMB) * 1.602176565e-19 / atomicTimeUnit
+            )
+            .baseUnit(
+                BaseDimension.THERMODYNAMIC_TEMPERATURE,
+                UnitOfMeasure(BaseUnit.KELVIN) * 3.1577464e5
+            )
+            .baseUnit(
+                BaseDimension.AMOUNT_OF_SUBSTANCE,
+                UnitOfMeasure.parse("mol")
+            )
+            .baseUnit(
+                BaseDimension.LUMINOUS_INTENSITY,
+                UnitOfMeasure(BaseUnit.CANDELA) * 671.2146654428731
+            )
     }
 
     /**
      *  Constructs the Hartree atomic unit system.
      */
-    override fun create(): UnitSystem =
-        build()
+    fun create(): UnitSystem =
+        builder.build()
 }

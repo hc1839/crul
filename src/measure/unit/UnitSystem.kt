@@ -21,28 +21,44 @@ import org.msgpack.value.Value
 
 import measure.dimension.BaseDimension
 import measure.dimension.Dimension
-import measure.dimension.parse.Production
 import measure.unit.UnitOfMeasure
 import serialize.BinarySerializable
 
 /**
- *  System of units.
+ *  Immutable system of units.
  */
 class UnitSystem : BinarySerializable {
     /**
-     *  Base units associated by base dimensions as a backing property.
+     *  Base units associated by base dimensions.
      */
-    private val _baseUnits: MutableMap<BaseDimension, UnitOfMeasure> =
-        enumValues<BaseDimension>()
-            .asIterable()
-            .associateWith { it.siUnit }
-            .toMutableMap()
+    val baseUnits: Map<BaseDimension, UnitOfMeasure>
 
     /**
-     *  Constructs a unit system initialized with SI base units. Use [set] to
-     *  modify the base units afterwards if needed.
+     *  @param baseUnits
+     *      Base units to use for each base dimension. Base units for all base
+     *      dimensions must be specified and must be commensurable with the
+     *      corresponding SI base unit.
      */
-    constructor()
+    constructor(baseUnits: Map<BaseDimension, UnitOfMeasure>) {
+        for (baseDim in enumValues<BaseDimension>()) {
+            val baseUnit = baseUnits[baseDim]
+
+            if (baseUnit == null) {
+                throw IllegalArgumentException(
+                    "Missing base dimension: ${baseDim.name}"
+                )
+            }
+
+            if (!baseUnit.isCommensurable(baseDim.siUnit)) {
+                throw IllegalArgumentException(
+                    "Base unit is not commensurable with the " +
+                    "corresponding SI base unit of '${baseDim.name}'."
+                )
+            }
+        }
+
+        this.baseUnits = baseUnits
+    }
 
     /**
      *  Initializes from a MessagePack map.
@@ -57,25 +73,22 @@ class UnitSystem : BinarySerializable {
         unpackedMap: Map<String, Value>,
         @Suppress("UNUSED_PARAMETER")
         msgpack: ByteArray
-    ) {
-        this._baseUnits.putAll(
-            unpackedMap["base-units"]!!
-                .asMapValue()
-                .map()
-                .map { (key, value) ->
-                    val baseDim = BaseDimension.getBySymbol(
-                        key.asStringValue().toString()
-                    )!!
+    ): this(
+        unpackedMap["base-units"]!!
+            .asMapValue()
+            .map()
+            .map { (key, value) ->
+                val baseDim = BaseDimension
+                    .getBySymbol(key.asStringValue().toString())!!
 
-                    val baseUnit = UnitOfMeasure(
-                        value.asBinaryValue().asByteArray()
-                    )
+                val baseUnit = UnitOfMeasure(
+                    value.asBinaryValue().asByteArray()
+                )
 
-                    Pair(baseDim, baseUnit)
-                }
-                .toMap()
-        )
-    }
+                Pair(baseDim, baseUnit)
+            }
+            .toMap()
+    )
 
     /**
      *  Deserialization constructor.
@@ -87,14 +100,6 @@ class UnitSystem : BinarySerializable {
         ),
         msgpack
     )
-
-    /**
-     *  Base units associated by base dimensions.
-     *
-     *  Base units for all base dimensions are returned.
-     */
-    val baseUnits: Map<BaseDimension, UnitOfMeasure>
-        get() = _baseUnits.toMap()
 
     override fun hashCode(): Int =
         baseUnits.hashCode()
@@ -120,9 +125,9 @@ class UnitSystem : BinarySerializable {
 
         packer
             .packString("base-units")
-            .packMapHeader(_baseUnits.count())
+            .packMapHeader(baseUnits.count())
 
-        for ((baseDim, baseUnit) in _baseUnits) {
+        for ((baseDim, baseUnit) in baseUnits) {
             val baseUnitAsBytes = baseUnit.serialize()
 
             packer
@@ -138,36 +143,6 @@ class UnitSystem : BinarySerializable {
     }
 
     /**
-     *  Sets the base unit of a base dimension.
-     *
-     *  @param baseDimension
-     *      Base dimension whose base unit is to be set.
-     *
-     *  @param baseUnit
-     *      New base unit for `baseDimension`. It must be commensurable with
-     *      the corresponding SI base unit.
-     *
-     *  @return
-     *      `this`.
-     */
-    fun set(
-        baseDimension: BaseDimension,
-        baseUnit: UnitOfMeasure
-    ): UnitSystem
-    {
-        if (!baseUnit.isCommensurable(baseDimension.siUnit)) {
-            throw IllegalArgumentException(
-                "New base unit is not commensurable with the " +
-                "corresponding SI base unit of '$baseDimension'."
-            )
-        }
-
-        _baseUnits[baseDimension] = baseUnit
-
-        return this
-    }
-
-    /**
      *  Creates a unit by raising each base unit in this unit system to the
      *  power specified by `dimension`.
      *
@@ -178,7 +153,7 @@ class UnitSystem : BinarySerializable {
         dimension
             .exponents
             .map { (baseDim, exp) ->
-                _baseUnits[baseDim]!!.pow(exp)
+                baseUnits[baseDim]!!.pow(exp)
             }
             .reduce { acc, item -> acc * item }
 }

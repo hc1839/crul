@@ -94,14 +94,6 @@ open class AtomBuilder<B : AtomBuilder<B>> {
             _name ?: uuid.Generator.inNCName()
         )
 
-    /**
-     *  Deserializes from a MessagePack returned by [AbstractAtom.serialize].
-     *
-     *  Data in this builder are ignored.
-     */
-    open fun deserialize(msgpack: ByteArray): Atom =
-        AtomImpl(msgpack)
-
     companion object {
         private class AtomBuilderImpl():
             AtomBuilder<AtomBuilderImpl>()
@@ -112,5 +104,13 @@ open class AtomBuilder<B : AtomBuilder<B>> {
         @JvmStatic
         fun create(): AtomBuilder<*> =
             AtomBuilderImpl()
+
+        /**
+         *  Deserializes an [Atom] from a MessagePack returned by
+         *  [AbstractAtom.serialize].
+         */
+        @JvmStatic
+        fun deserialize(msgpack: ByteArray): Atom =
+            AtomImpl(msgpack)
     }
 }
