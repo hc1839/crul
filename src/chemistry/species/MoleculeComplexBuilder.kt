@@ -52,7 +52,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      */
     private val _singletons: MutableSet<Atom> = mutableSetOf()
 
-    constructor()
+    protected constructor()
 
     /**
      *  Copy constructor.

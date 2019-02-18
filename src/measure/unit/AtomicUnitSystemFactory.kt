@@ -42,7 +42,7 @@ class AtomicUnitSystemFactory {
      *  Builder for construction.
      */
     private val builder: UnitSystemBuilder =
-        UnitSystemBuilder()
+        UnitSystemBuilder.create()
 
     constructor() {
         val atomicTimeUnit =

@@ -26,7 +26,7 @@ class SiUnitSystemFactory {
      *  Builder for construction.
      */
     private val builder: UnitSystemBuilder =
-        UnitSystemBuilder()
+        UnitSystemBuilder.create()
 
     constructor() {
         for (baseDim in enumValues<BaseDimension>()) {

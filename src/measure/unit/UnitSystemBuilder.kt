@@ -21,9 +21,11 @@ import measure.unit.UnitOfMeasure
 
 /**
  *  Mutable builder for [UnitSystem].
+ *
+ *  To construct an instance of this class, use [create].
  */
 class UnitSystemBuilder {
-    constructor()
+    private constructor()
 
     /**
      *  Base units to use for each base dimension when constructing a
@@ -83,4 +85,13 @@ class UnitSystemBuilder {
                 }
             }
         )
+
+    companion object {
+        /**
+         *  Creates an instance of [UnitSystemBuilder].
+         */
+        @JvmStatic
+        fun create(): UnitSystemBuilder =
+            UnitSystemBuilder()
+    }
 }
