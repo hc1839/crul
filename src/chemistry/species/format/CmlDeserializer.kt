@@ -204,9 +204,10 @@ open class CmlDeserializer<B : CmlDeserializer<B>>:
 
         // Construct each bond.
         for (bondNode in bondNodes) {
-            val atomNames = kotlin.text.Regex("\\s+").split(
-                bondNode.getAttribute("atomRefs2").trim()
-            )
+            val atomNames = bondNode
+                .getAttribute("atomRefs2")
+                .trim()
+                .split(Regex("\\s+"))
 
             if (atomNames.count() != 2) {
                 throw RuntimeException(
