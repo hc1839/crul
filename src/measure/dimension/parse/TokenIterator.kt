@@ -16,8 +16,8 @@
 
 package measure.dimension.parse
 
-import parse.AbstractTokenIterator
 import parse.ParseNode
+import parse.TokenIterator as TokenIteratorIntf
 
 /**
  *  Iterator of tokens of an ISQ dimension.
@@ -29,18 +29,26 @@ import parse.ParseNode
  *  All tokens have user data as `String` associated by
  *  [Production.userDataKey].
  */
-class TokenIterator : AbstractTokenIterator<Production> {
+class TokenIterator :
+    AbstractIterator<ParseNode<Production>>,
+    TokenIteratorIntf<Production>
+{
     /**
      *  Complete input string.
      */
     private val input: String
 
     /**
+     *  Unscanned text.
+     */
+    private var unscanned: String
+
+    /**
      *  @param input
      *      Input string representing a UCUM unit. It cannot contain
      *      intervening newlines.
      */
-    constructor(input: String): super(listOf(input.trim()).iterator()) {
+    constructor(input: String): super() {
         this.input = input.trim()
 
         if (Regex("\\n") in this.input) {
@@ -48,12 +56,14 @@ class TokenIterator : AbstractTokenIterator<Production> {
                 "Input string cannot contain intervening newlines."
             )
         }
+
+        this.unscanned = this.input
     }
 
     override fun computeNext() {
-        val currString = shift()
+        val currString = unscanned
 
-        if (currString == null) {
+        if (currString.trim() == "") {
             // Text is completely scanned.
             done()
             return
@@ -109,10 +119,7 @@ class TokenIterator : AbstractTokenIterator<Production> {
             }
         }
 
-        if (nextString != "") {
-            unshift(nextString)
-        }
-
+        unscanned = nextString
         setNext(nextToken)
 
         return
