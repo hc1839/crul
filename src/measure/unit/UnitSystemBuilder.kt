@@ -22,7 +22,7 @@ import measure.unit.UnitOfMeasure
 /**
  *  Mutable builder for [UnitSystem].
  *
- *  To construct an instance of this class, use [create].
+ *  To construct an instance of this class, use [newInstance].
  */
 class UnitSystemBuilder {
     private constructor()
@@ -91,7 +91,7 @@ class UnitSystemBuilder {
          *  Creates an instance of [UnitSystemBuilder].
          */
         @JvmStatic
-        fun create(): UnitSystemBuilder =
+        fun newInstance(): UnitSystemBuilder =
             UnitSystemBuilder()
     }
 }

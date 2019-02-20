@@ -20,6 +20,8 @@ import chemistry.species.impl.BondImpl
 
 /**
  *  Mutable builder for [Bond].
+ *
+ *  To construct an instance of this class, use [newInstance].
  */
 open class BondBuilder<B : BondBuilder<B>> {
     @Suppress("UNCHECKED_CAST")
@@ -81,33 +83,34 @@ open class BondBuilder<B : BondBuilder<B>> {
             _order!!
         )
 
-    /**
-     *  Deserializes from a MessagePack.
-     *
-     *  Data in this builder are ignored.
-     *
-     *  @param msgpack
-     *      MessagePack returned by [BinarySerializable.serialize] of a [Bond]
-     *      subclass.
-     *
-     *  @param atomDeserializer
-     *      Deserializer for atoms.
-     */
-    open fun <A : Atom> deserialize(
-        msgpack: ByteArray,
-        atomDeserializer: (ByteArray) -> A
-    ): Bond<A> =
-        BondImpl(msgpack, atomDeserializer)
-
     companion object {
         private class BondBuilderImpl() :
             BondBuilder<BondBuilderImpl>()
 
         /**
+         *  Deserializes from a MessagePack.
+         *
+         *  Data in this builder are ignored.
+         *
+         *  @param msgpack
+         *      MessagePack returned by [BinarySerializable.serialize] of a
+         *      [Bond] subclass.
+         *
+         *  @param atomDeserializer
+         *      Deserializer for atoms.
+         */
+        @JvmStatic
+        fun <A : Atom> deserialize(
+            msgpack: ByteArray,
+            atomDeserializer: (ByteArray) -> A
+        ): Bond<A> =
+            BondImpl(msgpack, atomDeserializer)
+
+        /**
          *  Creates an instance of [BondBuilder].
          */
         @JvmStatic
-        fun create(): BondBuilder<*> =
+        fun newInstance(): BondBuilder<*> =
             BondBuilderImpl()
     }
 }

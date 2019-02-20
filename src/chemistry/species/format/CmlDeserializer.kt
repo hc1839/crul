@@ -39,7 +39,7 @@ import measure.unit.UnitOfMeasure
 /**
  *  Deserializer for Chemical Markup Language (CML).
  *
- *  To construct an instance of this class, use [create].
+ *  To construct an instance of this class, use [newInstance].
  */
 open class CmlDeserializer<B : CmlDeserializer<B>>:
     AbstractDeserializer<B>
@@ -255,13 +255,13 @@ open class CmlDeserializer<B : CmlDeserializer<B>>:
          *  For descriptions of the parameters, see [CmlDeserializer].
          */
         @JvmStatic
-        fun create(
+        fun newInstance(
             atomBuilder: AtomBuilder<*> =
-                AtomBuilder.create(),
+                AtomBuilder.newInstance(),
             bondBuilder: BondBuilder<*> =
-                BondBuilder.create(),
+                BondBuilder.newInstance(),
             complexBuilder: MoleculeComplexBuilder<*> =
-                MoleculeComplexBuilder.create()
+                MoleculeComplexBuilder.newInstance()
         ): CmlDeserializer<*> =
             CmlDeserializerImpl(
                 atomBuilder,

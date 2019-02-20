@@ -28,7 +28,7 @@ import measure.unit.UnitOfMeasure
  */
 object Xyz {
     /**
-     *  Serializes this complex to the XYZ format.
+     *  Serializes this complex to XYZ.
      *
      *  @param fromLengthUnit
      *      The unit of length that the coordinates are in.

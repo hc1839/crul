@@ -21,7 +21,7 @@ import hierarchy.tree.Node
 /**
  *  Mutable builder for [TreeWalker].
  *
- *  To construct an instance of this class, use [create].
+ *  To construct an instance of this class, use [newInstance].
  */
 open class TreeWalkerBuilder<B : TreeWalkerBuilder<B>> {
     @Suppress("UNCHECKED_CAST")
@@ -67,7 +67,7 @@ open class TreeWalkerBuilder<B : TreeWalkerBuilder<B>> {
          *  Creates an instance of [TreeWalkerBuilder].
          */
         @JvmStatic
-        fun create(): TreeWalkerBuilder<*> =
+        fun newInstance(): TreeWalkerBuilder<*> =
             TreeWalkerBuilderImpl()
     }
 }

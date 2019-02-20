@@ -21,7 +21,7 @@ import chemistry.species.impl.ComplexImpl
 /**
  *  Mutable builder for [Complex].
  *
- *  To construct an instance of this class, use [create].
+ *  To construct an instance of this class, use [newInstance].
  */
 open class ComplexBuilder<B : ComplexBuilder<B>> {
     @Suppress("UNCHECKED_CAST")
@@ -87,7 +87,7 @@ open class ComplexBuilder<B : ComplexBuilder<B>> {
          *  Creates an instance of [ComplexBuilder].
          */
         @JvmStatic
-        fun create(): ComplexBuilder<*> =
+        fun newInstance(): ComplexBuilder<*> =
             ComplexBuilderImpl()
     }
 }

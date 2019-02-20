@@ -36,7 +36,7 @@ import hypergraph.Vertex
  *  This builder can be cloned, which is useful in building complexes that
  *  differ from each other only in some regions.
  *
- *  To construct an instance of this class, use [create].
+ *  To construct an instance of this class, use [newInstance].
  */
 open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
     @Suppress("UNCHECKED_CAST")
@@ -325,7 +325,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
         }
 
         // Use the same builder for all complex constructions.
-        val complexBuilder = ComplexBuilder.create()
+        val complexBuilder = ComplexBuilder.newInstance()
 
         // Construct a temporary sequence of complexes of bonds.
         val bondComplexes = graph
@@ -423,7 +423,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
          *  Creates an instance of [MoleculeComplexBuilder].
          */
         @JvmStatic
-        fun create(): MoleculeComplexBuilder<*> =
+        fun newInstance(): MoleculeComplexBuilder<*> =
             MoleculeComplexBuilderImpl()
     }
 }

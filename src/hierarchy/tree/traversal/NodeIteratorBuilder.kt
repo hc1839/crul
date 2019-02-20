@@ -21,7 +21,7 @@ import hierarchy.tree.Node
 /**
  *  Mutable builder for [NodeIterator].
  *
- *  To construct an instance of this class, use [create].
+ *  To construct an instance of this class, use [newInstance].
  */
 open class NodeIteratorBuilder<B : NodeIteratorBuilder<B>> {
     @Suppress("UNCHECKED_CAST")
@@ -83,7 +83,7 @@ open class NodeIteratorBuilder<B : NodeIteratorBuilder<B>> {
          *  Creates an instance of [NodeIteratorBuilder].
          */
         @JvmStatic
-        fun create(): NodeIteratorBuilder<*> =
+        fun newInstance(): NodeIteratorBuilder<*> =
             NodeIteratorBuilderImpl()
     }
 }

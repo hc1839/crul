@@ -144,7 +144,7 @@ abstract class AbstractMolecule<A : Atom> :
      */
     constructor(
         bonds: Set<Bond<A>>,
-        bondBuilder: BondBuilder<*> = BondBuilder.create()
+        bondBuilder: BondBuilder<*> = BondBuilder.newInstance()
     ): super(
         bonds
             .flatMap {

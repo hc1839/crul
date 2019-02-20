@@ -19,14 +19,14 @@ package measure.unit
 import measure.dimension.BaseDimension
 
 /**
- *  Factory for the SI unit system.
+ *  Factory for SI unit system.
  */
 class SiUnitSystemFactory {
     /**
      *  Builder for construction.
      */
     private val builder: UnitSystemBuilder =
-        UnitSystemBuilder.create()
+        UnitSystemBuilder.newInstance()
 
     constructor() {
         for (baseDim in enumValues<BaseDimension>()) {
@@ -35,7 +35,7 @@ class SiUnitSystemFactory {
     }
 
     /**
-     *  Constructs the SI unit system.
+     *  Constructs an SI unit system.
      */
     fun create(): UnitSystem =
         builder.build()

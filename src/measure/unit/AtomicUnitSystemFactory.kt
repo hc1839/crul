@@ -19,7 +19,7 @@ package measure.unit
 import measure.dimension.BaseDimension
 
 /**
- *  Factory for the Hartree atomic unit system.
+ *  Factory for Hartree atomic unit system.
  *
  *  The base unit for amount of substance is set to be the same as the
  *  corresponding SI unit, which is the mole.
@@ -42,7 +42,7 @@ class AtomicUnitSystemFactory {
      *  Builder for construction.
      */
     private val builder: UnitSystemBuilder =
-        UnitSystemBuilder.create()
+        UnitSystemBuilder.newInstance()
 
     constructor() {
         val atomicTimeUnit =
@@ -80,7 +80,7 @@ class AtomicUnitSystemFactory {
     }
 
     /**
-     *  Constructs the Hartree atomic unit system.
+     *  Constructs a Hartree atomic unit system.
      */
     fun create(): UnitSystem =
         builder.build()

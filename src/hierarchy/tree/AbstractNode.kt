@@ -181,7 +181,7 @@ abstract class AbstractNode : Node {
         filter: ((Node) -> FilterState)?
     ): TreeWalker =
         TreeWalkerBuilder
-            .create()
+            .newInstance()
             .root(this)
             .filter(filter)
             .build()
@@ -191,7 +191,7 @@ abstract class AbstractNode : Node {
         filter: ((Node) -> FilterState)?
     ): NodeIterator =
         NodeIteratorBuilder
-            .create()
+            .newInstance()
             .root(this)
             .filter(filter)
             .order(order)

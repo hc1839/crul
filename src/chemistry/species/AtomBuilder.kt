@@ -23,7 +23,7 @@ import math.coordsys.Vector3D
 /**
  *  Mutable builder for [Atom].
  *
- *  To construct an instance of this class, use [create].
+ *  To construct an instance of this class, use [newInstance].
  */
 open class AtomBuilder<B : AtomBuilder<B>> {
     @Suppress("UNCHECKED_CAST")
@@ -102,7 +102,7 @@ open class AtomBuilder<B : AtomBuilder<B>> {
          *  Creates an instance of [AtomBuilder].
          */
         @JvmStatic
-        fun create(): AtomBuilder<*> =
+        fun newInstance(): AtomBuilder<*> =
             AtomBuilderImpl()
 
         /**

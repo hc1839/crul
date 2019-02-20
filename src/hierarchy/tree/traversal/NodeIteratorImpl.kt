@@ -49,7 +49,7 @@ internal class NodeIteratorImpl :
     ): super()
     {
         this.treeWalker = TreeWalkerBuilder
-            .create()
+            .newInstance()
             .root(root)
             .filter(filter)
             .build()
