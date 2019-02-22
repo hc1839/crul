@@ -255,6 +255,7 @@ open class CmlDeserializer<B : CmlDeserializer<B>>:
          *  For descriptions of the parameters, see [CmlDeserializer].
          */
         @JvmStatic
+        @JvmOverloads
         fun newInstance(
             atomBuilder: AtomBuilder<*> =
                 AtomBuilder.newInstance(),
