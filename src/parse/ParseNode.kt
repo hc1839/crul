@@ -14,10 +14,10 @@
  *  under the License.
  */
 
-package parse
+package crul.parse
 
-import hierarchy.tree.TypedNode
-import hierarchy.tree.UserDataHandler
+import crul.hierarchy.tree.TypedNode
+import crul.hierarchy.tree.UserDataHandler
 
 /**
  *  Node in a parse tree.

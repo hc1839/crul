@@ -14,17 +14,17 @@
  *  under the License.
  */
 
-package chemistry.species.impl
+package crul.chemistry.species.impl
 
-import chemistry.species.AbstractMolecule
-import chemistry.species.Atom
-import chemistry.species.Bond
-import chemistry.species.BondBuilder
-import chemistry.species.Molecule
-import hypergraph.Edge
-import hypergraph.Graph
-import hypergraph.GraphSystem
-import hypergraph.Vertex
+import crul.chemistry.species.AbstractMolecule
+import crul.chemistry.species.Atom
+import crul.chemistry.species.Bond
+import crul.chemistry.species.BondBuilder
+import crul.chemistry.species.Molecule
+import crul.hypergraph.Edge
+import crul.hypergraph.Graph
+import crul.hypergraph.GraphSystem
+import crul.hypergraph.Vertex
 
 /**
  *  Default implementation of [Molecule].

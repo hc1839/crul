@@ -14,13 +14,13 @@
  *  under the License.
  */
 
-package chemistry.species.format
+package crul.chemistry.species.format
 
-import chemistry.species.Atom
-import chemistry.species.AtomBuilder
-import chemistry.species.BondBuilder
-import chemistry.species.MoleculeComplex
-import chemistry.species.MoleculeComplexBuilder
+import crul.chemistry.species.Atom
+import crul.chemistry.species.AtomBuilder
+import crul.chemistry.species.BondBuilder
+import crul.chemistry.species.MoleculeComplex
+import crul.chemistry.species.MoleculeComplexBuilder
 
 /**
  *  Abstract deserializer as a mutable builder for a data format representing a

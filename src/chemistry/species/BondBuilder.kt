@@ -14,9 +14,9 @@
  *  under the License.
  */
 
-package chemistry.species
+package crul.chemistry.species
 
-import chemistry.species.impl.BondImpl
+import crul.chemistry.species.impl.BondImpl
 
 /**
  *  Mutable builder for [Bond].

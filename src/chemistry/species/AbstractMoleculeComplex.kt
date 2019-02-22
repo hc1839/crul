@@ -14,12 +14,12 @@
  *  under the License.
  */
 
-package chemistry.species
+package crul.chemistry.species
 
-import hypergraph.Edge
-import hypergraph.Graph
-import hypergraph.GraphSystem
-import hypergraph.Vertex
+import crul.hypergraph.Edge
+import crul.hypergraph.Graph
+import crul.hypergraph.GraphSystem
+import crul.hypergraph.Vertex
 
 /**
  *  Skeletal implementation of [MoleculeComplex].

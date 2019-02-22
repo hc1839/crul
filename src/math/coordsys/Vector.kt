@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package math.coordsys
+package crul.math.coordsys
 
 import kotlin.math.pow
 
@@ -74,8 +74,8 @@ open class Vector : Spatial {
         val otherMagnitude = other.magnitude()
 
         if (
-            float.Comparison.nearlyEquals(thisMagnitude, 0.0) ||
-            float.Comparison.nearlyEquals(otherMagnitude, 0.0)
+            crul.float.Comparison.nearlyEquals(thisMagnitude, 0.0) ||
+            crul.float.Comparison.nearlyEquals(otherMagnitude, 0.0)
         ) {
             throw RuntimeException(
                 "Cannot be a zero vector."
@@ -103,7 +103,7 @@ open class Vector : Spatial {
 
         val magnitude = magnitude()
 
-        if (float.Comparison.nearlyEquals(magnitude, 0.0)) {
+        if (crul.float.Comparison.nearlyEquals(magnitude, 0.0)) {
             throw RuntimeException(
                 "Cannot be a zero vector."
             )

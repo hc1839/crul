@@ -14,12 +14,12 @@
  *  under the License.
  */
 
-package chemistry.species
+package crul.chemistry.species
 
-import hypergraph.Edge
-import hypergraph.Graph
-import hypergraph.GraphSystem
-import hypergraph.Vertex
+import crul.hypergraph.Edge
+import crul.hypergraph.Graph
+import crul.hypergraph.GraphSystem
+import crul.hypergraph.Vertex
 
 /**
  *  Skeletal implementation of [Molecule].
@@ -152,7 +152,7 @@ abstract class AbstractMolecule<A : Atom> :
             }
             .toSet()
     ) {
-        this.graphSystem.createGraph(uuid.Generator.inNCName())
+        this.graphSystem.createGraph(crul.uuid.Generator.inNCName())
         this.bondEdgeType = this.graph.createVertex()
         this.bondOrderPropertyType = this.graph.createVertex()
         this.bondBuilder = bondBuilder
@@ -167,7 +167,7 @@ abstract class AbstractMolecule<A : Atom> :
      *      Atom acting as a singleton molecule.
      */
     constructor(atom: A): super(listOf(atom)) {
-        this.graphSystem.createGraph(uuid.Generator.inNCName())
+        this.graphSystem.createGraph(crul.uuid.Generator.inNCName())
         this.bondEdgeType = this.graph.createVertex()
         this.bondOrderPropertyType = this.graph.createVertex()
         this.bondBuilder = null
@@ -179,7 +179,7 @@ abstract class AbstractMolecule<A : Atom> :
      *  Copy constructor.
      */
     constructor(other: AbstractMolecule<A>): super(other) {
-        this.graphSystem.createGraph(uuid.Generator.inNCName())
+        this.graphSystem.createGraph(crul.uuid.Generator.inNCName())
         this.bondEdgeType = this.graph.createVertex()
         this.bondOrderPropertyType = this.graph.createVertex()
         this.bondBuilder = other.bondBuilder

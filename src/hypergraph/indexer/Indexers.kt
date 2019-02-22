@@ -14,10 +14,10 @@
  *  under the License.
  */
 
-package hypergraph.indexer
+package crul.hypergraph.indexer
 
-import hypergraph.base.*
-import hypergraph.compare.VertexSetElement
+import crul.hypergraph.base.*
+import crul.hypergraph.compare.VertexSetElement
 
 /**
  *  Generic indexer of graph constructs.

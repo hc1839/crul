@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package hypergraph.base
+package crul.hypergraph.base
 
 /**
  *  Graph construct.

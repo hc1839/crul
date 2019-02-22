@@ -14,9 +14,9 @@
  *  under the License.
  */
 
-package parse.shiftreduce
+package crul.parse.shiftreduce
 
-import parse.ParseNode
+import crul.parse.ParseNode
 
 /**
  *  Matcher for the rightmost node(s) in a parse stack and the lookahead symbol

@@ -17,9 +17,9 @@
 @file:JvmName("Hashing")
 @file:JvmMultifileClass
 
-package hypergraph.compare
+package crul.hypergraph.compare
 
-import hypergraph.base.*
+import crul.hypergraph.base.*
 
 /**
  *  Hashing of graph constructs.

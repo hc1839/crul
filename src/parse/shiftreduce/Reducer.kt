@@ -14,9 +14,9 @@
  *  under the License.
  */
 
-package parse.shiftreduce
+package crul.parse.shiftreduce
 
-import parse.ParseNode
+import crul.parse.ParseNode
 
 /**
  *  Performer of an individual reduce step corresponding to the node type of

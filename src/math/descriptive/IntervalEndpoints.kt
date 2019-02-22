@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package math.descriptive
+package crul.math.descriptive
 
 /**
  *  Interface for specifying the endpoints of an interval.

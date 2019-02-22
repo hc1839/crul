@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package math.fuzzy
+package crul.math.fuzzy
 
 /**
  *  Information for an element of a fuzzy set.

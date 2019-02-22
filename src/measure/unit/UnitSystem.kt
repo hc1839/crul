@@ -14,15 +14,15 @@
  *  under the License.
  */
 
-package measure.unit
+package crul.measure.unit
 
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import measure.dimension.BaseDimension
-import measure.dimension.Dimension
-import measure.unit.UnitOfMeasure
-import serialize.BinarySerializable
+import crul.measure.dimension.BaseDimension
+import crul.measure.dimension.Dimension
+import crul.measure.unit.UnitOfMeasure
+import crul.serialize.BinarySerializable
 
 /**
  *  Immutable system of units.

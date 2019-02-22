@@ -14,14 +14,14 @@
  *  under the License.
  */
 
-package chemistry.species
+package crul.chemistry.species
 
-import chemistry.species.impl.MoleculeComplexImpl
-import chemistry.species.impl.MoleculeImpl
-import hypergraph.Edge
-import hypergraph.Graph
-import hypergraph.GraphSystem
-import hypergraph.Vertex
+import crul.chemistry.species.impl.MoleculeComplexImpl
+import crul.chemistry.species.impl.MoleculeImpl
+import crul.hypergraph.Edge
+import crul.hypergraph.Graph
+import crul.hypergraph.GraphSystem
+import crul.hypergraph.Vertex
 
 /**
  *  Mutable builder for [MoleculeComplex].
@@ -228,7 +228,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      */
     protected fun groupSpecies(): Set<Complex<Species>> {
         val graphSystem = GraphSystem()
-        val graph = graphSystem.createGraph(uuid.Generator.inNCName())
+        val graph = graphSystem.createGraph(crul.uuid.Generator.inNCName())
 
         // Vertex acting as the edge type for a fragment.
         val fragmentEdgeType = graph.createVertex()

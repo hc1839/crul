@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package math.fuzzy
+package crul.math.fuzzy
 
 /**
  *  Membership function as a class.

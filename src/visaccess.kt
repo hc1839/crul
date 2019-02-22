@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package visaccess
+package crul.visaccess
 
 /**
  *  General access interface.
@@ -50,10 +50,10 @@ abstract class AccessKey() {
  *      String to use as part of comparison purposes.
  */
 open class FriendKey(
-    override val keyString: String = uuid.Generator.inNCName()
+    override val keyString: String = crul.uuid.Generator.inNCName()
 ) : AccessKey() {
     init {
-        if (!xml.Datatype.isNCName(keyString)) {
+        if (!crul.xml.Datatype.isNCName(keyString)) {
             throw IllegalArgumentException(
                 "Key string does not conform to XML NCName production: " +
                 keyString

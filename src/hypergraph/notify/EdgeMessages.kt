@@ -14,9 +14,9 @@
  *  under the License.
  */
 
-package hypergraph.notify
+package crul.hypergraph.notify
 
-import hypergraph.base.*
+import crul.hypergraph.base.*
 
 /**
  *  Message from an edge indicating that a vertex has been added.

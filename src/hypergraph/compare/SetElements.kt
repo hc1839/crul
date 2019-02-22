@@ -14,9 +14,9 @@
  *  under the License.
  */
 
-package hypergraph.compare
+package crul.hypergraph.compare
 
-import hypergraph.base.*
+import crul.hypergraph.base.*
 
 /**
  *  Wrapper for a construct as an element of a set such that constructs are

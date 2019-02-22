@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package hierarchy.tree
+package crul.hierarchy.tree
 
 /**
  *  When associating an object to a node using [Node.setUserData], the handler

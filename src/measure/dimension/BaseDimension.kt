@@ -14,10 +14,10 @@
  *  under the License.
  */
 
-package measure.dimension
+package crul.measure.dimension
 
-import measure.unit.BaseUnit
-import measure.unit.UnitOfMeasure
+import crul.measure.unit.BaseUnit
+import crul.measure.unit.UnitOfMeasure
 
 /**
  *  Base dimension according to the International System of Quantities (ISQ).

@@ -14,10 +14,10 @@
  *  under the License.
  */
 
-package math.fuzzy.number
+package crul.math.fuzzy.number
 
-import float.Comparison.nearlyEquals
-import math.fuzzy.Interval
+import crul.float.Comparison.nearlyEquals
+import crul.math.fuzzy.Interval
 
 /**
  *  Fuzzy number.

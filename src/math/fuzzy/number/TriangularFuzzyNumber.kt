@@ -14,13 +14,13 @@
  *  under the License.
  */
 
-package math.fuzzy.number
+package crul.math.fuzzy.number
 
-import math.descriptive.EndpointInclusion
-import math.descriptive.IntervalEndpoints
-import math.descriptive.IntervalEndpointsSpec
-import math.fuzzy.Interval
-import math.fuzzy.Membership
+import crul.math.descriptive.EndpointInclusion
+import crul.math.descriptive.IntervalEndpoints
+import crul.math.descriptive.IntervalEndpointsSpec
+import crul.math.fuzzy.Interval
+import crul.math.fuzzy.Membership
 
 /**
  *  Triangular fuzzy number (TFN).

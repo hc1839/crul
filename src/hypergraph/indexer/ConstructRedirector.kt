@@ -14,9 +14,9 @@
  *  under the License.
  */
 
-package hypergraph.indexer
+package crul.hypergraph.indexer
 
-import hypergraph.base.*
+import crul.hypergraph.base.*
 
 /**
  *  Redirection for merged constructs.
@@ -62,7 +62,7 @@ class ConstructRedirector<T : Construct>() {
      *  Puts a construct to the redirector.
      */
     fun put(constructId: String, construct: T) {
-        if (!xml.Datatype.isNCName(constructId)) {
+        if (!crul.xml.Datatype.isNCName(constructId)) {
             throw IllegalArgumentException(
                 "Construct ID does not conform to XML NCName production: " +
                 constructId

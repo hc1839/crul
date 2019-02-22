@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package math.coordsys
+package crul.math.coordsys
 
 /**
  *  Spherical coordinate tuple in ISO convention.

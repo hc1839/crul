@@ -14,9 +14,9 @@
  *  under the License.
  */
 
-package chemistry.species
+package crul.chemistry.species
 
-import math.coordsys.Vector3D
+import crul.math.coordsys.Vector3D
 
 /**
  *  Interface for a complex, which is a species that is also set of subspecies.

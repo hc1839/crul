@@ -16,7 +16,7 @@
 
 @file:JvmMultifileClass
 
-package serialize
+package crul.serialize
 
 import org.msgpack.core.MessagePack
 import org.msgpack.value.impl.ImmutableArrayValueImpl

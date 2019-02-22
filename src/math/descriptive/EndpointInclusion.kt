@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package math.descriptive
+package crul.math.descriptive
 
 /**
  *  Type of interval on a number line.

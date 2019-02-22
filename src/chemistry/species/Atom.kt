@@ -14,10 +14,10 @@
  *  under the License.
  */
 
-package chemistry.species
+package crul.chemistry.species
 
-import chemistry.species.Element
-import math.coordsys.Vector3D
+import crul.chemistry.species.Element
+import crul.math.coordsys.Vector3D
 
 /**
  *  Interface for an atom.

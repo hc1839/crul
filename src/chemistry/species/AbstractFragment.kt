@@ -14,12 +14,12 @@
  *  under the License.
  */
 
-package chemistry.species
+package crul.chemistry.species
 
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import serialize.BinarySerializable
+import crul.serialize.BinarySerializable
 
 /**
  *  Skeletal implementation of [Fragment].

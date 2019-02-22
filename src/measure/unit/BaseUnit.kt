@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package measure.unit
+package crul.measure.unit
 
 /**
  *  Base unit according to the Unified Code for Units of Measure (UCUM).

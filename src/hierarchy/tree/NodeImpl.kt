@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package hierarchy.tree
+package crul.hierarchy.tree
 
 /**
  *  Default implementation of [Node].

@@ -14,14 +14,14 @@
  *  under the License.
  */
 
-package measure.dimension.parse
+package crul.measure.dimension.parse
 
-import measure.dimension.BaseDimension
-import measure.dimension.Dimension
-import parse.ColorFiller
-import parse.ParseNode
-import parse.shiftreduce.ProductionMatcher
-import parse.shiftreduce.Reducer
+import crul.measure.dimension.BaseDimension
+import crul.measure.dimension.Dimension
+import crul.parse.ColorFiller
+import crul.parse.ParseNode
+import crul.parse.shiftreduce.ProductionMatcher
+import crul.parse.shiftreduce.Reducer
 
 /**
  *  Production rules that are used as node types in a parse tree for an ISQ

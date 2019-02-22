@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package chemistry.species.format
+package crul.chemistry.species.format
 
 import java.io.StringReader
 import javax.xml.parsers.DocumentBuilderFactory
@@ -23,18 +23,18 @@ import javax.xml.xpath.XPathFactory
 import org.w3c.dom.NodeList
 import org.xml.sax.InputSource
 
-import chemistry.species.Atom
-import chemistry.species.AtomBuilder
-import chemistry.species.Bond
-import chemistry.species.BondBuilder
-import chemistry.species.Element
-import chemistry.species.MoleculeComplex
-import chemistry.species.MoleculeComplexBuilder
-import float.Comparison.nearlyEquals
-import math.coordsys.Vector3D
-import measure.Quantity
-import measure.dimension.BaseDimension
-import measure.unit.UnitOfMeasure
+import crul.chemistry.species.Atom
+import crul.chemistry.species.AtomBuilder
+import crul.chemistry.species.Bond
+import crul.chemistry.species.BondBuilder
+import crul.chemistry.species.Element
+import crul.chemistry.species.MoleculeComplex
+import crul.chemistry.species.MoleculeComplexBuilder
+import crul.float.Comparison.nearlyEquals
+import crul.math.coordsys.Vector3D
+import crul.measure.Quantity
+import crul.measure.dimension.BaseDimension
+import crul.measure.unit.UnitOfMeasure
 
 /**
  *  Deserializer for Chemical Markup Language (CML).

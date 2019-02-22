@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package permute.variation
+package crul.permute.variation
 
 /**
  *  Variator over `Double` values.

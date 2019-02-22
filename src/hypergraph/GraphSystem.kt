@@ -14,12 +14,12 @@
  *  under the License.
  */
 
-package hypergraph
+package crul.hypergraph
 
 /**
  *  System of graphs.
  */
-class GraphSystem() : hypergraph.base.GraphSystem {
+class GraphSystem() : crul.hypergraph.base.GraphSystem {
     /**
      *  Graphs where each is associated with its ID.
      */
@@ -54,10 +54,10 @@ class GraphSystem() : hypergraph.base.GraphSystem {
         graphsById.remove(graph.id)
     }
 
-    private object FriendKey : visaccess.FriendKey()
+    private object FriendKey : crul.visaccess.FriendKey()
 
-    open class FriendAccess(key: visaccess.FriendKey) :
-        visaccess.FriendAccess
+    open class FriendAccess(key: crul.visaccess.FriendKey) :
+        crul.visaccess.FriendAccess
     {
         init {
             if (key != FriendKey) {

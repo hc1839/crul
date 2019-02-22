@@ -16,7 +16,7 @@
 
 @file:JvmMultifileClass
 
-package float
+package crul.float
 
 /**
  *  Functions for comparing two floating-point numbers.

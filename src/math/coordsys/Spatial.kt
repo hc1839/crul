@@ -14,12 +14,12 @@
  *  under the License.
  */
 
-package math.coordsys
+package crul.math.coordsys
 
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import serialize.BinarySerializable
+import crul.serialize.BinarySerializable
 
 /**
  *  Base class for representing a coordinate tuple or a vector.

@@ -14,15 +14,15 @@
  *  under the License.
  */
 
-package chemistry.species.impl
+package crul.chemistry.species.impl
 
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import chemistry.species.Atom
-import chemistry.species.AtomBuilder
-import chemistry.species.Bond
-import serialize.BinarySerializable
+import crul.chemistry.species.Atom
+import crul.chemistry.species.AtomBuilder
+import crul.chemistry.species.Bond
+import crul.serialize.BinarySerializable
 
 /**
  *  Default implementation of [Bond].

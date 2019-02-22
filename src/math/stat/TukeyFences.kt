@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package math.stat.descriptive
+package crul.math.stat.descriptive
 
 import org.apache.commons.math3.stat.descriptive.rank.Percentile
 

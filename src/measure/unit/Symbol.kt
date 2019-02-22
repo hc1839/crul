@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package measure.unit
+package crul.measure.unit
 
 import com.google.gson.Gson
 import java.io.File
@@ -22,13 +22,13 @@ import kotlin.math.pow
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import hierarchy.tree.Node
-import measure.dimension.BaseDimension
-import measure.dimension.Dimension
-import measure.unit.parse.Production
-import measure.unit.parse.TokenIterator
-import parse.shiftreduce.Actuator
-import serialize.BinarySerializable
+import crul.hierarchy.tree.Node
+import crul.measure.dimension.BaseDimension
+import crul.measure.dimension.Dimension
+import crul.measure.unit.parse.Production
+import crul.measure.unit.parse.TokenIterator
+import crul.parse.shiftreduce.Actuator
+import crul.serialize.BinarySerializable
 
 /**
  *  Storage information for UCUM symbols.
@@ -332,7 +332,7 @@ class UnitOfMeasure : BinarySerializable {
         other is UnitOfMeasure &&
         this::class == other::class &&
         (
-            float.Comparison.nearlyEquals(
+            crul.float.Comparison.nearlyEquals(
                 magnitude,
                 other.magnitude
             ) &&

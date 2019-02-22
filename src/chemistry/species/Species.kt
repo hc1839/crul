@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package chemistry.species
+package crul.chemistry.species
 
 /**
  *  Interface for species.

@@ -16,12 +16,12 @@
 
 @file:JvmMultifileClass
 
-package chemistry.species.format
+package crul.chemistry.species.format
 
-import chemistry.species.Atom
-import chemistry.species.MoleculeComplex
-import measure.dimension.BaseDimension
-import measure.unit.UnitOfMeasure
+import crul.chemistry.species.Atom
+import crul.chemistry.species.MoleculeComplex
+import crul.measure.dimension.BaseDimension
+import crul.measure.unit.UnitOfMeasure
 
 /**
  *  Functions related to XYZ.
@@ -47,7 +47,7 @@ object Xyz {
     fun <A : Atom> MoleculeComplex<A>.toXyz(
         fromLengthUnit: UnitOfMeasure,
         toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
-        name: String = uuid.Generator.inNCName(),
+        name: String = crul.uuid.Generator.inNCName(),
         separator: String = " "
     ): String
     {

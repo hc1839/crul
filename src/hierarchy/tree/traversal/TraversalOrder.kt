@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package hierarchy.tree.traversal
+package crul.hierarchy.tree.traversal
 
 /**
  *  Traversal order.

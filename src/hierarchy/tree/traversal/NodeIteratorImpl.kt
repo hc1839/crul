@@ -14,9 +14,9 @@
  *  under the License.
  */
 
-package hierarchy.tree.traversal
+package crul.hierarchy.tree.traversal
 
-import hierarchy.tree.Node
+import crul.hierarchy.tree.Node
 
 /**
  *  Default implementation of [NodeIterator] that iterates in pre-order

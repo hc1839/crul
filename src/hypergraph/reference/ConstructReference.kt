@@ -14,11 +14,11 @@
  *  under the License.
  */
 
-package hypergraph.reference
+package crul.hypergraph.reference
 
-import hypergraph.base.*
-import hypergraph.compare.ConstructSetElement
-import hypergraph.compare.Equality
+import crul.hypergraph.base.*
+import crul.hypergraph.compare.ConstructSetElement
+import crul.hypergraph.compare.Equality
 
 /**
  *  Dynamic referencing of a graph construct.

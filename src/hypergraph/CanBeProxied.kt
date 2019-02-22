@@ -14,14 +14,16 @@
  *  under the License.
  */
 
-package hypergraph
+package crul.hypergraph
 
-import hypergraph.compare.Equality
+import crul.hypergraph.base.CanBeProxied as CanBeProxiedIntf
+import crul.hypergraph.base.Vertex as VertexIntf
+import crul.hypergraph.compare.Equality
 
 /**
  *  Skeletal implementation of a construct that can be proxied.
  */
-abstract class CanBeProxied() : hypergraph.base.CanBeProxied {
+abstract class CanBeProxied() : CanBeProxiedIntf {
     /**
      *  Whether the construct is being redirected to a terminal construct.
      */
@@ -33,7 +35,7 @@ abstract class CanBeProxied() : hypergraph.base.CanBeProxied {
      */
     abstract protected fun getTerminalProxied(): CanBeProxied
 
-    override var proxy: hypergraph.base.Vertex? = null
+    override var proxy: VertexIntf? = null
         get() {
             if (isRedirected) {
                 return getTerminalProxied().proxy
@@ -80,10 +82,10 @@ abstract class CanBeProxied() : hypergraph.base.CanBeProxied {
             }
         }
 
-    private object FriendKey : visaccess.FriendKey()
+    private object FriendKey : crul.visaccess.FriendKey()
 
-    open class FriendAccess(key: visaccess.FriendKey) :
-        visaccess.FriendAccess
+    open class FriendAccess(key: crul.visaccess.FriendKey) :
+        crul.visaccess.FriendAccess
     {
         init {
             if (key != FriendKey) {

@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package math.coordsys
+package crul.math.coordsys
 
 /**
  *  Position as a coordinate tuple in three dimensions.

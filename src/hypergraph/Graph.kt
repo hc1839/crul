@@ -14,21 +14,20 @@
  *  under the License.
  */
 
-package hypergraph
+package crul.hypergraph
 
-import hypergraph.base.Construct
-import hypergraph.compare.Equality
-import hypergraph.compare.Hashing
-import hypergraph.indexer.*
-import hypergraph.notify.*
-
-import hypergraph.compare.VertexSetElement
+import crul.hypergraph.base.Construct
+import crul.hypergraph.compare.Equality
+import crul.hypergraph.compare.Hashing
+import crul.hypergraph.compare.VertexSetElement
+import crul.hypergraph.indexer.*
+import crul.hypergraph.notify.*
 
 /**
  *  Graph that acts a container for vertices and edges.
  */
 class Graph : CanBeProxied,
-    hypergraph.base.Graph
+    crul.hypergraph.base.Graph
 {
     override val id: String
 
@@ -54,7 +53,7 @@ class Graph : CanBeProxied,
         parentGraphSystem: GraphSystem
     ): super()
     {
-        if (!xml.Datatype.isNCName(id)) {
+        if (!crul.xml.Datatype.isNCName(id)) {
             throw IllegalArgumentException(
                 "ID does not conform to XML NCName production: $id"
             )
@@ -128,7 +127,8 @@ class Graph : CanBeProxied,
         vertexIndexer.getByName(name)
 
     /**
-     *  Gets vertices where [hypergraph.base.Vertex.types] contains `type`.
+     *  Gets vertices where [crul.hypergraph.base.Vertex.types] contains
+     *  `type`.
      */
     fun getVerticesByType(type: Vertex): List<Vertex> =
         vertexIndexer.constructs.filter { vertex ->
@@ -136,7 +136,7 @@ class Graph : CanBeProxied,
         }
 
     /**
-     *  Gets edges where [hypergraph.base.Edge.type] is `type`.
+     *  Gets edges where [crul.hypergraph.base.Edge.type] is `type`.
      */
     fun getEdgesByType(type: Vertex): List<Edge> =
         edgeIndexer.constructs.filter { edge ->
@@ -151,7 +151,7 @@ class Graph : CanBeProxied,
             var newId: String
 
             do {
-                newId = uuid.Generator.inNCName()
+                newId = crul.uuid.Generator.inNCName()
             } while (vertexIndexer.contains(newId))
 
             return createVertex(newId)
@@ -192,7 +192,7 @@ class Graph : CanBeProxied,
             var newId: String
 
             do {
-                newId = uuid.Generator.inNCName()
+                newId = crul.uuid.Generator.inNCName()
             } while (edgeIndexer.contains(newId))
 
             return createEdge(newId, type)
@@ -222,7 +222,7 @@ class Graph : CanBeProxied,
         constructRedirector.remove(edgeId)
     }
 
-    override fun createEdge(type: hypergraph.base.Vertex) =
+    override fun createEdge(type: crul.hypergraph.base.Vertex) =
         createEdge(null, type as Vertex)
 
     /**
@@ -476,10 +476,10 @@ class Graph : CanBeProxied,
         }
     }
 
-    private object FriendKey : visaccess.FriendKey()
+    private object FriendKey : crul.visaccess.FriendKey()
 
-    open class FriendAccess(key: visaccess.FriendKey) :
-        visaccess.FriendAccess
+    open class FriendAccess(key: crul.visaccess.FriendKey) :
+        crul.visaccess.FriendAccess
     {
         init {
             if (key != FriendKey) {

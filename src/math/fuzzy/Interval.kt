@@ -14,11 +14,11 @@
  *  under the License.
  */
 
-package math.fuzzy
+package crul.math.fuzzy
 
-import math.descriptive.EndpointInclusion
-import math.descriptive.Indicator
-import math.descriptive.IntervalEndpointsSpec
+import crul.math.descriptive.EndpointInclusion
+import crul.math.descriptive.Indicator
+import crul.math.descriptive.IntervalEndpointsSpec
 
 /**
  *  Fuzzy interval.

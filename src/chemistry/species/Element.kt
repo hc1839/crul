@@ -14,14 +14,14 @@
  *  under the License.
  */
 
-package chemistry.species
+package crul.chemistry.species
 
 import com.google.gson.Gson
 import java.io.File
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import serialize.BinarySerializable
+import crul.serialize.BinarySerializable
 
 /**
  *  Storage information for elements.

@@ -16,12 +16,12 @@
 
 @file:JvmMultifileClass
 
-package math.coordsys.transform
+package crul.math.coordsys.transform
 
-import math.coordsys.Cartesian
-import math.coordsys.Position3D
-import math.coordsys.Vector3D
-import math.number.quaternion.Quaternion
+import crul.math.coordsys.Cartesian
+import crul.math.coordsys.Position3D
+import crul.math.coordsys.Vector3D
+import crul.math.number.quaternion.Quaternion
 
 /**
  *  Functions for perform rotations of a position.

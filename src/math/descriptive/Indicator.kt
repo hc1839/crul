@@ -14,9 +14,9 @@
  *  under the License.
  */
 
-package math.descriptive
+package crul.math.descriptive
 
-import math.fuzzy.Membership
+import crul.math.fuzzy.Membership
 
 /**
  *  Indicator function.

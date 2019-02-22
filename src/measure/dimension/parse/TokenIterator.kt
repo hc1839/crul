@@ -14,10 +14,10 @@
  *  under the License.
  */
 
-package measure.dimension.parse
+package crul.measure.dimension.parse
 
-import parse.ParseNode
-import parse.TokenIterator as TokenIteratorIntf
+import crul.parse.ParseNode
+import crul.parse.TokenIterator as TokenIteratorIntf
 
 /**
  *  Iterator of tokens of an ISQ dimension.

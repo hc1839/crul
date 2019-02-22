@@ -14,17 +14,17 @@
  *  under the License.
  */
 
-package measure
+package crul.measure
 
 import kotlin.math.pow
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import measure.dimension.BaseDimension
-import measure.dimension.Dimension
-import measure.unit.UnitOfMeasure
-import measure.unit.UnitSystem
-import serialize.BinarySerializable
+import crul.measure.dimension.BaseDimension
+import crul.measure.dimension.Dimension
+import crul.measure.unit.UnitOfMeasure
+import crul.measure.unit.UnitSystem
+import crul.serialize.BinarySerializable
 
 /**
  *  Quantity containing a numerical value and a unit.
@@ -116,7 +116,7 @@ class Quantity : Comparable<Quantity>, BinarySerializable {
         other is Quantity &&
         this::class == other::class &&
         (
-            float.Comparison.nearlyEquals(
+            crul.float.Comparison.nearlyEquals(
                 value,
                 other.value(unit)
             ) &&

@@ -14,13 +14,13 @@
  *  under the License.
  */
 
-package math.number.quaternion
+package crul.math.number.quaternion
 
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import math.coordsys.Vector3D
-import serialize.BinarySerializable
+import crul.math.coordsys.Vector3D
+import crul.serialize.BinarySerializable
 
 /**
  *  Quaternion.

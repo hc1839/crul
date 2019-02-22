@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package chemistry.species
+package crul.chemistry.species
 
 /**
  *  Interface for a fragment, which is a non-emtpy [Complex] of [Atom].

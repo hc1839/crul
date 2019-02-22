@@ -17,7 +17,7 @@
 @file:JvmName("Datatype")
 @file:JvmMultifileClass
 
-package xml
+package crul.xml
 
 /**
  *  Functions related to data types in XML.

@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package math.coordsys
+package crul.math.coordsys
 
 /**
  *  Vector in three dimensions.

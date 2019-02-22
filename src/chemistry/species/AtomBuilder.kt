@@ -14,11 +14,11 @@
  *  under the License.
  */
 
-package chemistry.species
+package crul.chemistry.species
 
-import chemistry.species.Element
-import chemistry.species.impl.AtomImpl
-import math.coordsys.Vector3D
+import crul.chemistry.species.Element
+import crul.chemistry.species.impl.AtomImpl
+import crul.math.coordsys.Vector3D
 
 /**
  *  Mutable builder for [Atom].
@@ -91,7 +91,7 @@ open class AtomBuilder<B : AtomBuilder<B>> {
             _element!!,
             _position!!,
             _formalCharge!!,
-            _name ?: uuid.Generator.inNCName()
+            _name ?: crul.uuid.Generator.inNCName()
         )
 
     companion object {

@@ -14,9 +14,9 @@
  *  under the License.
  */
 
-package hierarchy.tree.traversal
+package crul.hierarchy.tree.traversal
 
-import hierarchy.tree.Node
+import crul.hierarchy.tree.Node
 
 /**
  *  Iterator over nodes in a tree.

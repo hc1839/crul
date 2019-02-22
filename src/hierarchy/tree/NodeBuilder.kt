@@ -14,11 +14,11 @@
  *  under the License.
  */
 
-package hierarchy.tree
+package crul.hierarchy.tree
 
-import hierarchy.tree.traversal.NodeIterator
-import hierarchy.tree.traversal.TraversalOrder
-import hierarchy.tree.traversal.TreeWalker
+import crul.hierarchy.tree.traversal.NodeIterator
+import crul.hierarchy.tree.traversal.TraversalOrder
+import crul.hierarchy.tree.traversal.TreeWalker
 
 /**
  *  Mutable builder for [Node].

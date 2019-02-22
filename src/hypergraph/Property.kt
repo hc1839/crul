@@ -14,18 +14,18 @@
  *  under the License.
  */
 
-package hypergraph
+package crul.hypergraph
 
-import hypergraph.compare.Equality
-import hypergraph.notify.*
-import hypergraph.reference.ConstructReference
+import crul.hypergraph.compare.Equality
+import crul.hypergraph.notify.*
+import crul.hypergraph.reference.ConstructReference
 
 /**
  *  Property.
  */
 class Property :
     CanBeProxied,
-    hypergraph.base.Property
+    crul.hypergraph.base.Property
 {
     private val propertyRef: ConstructReference<Property>
 
@@ -33,7 +33,7 @@ class Property :
 
     private val graphRef: ConstructReference<Graph>
 
-    override var type: hypergraph.base.Vertex
+    override var type: crul.hypergraph.base.Vertex
         get() {
             if (isRedirected) {
                 return propertyRef.get()!!.type
@@ -112,7 +112,7 @@ class Property :
         value: String,
         parentVertex: Vertex
     ) {
-        if (!xml.Datatype.isNCName(id)) {
+        if (!crul.xml.Datatype.isNCName(id)) {
             throw IllegalArgumentException(
                 "ID does not conform to XML NCName production: $id"
             )
@@ -313,10 +313,10 @@ class Property :
         }
     }
 
-    private object FriendKey : visaccess.FriendKey()
+    private object FriendKey : crul.visaccess.FriendKey()
 
-    open class FriendAccess(key: visaccess.FriendKey) :
-        visaccess.FriendAccess
+    open class FriendAccess(key: crul.visaccess.FriendKey) :
+        crul.visaccess.FriendAccess
     {
         init {
             if (key != FriendKey) {

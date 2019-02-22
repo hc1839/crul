@@ -14,9 +14,9 @@
  *  under the License.
  */
 
-package chemistry.species
+package crul.chemistry.species
 
-import chemistry.species.impl.ComplexImpl
+import crul.chemistry.species.impl.ComplexImpl
 
 /**
  *  Mutable builder for [Complex].

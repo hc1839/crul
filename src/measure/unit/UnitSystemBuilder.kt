@@ -14,10 +14,10 @@
  *  under the License.
  */
 
-package measure.unit
+package crul.measure.unit
 
-import measure.dimension.BaseDimension
-import measure.unit.UnitOfMeasure
+import crul.measure.dimension.BaseDimension
+import crul.measure.unit.UnitOfMeasure
 
 /**
  *  Mutable builder for [UnitSystem].

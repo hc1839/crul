@@ -14,19 +14,19 @@
  *  under the License.
  */
 
-package hypergraph
+package crul.hypergraph
 
-import hypergraph.base.Construct
-import hypergraph.compare.Equality
-import hypergraph.compare.Hashing
-import hypergraph.indexer.*
-import hypergraph.notify.*
-import hypergraph.reference.ConstructReference
+import crul.hypergraph.base.Construct
+import crul.hypergraph.compare.Equality
+import crul.hypergraph.compare.Hashing
+import crul.hypergraph.indexer.*
+import crul.hypergraph.notify.*
+import crul.hypergraph.reference.ConstructReference
 
 /**
  *  Vertex.
  */
-class Vertex : hypergraph.base.Vertex {
+class Vertex : crul.hypergraph.base.Vertex {
     /**
      *  Reference to this vertex.
      *
@@ -201,7 +201,7 @@ class Vertex : hypergraph.base.Vertex {
         involvedEdgeIndexer.remove(edgeRef)
     }
 
-    override var proxied: hypergraph.base.CanBeProxied? = null
+    override var proxied: crul.hypergraph.base.CanBeProxied? = null
         get() {
             if (isRedirected) {
                 return vertexRef.get()!!.proxied
@@ -307,7 +307,7 @@ class Vertex : hypergraph.base.Vertex {
             return
         }
 
-        if (!xml.Datatype.isNCName(name)) {
+        if (!crul.xml.Datatype.isNCName(name)) {
             throw IllegalArgumentException(
                 "Name does not conform to XML NCName production: $name"
             )
@@ -372,7 +372,10 @@ class Vertex : hypergraph.base.Vertex {
             return involvedEdgeIndexer.constructs.toList()
         }
 
-    override fun getEdgesByType(type: hypergraph.base.Vertex): List<Edge> {
+    override fun getEdgesByType(
+        type: crul.hypergraph.base.Vertex
+    ): List<Edge>
+    {
         if (isRedirected) {
             return vertexRef.get()!!.getEdgesByType(type)
         }
@@ -417,7 +420,7 @@ class Vertex : hypergraph.base.Vertex {
         return involvedInTypeIndexer.constructs.toList()
     }
 
-    override fun addType(type: hypergraph.base.Vertex) {
+    override fun addType(type: crul.hypergraph.base.Vertex) {
         if (isRedirected) {
             return vertexRef.get()!!.addType(type)
         }
@@ -447,7 +450,7 @@ class Vertex : hypergraph.base.Vertex {
         type.involvedInTypeIndexer.add(vertexRef)
     }
 
-    override fun removeType(type: hypergraph.base.Vertex) {
+    override fun removeType(type: crul.hypergraph.base.Vertex) {
         if (isRedirected) {
             return vertexRef.get()!!.removeType(type)
         }
@@ -586,7 +589,7 @@ class Vertex : hypergraph.base.Vertex {
 
             // Guarantee the uniqueness of the generated UUID within the graph.
             do {
-                newId = uuid.Generator.inNCName()
+                newId = crul.uuid.Generator.inNCName()
             } while (graph.getConstructById(newId) != null)
 
             return createProperty(newId, type, value)
@@ -610,7 +613,7 @@ class Vertex : hypergraph.base.Vertex {
     }
 
     override fun createProperty(
-        type: hypergraph.base.Vertex,
+        type: crul.hypergraph.base.Vertex,
         value: String
     ): Property {
         if (isRedirected) {
@@ -661,7 +664,7 @@ class Vertex : hypergraph.base.Vertex {
     }
 
     override fun getPropertiesByType(
-        type: hypergraph.base.Vertex
+        type: crul.hypergraph.base.Vertex
     ): List<Property> {
         if (isRedirected) {
             return vertexRef.get()!!.getPropertiesByType(type)
@@ -911,10 +914,10 @@ class Vertex : hypergraph.base.Vertex {
         }
     }
 
-    private object FriendKey : visaccess.FriendKey()
+    private object FriendKey : crul.visaccess.FriendKey()
 
-    open class FriendAccess(key: visaccess.FriendKey) :
-        visaccess.FriendAccess
+    open class FriendAccess(key: crul.visaccess.FriendKey) :
+        crul.visaccess.FriendAccess
     {
         init {
             if (key != FriendKey) {

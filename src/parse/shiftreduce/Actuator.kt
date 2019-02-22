@@ -14,10 +14,10 @@
  *  under the License.
  */
 
-package parse.shiftreduce
+package crul.parse.shiftreduce
 
-import parse.ColorFiller
-import parse.ParseNode
+import crul.parse.ColorFiller
+import crul.parse.ParseNode
 
 /**
  *  Actuator that executes a sequence of shift-reduce steps.

@@ -14,7 +14,7 @@
  *  under the License.
  */
 
-package permute.variation
+package crul.permute.variation
 
 /**
  *  Uses the values from an `Iterable` as the values to variate over in order.

@@ -16,7 +16,7 @@
 
 @file:JvmMultifileClass
 
-package uuid
+package crul.uuid
 
 /**
  *  Generator for UUIDs.
@@ -31,7 +31,7 @@ object Generator {
 
         do {
             id = java.util.UUID.randomUUID().toString()
-        } while (!xml.Datatype.isNCName(id))
+        } while (!crul.xml.Datatype.isNCName(id))
 
         return id
     }

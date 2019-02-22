@@ -14,16 +14,16 @@
  *  under the License.
  */
 
-package measure.dimension
+package crul.measure.dimension
 
 import kotlin.math.pow
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import measure.dimension.parse.Production
-import measure.dimension.parse.TokenIterator
-import parse.shiftreduce.Actuator
-import serialize.BinarySerializable
+import crul.measure.dimension.parse.Production
+import crul.measure.dimension.parse.TokenIterator
+import crul.parse.shiftreduce.Actuator
+import crul.serialize.BinarySerializable
 
 /**
  *  Dimension of a quantity according to the International System of Quantities

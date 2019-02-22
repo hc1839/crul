@@ -14,10 +14,10 @@
  *  under the License.
  */
 
-package chemistry.species.impl
+package crul.chemistry.species.impl
 
-import chemistry.species.AbstractComplex
-import chemistry.species.Species
+import crul.chemistry.species.AbstractComplex
+import crul.chemistry.species.Species
 
 /**
  *  Default implementation of [Complex].

@@ -14,11 +14,11 @@
  *  under the License.
  */
 
-package hypergraph.indexer
+package crul.hypergraph.indexer
 
-import hypergraph.base.Construct
-import hypergraph.compare.ConstructSetElement
-import hypergraph.reference.ConstructReference
+import crul.hypergraph.base.Construct
+import crul.hypergraph.compare.ConstructSetElement
+import crul.hypergraph.reference.ConstructReference
 
 /**
  *  Indexer for constructs involving in other constructs.

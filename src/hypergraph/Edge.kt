@@ -14,26 +14,26 @@
  *  under the License.
  */
 
-package hypergraph
+package crul.hypergraph
 
-import hypergraph.base.Construct
-import hypergraph.compare.Equality
-import hypergraph.indexer.*
-import hypergraph.notify.*
-import hypergraph.reference.ConstructReference
+import crul.hypergraph.base.Construct
+import crul.hypergraph.compare.Equality
+import crul.hypergraph.indexer.*
+import crul.hypergraph.notify.*
+import crul.hypergraph.reference.ConstructReference
 
 /**
  *  Edge.
  */
 class Edge :
     CanBeProxied,
-    hypergraph.base.Edge
+    crul.hypergraph.base.Edge
 {
     private val edgeRef: ConstructReference<Edge>
 
     private val graphRef: ConstructReference<Graph>
 
-    override var type: hypergraph.base.Vertex
+    override var type: crul.hypergraph.base.Vertex
         get() {
             if (isRedirected) {
                 return edgeRef.get()!!.type
@@ -94,7 +94,7 @@ class Edge :
         type: Vertex,
         parentGraph: Graph
     ) {
-        if (!xml.Datatype.isNCName(id)) {
+        if (!crul.xml.Datatype.isNCName(id)) {
             throw IllegalArgumentException(
                 "ID does not conform to XML NCName production: $id"
             )
@@ -196,7 +196,7 @@ class Edge :
         }
 
     /**
-     *  Overrides [hypergraph.base.Edge.vertices].
+     *  Overrides [crul.hypergraph.base.Edge.vertices].
      *
      *  If the edge is newly created and no vertices have been added with
      *  [addVertex], an exception is raised.
@@ -220,7 +220,7 @@ class Edge :
         vertex.addInvolvedEdge(Friendship, edgeRef)
     }
 
-    override fun addVertex(vertex: hypergraph.base.Vertex) {
+    override fun addVertex(vertex: crul.hypergraph.base.Vertex) {
         if (isRedirected) {
             return edgeRef.get()!!.addVertex(vertex)
         }
@@ -248,7 +248,7 @@ class Edge :
         vertex.removeInvolvedEdge(Friendship, edgeRef)
     }
 
-    override fun removeVertex(vertex: hypergraph.base.Vertex) {
+    override fun removeVertex(vertex: crul.hypergraph.base.Vertex) {
         if (isRedirected) {
             return edgeRef.get()!!.removeVertex(vertex)
         }
@@ -364,7 +364,7 @@ class Edge :
      *  graph.
      *
      *  The recognized message types are
-     *      - [hypergraph.notify.VertexRedirected]
+     *      - [crul.hypergraph.notify.VertexRedirected]
      */
     @Suppress("UNUSED_PARAMETER")
     fun notify(
@@ -391,10 +391,10 @@ class Edge :
         }
     }
 
-    private object FriendKey : visaccess.FriendKey()
+    private object FriendKey : crul.visaccess.FriendKey()
 
-    open class FriendAccess(key: visaccess.FriendKey) :
-        visaccess.FriendAccess
+    open class FriendAccess(key: crul.visaccess.FriendKey) :
+        crul.visaccess.FriendAccess
     {
         init {
             if (key != FriendKey) {

@@ -16,7 +16,7 @@
 
 @file:JvmMultifileClass
 
-package chemistry.species.format
+package crul.chemistry.species.format
 
 import java.io.StringWriter
 import javax.xml.parsers.DocumentBuilderFactory
@@ -26,12 +26,12 @@ import javax.xml.transform.stream.StreamResult
 import kotlin.math.round
 import kotlin.math.roundToInt
 
-import chemistry.species.Atom
-import chemistry.species.MoleculeComplex
-import float.Comparison.nearlyEquals
-import measure.Quantity
-import measure.dimension.BaseDimension
-import measure.unit.UnitOfMeasure
+import crul.chemistry.species.Atom
+import crul.chemistry.species.MoleculeComplex
+import crul.float.Comparison.nearlyEquals
+import crul.measure.Quantity
+import crul.measure.dimension.BaseDimension
+import crul.measure.unit.UnitOfMeasure
 
 /**
  *  Functions related to Chemical Markup Language (CML).
@@ -56,7 +56,7 @@ object Cml {
     fun <A : Atom> MoleculeComplex<A>.toCml(
         fromLengthUnit: UnitOfMeasure,
         toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
-        name: String = uuid.Generator.inNCName()
+        name: String = crul.uuid.Generator.inNCName()
     ): String
     {
         if (!fromLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {

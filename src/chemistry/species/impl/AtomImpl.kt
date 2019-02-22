@@ -14,15 +14,15 @@
  *  under the License.
  */
 
-package chemistry.species.impl
+package crul.chemistry.species.impl
 
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import chemistry.species.AbstractAtom
-import chemistry.species.Atom
-import chemistry.species.Element
-import math.coordsys.Vector3D
+import crul.chemistry.species.AbstractAtom
+import crul.chemistry.species.Atom
+import crul.chemistry.species.Element
+import crul.math.coordsys.Vector3D
 
 /**
  *  Default implementation of [Atom].
@@ -32,7 +32,7 @@ internal class AtomImpl : AbstractAtom {
         element: Element,
         position: Vector3D,
         formalCharge: Double,
-        name: String = uuid.Generator.inNCName()
+        name: String = crul.uuid.Generator.inNCName()
     ): super(
         element,
         position,

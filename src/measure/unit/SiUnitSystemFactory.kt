@@ -14,9 +14,9 @@
  *  under the License.
  */
 
-package measure.unit
+package crul.measure.unit
 
-import measure.dimension.BaseDimension
+import crul.measure.dimension.BaseDimension
 
 /**
  *  Factory for SI unit system.

@@ -14,14 +14,14 @@
  *  under the License.
  */
 
-package chemistry.species
+package crul.chemistry.species
 
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import chemistry.species.Element
-import math.coordsys.Vector3D
-import serialize.BinarySerializable
+import crul.chemistry.species.Element
+import crul.math.coordsys.Vector3D
+import crul.serialize.BinarySerializable
 
 /**
  *  Skeletal implementation of [Atom].
@@ -56,9 +56,9 @@ abstract class AbstractAtom :
         element: Element,
         position: Vector3D,
         formalCharge: Double,
-        name: String = uuid.Generator.inNCName()
+        name: String = crul.uuid.Generator.inNCName()
     ) {
-        if (!xml.Datatype.isNCName(name)) {
+        if (!crul.xml.Datatype.isNCName(name)) {
             throw IllegalArgumentException(
                 "Name does not conform to XML NCName production: $name"
             )
