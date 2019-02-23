@@ -47,9 +47,11 @@ interface Atom : Species {
     var formalCharge: Double
 
     /**
-     *  Arbitrary name.
+     *  Identifier for this atom.
+     *
+     *  It must conform to XML NCName production.
      */
-    val name: String
+    val id: String
 
     abstract override fun clone(): Atom
 }

@@ -46,16 +46,35 @@ open class CmlDeserializer<B : CmlDeserializer<B>>:
 {
     /**
      *  @param atomBuilder
-     *      Builder for constructing atoms.
+     *      Builder for constructing atoms. Identifier in this builder is
+     *      ignored.
+     *
+     *  @param bondBuilder
+     *      Builder for constructing bonds.
      *
      *  @param complexBuilder
-     *      Builder for constructing the complex.
+     *      Builder for constructing the complex. Identifier in this builder is
+     *      ignored.
      */
     protected constructor(
         atomBuilder: AtomBuilder<*>,
         bondBuilder: BondBuilder<*>,
         complexBuilder: MoleculeComplexBuilder<*>
     ): super(atomBuilder, bondBuilder, complexBuilder)
+
+    protected var _id: String? = null
+        private set
+
+    /**
+     *  Configures the identifier.
+     *
+     *  If it is not set, the `id` attribute of the root element, `molecule`,
+     *  is used.
+     */
+    fun id(value: String?): B {
+        _id = value
+        return _this
+    }
 
     protected var _fromLengthUnit: UnitOfMeasure? = null
         private set
@@ -121,7 +140,7 @@ open class CmlDeserializer<B : CmlDeserializer<B>>:
             .evaluate("/*/atomArray/atom", cmlDoc, XPathConstants.NODESET)
             as NodeList
 
-        val atomsByName: MutableMap<String, A> = mutableMapOf()
+        val atomsById: MutableMap<String, A> = mutableMapOf()
 
         // Construct each atom using the information stored in the node.
         for (index in 0 until atomsNodeList.length) {
@@ -147,11 +166,11 @@ open class CmlDeserializer<B : CmlDeserializer<B>>:
                     0.0
                 }
 
-            val atomName = atomNode.getAttribute("id")
+            val atomId = atomNode.getAttribute("id")
 
-            if (atomsByName.containsKey(atomName)) {
+            if (atomsById.containsKey(atomId)) {
                 throw RuntimeException(
-                    "Atom with the same name has already been added: $atomName"
+                    "Atom with the same ID has already been added: $atomId"
                 )
             }
 
@@ -160,11 +179,11 @@ open class CmlDeserializer<B : CmlDeserializer<B>>:
                 .element(element)
                 .position(position)
                 .formalCharge(formalCharge)
-                .name(atomName)
+                .id(atomId)
                 .build()
 
             @Suppress("UNCHECKED_CAST")
-            atomsByName[atomName] = atom as A
+            atomsById[atomId] = atom as A
         }
 
         // Check that the formal charge specified in the root node matches the
@@ -177,7 +196,7 @@ open class CmlDeserializer<B : CmlDeserializer<B>>:
             if (
                 !nearlyEquals(
                     molecularFormalCharge,
-                    atomsByName
+                    atomsById
                         .values
                         .map { it.formalCharge }
                         .reduce { acc, item -> acc + item }
@@ -204,12 +223,12 @@ open class CmlDeserializer<B : CmlDeserializer<B>>:
 
         // Construct each bond.
         for (bondNode in bondNodes) {
-            val atomNames = bondNode
+            val atomRefids = bondNode
                 .getAttribute("atomRefs2")
                 .trim()
                 .split(Regex("\\s+"))
 
-            if (atomNames.count() != 2) {
+            if (atomRefids.count() != 2) {
                 throw RuntimeException(
                     "'bond' element node does not specify " +
                     "exactly two atom names."
@@ -218,15 +237,18 @@ open class CmlDeserializer<B : CmlDeserializer<B>>:
 
             bonds.add(
                 bondBuilder
-                    .atom1(atomsByName[atomNames[0]]!!)
-                    .atom2(atomsByName[atomNames[1]]!!)
+                    .atom1(atomsById[atomRefids[0]]!!)
+                    .atom2(atomsById[atomRefids[1]]!!)
                     .order(bondNode.getAttribute("order"))
                     .build()
             )
         }
 
+        complexBuilder.clear()
+        complexBuilder.id(_id ?: moleculeNode.getAttribute("id"))
+
         // Add the atoms to the complex builder.
-        for (atom in atomsByName.values) {
+        for (atom in atomsById.values) {
             complexBuilder.addAtom(atom)
         }
 

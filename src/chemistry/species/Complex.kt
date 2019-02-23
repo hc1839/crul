@@ -42,6 +42,17 @@ interface Complex<S : Species> :
     override fun isEmpty(): Boolean =
         iterator().asSequence().count() == 0
 
+    override fun atoms(): Iterator<Atom> =
+        iterator()
+            .asSequence()
+            .flatMap { it.atoms().asSequence() }
+            .iterator()
+
+    /**
+     *  Clones this complex along with its subspecies.
+     */
+    abstract override fun clone(): Complex<S>
+
     /**
      *  Centroid of [atoms].
      *
@@ -81,15 +92,4 @@ interface Complex<S : Species> :
                 atom.position += centroidDisplacement
             }
         }
-
-    override fun atoms(): Iterator<Atom> =
-        iterator()
-            .asSequence()
-            .flatMap { it.atoms().asSequence() }
-            .iterator()
-
-    /**
-     *  Clones this complex along with its subspecies.
-     */
-    abstract override fun clone(): Complex<S>
 }

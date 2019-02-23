@@ -62,6 +62,21 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
     constructor(other: MoleculeComplexBuilder<B>) {
         this._bonds.addAll(other._bonds.map { it.clone() })
         this._singletons.addAll(other._singletons.map { it.clone() })
+
+        this._id = other._id
+    }
+
+    protected var _id: String? = null
+        private set
+
+    /**
+     *  Configures the identifier.
+     *
+     *  If it is not set, UUID Version 4 is used.
+     */
+    fun id(value: String?): B {
+        _id = value
+        return _this
     }
 
     /**
@@ -72,9 +87,9 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      *  An exception is raised in the following scenarios.
      *      - An unequal bond with both atoms being equal to the atoms in the
      *        given bond, regardless of the equality of the bond order.
-     *      - Another bond has an unequal atom with the same name or an equal
-     *        atom with a different name compared to one of the atoms in the
-     *        given bond.
+     *      - Another bond has an unequal atom with the same ID or an equal
+     *        atom with a different ID compared to one of the atoms in the given
+     *        bond.
      */
     open fun addBond(newBond: Bond<Atom>): B {
         if (_bonds.contains(newBond)) {
@@ -94,17 +109,17 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
                 )
             }
 
-            // Atoms of the existing bond associated by name.
-            val existingAtomsByName = existingAtoms.associateBy { it.name }
+            // Atoms of the existing bond associated by ID.
+            val existingAtomsById = existingAtoms.associateBy { it.id }
 
             for (newAtom in newAtoms) {
                 if (
-                    existingAtomsByName.containsKey(newAtom.name) &&
-                    newAtom != existingAtomsByName[newAtom.name]!!
+                    existingAtomsById.containsKey(newAtom.id) &&
+                    newAtom != existingAtomsById[newAtom.id]!!
                 ) {
                     throw IllegalArgumentException(
-                        "Different atom with the same name exists: " +
-                        newAtom.name
+                        "Different atom with the same ID exists: " +
+                        newAtom.id
                     )
                 }
 
@@ -113,11 +128,11 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
 
                 if (
                     equivalentExistingAtom != null &&
-                    equivalentExistingAtom.name != newAtom.name
+                    equivalentExistingAtom.id != newAtom.id
                 ) {
                     throw IllegalArgumentException(
-                        "Equivalent atoms have different names: " +
-                        "'${equivalentExistingAtom.name}' and '${newAtom.name}'"
+                        "Equivalent atoms have different IDs: " +
+                        "'${equivalentExistingAtom.id}' and '${newAtom.id}'"
                     )
                 }
             }
@@ -140,8 +155,8 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
     /**
      *  Adds an atom as a singleton molecule.
      *
-     *  If an unequal atom with the same name or an equal atom with a different
-     *  name exists (as a singleton molecule or as one of the atoms in a bond),
+     *  If an unequal atom with the same ID or an equal atom with a different
+     *  ID exists (as a singleton molecule or as one of the atoms in a bond),
      *  an exception is raised.
      */
     open fun addAtom(newAtom: Atom): B {
@@ -156,22 +171,22 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
         // Sanity checks.
         for (existingAtom in existingAtomsAll) {
             if (
-                newAtom.name == existingAtom.name &&
+                newAtom.id == existingAtom.id &&
                 newAtom != existingAtom
             ) {
                 throw IllegalArgumentException(
-                    "Different atom with the same name exists: " +
-                    newAtom.name
+                    "Different atom with the same ID exists: " +
+                    newAtom.id
                 )
             }
 
             if (
                 newAtom == existingAtom &&
-                newAtom.name != existingAtom.name
+                newAtom.id != existingAtom.id
             ) {
                 throw IllegalArgumentException(
-                    "Equivalent atoms have different names: " +
-                    "'${existingAtom.name}' and '${newAtom.name}'"
+                    "Equivalent atoms have different IDs: " +
+                    "'${existingAtom.id}' and '${newAtom.id}'"
                 )
             }
         }
@@ -184,20 +199,20 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
     /**
      *  Removes a singleton molecule.
      *
-     *  If an unequal atom with the same name or an equal atom with a different
-     *  name exists (only as a singleton molecule), an exception is raised.
+     *  If an unequal atom with the same ID or an equal atom with a different
+     *  ID exists (only as a singleton molecule), an exception is raised.
      */
     open fun removeAtom(oldAtom: Atom): B {
-        val existingAtomOfSameName = _singletons
-            .find { it.name == oldAtom.name }
+        val existingAtomOfSameId = _singletons
+            .find { it.id == oldAtom.id }
 
         if (
-            existingAtomOfSameName != null &&
-            existingAtomOfSameName != oldAtom
+            existingAtomOfSameId != null &&
+            existingAtomOfSameId != oldAtom
         ) {
             throw IllegalArgumentException(
-                "Different atom with the same name exists: " +
-                oldAtom.name
+                "Different atom with the same ID exists: " +
+                oldAtom.id
             )
         }
 
@@ -206,11 +221,11 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
 
         if (
             equivalentExistingAtom != null &&
-            equivalentExistingAtom.name != oldAtom.name
+            equivalentExistingAtom.id != oldAtom.id
         ) {
             throw IllegalArgumentException(
-                "Equivalent atoms have different names: " +
-                "'${equivalentExistingAtom.name}' and '${oldAtom.name}'"
+                "Equivalent atoms have different IDs: " +
+                "'${equivalentExistingAtom.id}' and '${oldAtom.id}'"
             )
         }
 
@@ -245,7 +260,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
         for (atom in atomsAll) {
             // Create a vertex for the atom, and store the atom.
             val atomVertex = graph.createVertex()
-            atomVertex.addName(atom.name)
+            atomVertex.addName(atom.id)
             atomVertex.userData = atom
 
             // Create an edge representing a singleton fragment.
@@ -261,8 +276,8 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
         // Combine fragments based on atom connectivity.
         for (bond in _bonds) {
             val (atom1, atom2) = bond.toAtomPair()
-            val atom1Vertex = graph.getVertexByName(atom1.name)!!
-            val atom2Vertex = graph.getVertexByName(atom2.name)!!
+            val atom1Vertex = graph.getVertexByName(atom1.id)!!
+            val atom2Vertex = graph.getVertexByName(atom2.id)!!
 
             // Fragment that contains the first atom.
             val fragment1Edge = atom1Vertex
@@ -286,8 +301,8 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
                 // Combine the two different fragments with the second fragment
                 // as the arbitrary target.
 
-                // Names of atoms in the first fragment.
-                val migrantAtomNames = fragment1Edge
+                // IDs of atoms in the first fragment.
+                val migrantAtomIds = fragment1Edge
                     .vertices
                     .map { it.names.single() }
 
@@ -315,9 +330,9 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
 
                 // Add atom vertices from the first fragment edge to the
                 // second.
-                for (migrantAtomName in migrantAtomNames) {
+                for (migrantAtomId in migrantAtomIds) {
                     val migrantAtomVertex = graph
-                        .getVertexByName(migrantAtomName)!!
+                        .getVertexByName(migrantAtomId)!!
 
                     fragment2Edge.addVertex(migrantAtomVertex)
                 }
@@ -380,6 +395,17 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
     }
 
     /**
+     *  Removes all bonds and atoms from this builder.
+     *
+     *  Identifier remains intact.
+     */
+    fun clear(): B {
+        _bonds.clear()
+        _singletons.clear()
+        return _this
+    }
+
+    /**
      *  Constructs a [MoleculeComplex] from the data in this builder.
      */
     open fun <A : Atom> build(): MoleculeComplex<A> =
@@ -404,7 +430,8 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
                         "${speciesComplex.first()::class.qualifiedName}"
                     )
                 }
-            }
+            },
+            _id ?: crul.uuid.Generator.inNCName()
         )
 
     /**

@@ -46,17 +46,12 @@ object Cml {
      *  @param toLengthUnit
      *      The unit of length that the coordinates in the CML output are in.
      *      Unit information is not stored in the CML output.
-     *
-     *  @param name
-     *      ID attribute value for the root node ('molecule') in the CML
-     *      output.
      */
     @JvmStatic
     @JvmOverloads
     fun <A : Atom> MoleculeComplex<A>.toCml(
         fromLengthUnit: UnitOfMeasure,
-        toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
-        name: String = crul.uuid.Generator.inNCName()
+        toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao")
     ): String
     {
         if (!fromLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
@@ -99,7 +94,7 @@ object Cml {
             }
         )
 
-        moleculeNode.setAttribute("id", name)
+        moleculeNode.setAttribute("id", id)
 
         // Create and append the node for an array of atoms.
         val atomArrayNode = cmlDoc.createElement("atomArray")
@@ -110,7 +105,7 @@ object Cml {
             val atomNode = cmlDoc.createElement("atom")
             atomArrayNode.appendChild(atomNode)
 
-            atomNode.setAttribute("id", atom.name)
+            atomNode.setAttribute("id", atom.id)
             atomNode.setAttribute("elementType", atom.element.symbol)
 
             val cmptsByName = listOf("x3", "y3", "z3")
@@ -163,7 +158,7 @@ object Cml {
                 bond
                     .atoms()
                     .asSequence()
-                    .map { it.name }
+                    .map { it.id }
                     .joinToString(" ")
             )
 

@@ -41,16 +41,16 @@ interface Fragment<A : Atom> : Complex<A> {
     fun containsAtom(atom: A): Boolean
 
     /**
-     *  Gets an atom by its name, or `null` if there is no such atom.
+     *  Gets an atom by its ID, or `null` if there is no such atom.
      *
-     *  If this fragment has more than one atom with the same given name, the
+     *  If this fragment has more than one atom with the same given ID, the
      *  first one encountered is returned.
      */
-    fun getAtomByName(atomName: String): A? =
+    fun getAtomById(atomId: String): A? =
         @Suppress("UNCHECKED_CAST") (
             atoms()
                 .asSequence()
-                .firstOrNull { it.name == atomName }
+                .firstOrNull { it.id == atomId }
         )
 
     override fun atoms(): Iterator<A> =

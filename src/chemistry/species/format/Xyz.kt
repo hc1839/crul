@@ -36,8 +36,8 @@ object Xyz {
      *  @param toLengthUnit
      *      The unit of length that the coordinates in the XYZ output are in.
      *
-     *  @param name
-     *      Name of the complex to use in the XYZ output.
+     *  @param label
+     *      Label to use for the complex in the XYZ output.
      *
      *  @param separator
      *      Separator to use between columns in the output.
@@ -47,7 +47,7 @@ object Xyz {
     fun <A : Atom> MoleculeComplex<A>.toXyz(
         fromLengthUnit: UnitOfMeasure,
         toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
-        name: String = crul.uuid.Generator.inNCName(),
+        label: String = crul.uuid.Generator.inNCName(),
         separator: String = " "
     ): String
     {
@@ -64,11 +64,10 @@ object Xyz {
         }
 
         var xyzBuilder = ""
-
         val atomsBuf = atoms().asSequence().toList()
 
         xyzBuilder += atomsBuf.count().toString() + "\n"
-        xyzBuilder += name + "\n"
+        xyzBuilder += label + "\n"
 
         for (atom in atomsBuf) {
             xyzBuilder += atom.element.symbol + separator

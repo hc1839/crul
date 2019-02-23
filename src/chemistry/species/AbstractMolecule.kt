@@ -79,13 +79,13 @@ abstract class AbstractMolecule<A : Atom> :
                 .map { atom ->
                     val existingVertex = this
                         .graph
-                        .getVertexByName(atom.name)
+                        .getVertexByName(atom.id)
 
-                    // Check for another atom with the same name.
+                    // Check for another atom with the same ID.
                     if (existingVertex == null) {
                         val atomVertex = this.graph.createVertex()
 
-                        atomVertex.addName(atom.name)
+                        atomVertex.addName(atom.id)
                         atomVertex.userData = atom
 
                         atomVertex
@@ -95,8 +95,8 @@ abstract class AbstractMolecule<A : Atom> :
 
                         if (existingAtom != atom) {
                             throw IllegalArgumentException(
-                                "Another atom with the same name exists: " +
-                                atom.name
+                                "Another atom with the same ID exists: " +
+                                atom.id
                             )
                         }
 
@@ -193,13 +193,13 @@ abstract class AbstractMolecule<A : Atom> :
         // Replace the other atom with the cloned version stored in the
         // superclass.
         for (atom in _subspecies) {
-            val atomVertex = this.graph.getVertexByName(atom.name)!!
+            val atomVertex = this.graph.getVertexByName(atom.id)!!
             atomVertex.userData = atom
         }
     }
 
     override fun containsAtom(atom: A): Boolean {
-        val atomVertex = graph.getVertexByName(atom.name)
+        val atomVertex = graph.getVertexByName(atom.id)
 
         return atomVertex?.userData == atom
     }
@@ -243,11 +243,11 @@ abstract class AbstractMolecule<A : Atom> :
         }
 
     override fun getBondsByAtom(atom: A): Set<Bond<A>> {
-        val atomVertex = graph.getVertexByName(atom.name)
+        val atomVertex = graph.getVertexByName(atom.id)
 
         if (atomVertex?.userData != atom) {
             throw IllegalArgumentException(
-                "No such atom: ${atom.name}"
+                "No such atom: ${atom.id}"
             )
         }
 
@@ -285,13 +285,13 @@ abstract class AbstractMolecule<A : Atom> :
     override fun getBond(atom1: A, atom2: A): Bond<A>? {
         val atomVertices = listOf(atom1, atom2)
             .map { atom ->
-                val atomVertex = graph.getVertexByName(atom.name)
+                val atomVertex = graph.getVertexByName(atom.id)
 
                 if (atomVertex != null) {
                     atomVertex
                 } else {
                     throw IllegalArgumentException(
-                        "No such atom: ${atom.name}"
+                        "No such atom: ${atom.id}"
                     )
                 }
             }

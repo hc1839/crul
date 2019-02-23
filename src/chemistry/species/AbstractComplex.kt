@@ -28,6 +28,10 @@ abstract class AbstractComplex<S : Species> : Complex<S> {
      */
     protected val _subspecies: MutableList<S>
 
+    /**
+     *  @param subspecies
+     *      Subspecies within this complex.
+     */
     constructor(subspecies: Iterable<S>) {
         this._subspecies = subspecies.toMutableList()
     }
@@ -36,6 +40,9 @@ abstract class AbstractComplex<S : Species> : Complex<S> {
      *  Copy constructor.
      *
      *  Subspecies are cloned.
+     *
+     *  @param other
+     *      Complex to copy.
      */
     constructor(other: AbstractComplex<S>) {
         @Suppress("UNCHECKED_CAST")

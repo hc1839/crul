@@ -19,8 +19,6 @@ package crul.chemistry.species
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import crul.serialize.BinarySerializable
-
 /**
  *  Skeletal implementation of [Fragment].
  */

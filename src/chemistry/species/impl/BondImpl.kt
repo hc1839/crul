@@ -59,9 +59,9 @@ internal class BondImpl<A : Atom> :
         atom2: A,
         order: String
     ) {
-        if (atom1 == atom2 || atom1.name == atom2.name) {
+        if (atom1 == atom2 || atom1.id == atom2.id) {
             throw IllegalArgumentException(
-                "Atoms are equal or have the same name."
+                "Atoms are equal or have the same ID."
             )
         }
 

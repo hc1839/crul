@@ -44,16 +44,16 @@ open class AtomBuilder<B : AtomBuilder<B>> {
         return _this
     }
 
-    protected var _name: String? = null
+    protected var _id: String? = null
         private set
 
     /**
-     *  Configures the name.
+     *  Configures the identifier.
      *
-     *  If `null`, the default argument is used.
+     *  If it is not set, UUID Version 4 is used.
      */
-    fun name(value: String?): B {
-        _name = value
+    fun id(value: String?): B {
+        _id = value
         return _this
     }
 
@@ -91,7 +91,7 @@ open class AtomBuilder<B : AtomBuilder<B>> {
             _element!!,
             _position!!,
             _formalCharge!!,
-            _name ?: crul.uuid.Generator.inNCName()
+            _id ?: crul.uuid.Generator.inNCName()
         )
 
     companion object {

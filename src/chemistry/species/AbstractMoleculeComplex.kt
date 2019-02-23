@@ -31,18 +31,54 @@ abstract class AbstractMoleculeComplex<A : Atom> :
     AbstractComplex<Molecule<A>>,
     MoleculeComplex<A>
 {
+    override val id: String
+
     /**
      *  @param molecules
      *      Molecules of the complex.
+     *
+     *  @param id
+     *      Identifier for this complex. It must conform to XML NCName
+     *      production.
      */
-    constructor(molecules: Iterable<Molecule<A>>): super(molecules)
+    @JvmOverloads
+    constructor(
+        molecules: Iterable<Molecule<A>>,
+        id: String = crul.uuid.Generator.inNCName()
+    ): super(molecules)
+    {
+        if (!crul.xml.Datatype.isNCName(id)) {
+            throw IllegalArgumentException(
+                "ID does not conform to XML NCName production: $id"
+            )
+        }
+
+        this.id = id
+    }
 
     /**
      *  Copy constructor.
      *
      *  Molecules are cloned.
+     *
+     *  @param id
+     *      Identifier to use for the copied complex. It must conform to XML
+     *      NCName production.
      */
-    constructor(other: AbstractMoleculeComplex<A>): super(other)
+    @JvmOverloads
+    constructor(
+        other: AbstractMoleculeComplex<A>,
+        id: String = other.id
+    ): super(other)
+    {
+        if (!crul.xml.Datatype.isNCName(id)) {
+            throw IllegalArgumentException(
+                "ID does not conform to XML NCName production: $id"
+            )
+        }
+
+        this.id = id
+    }
 
     override fun getMoleculeWithAtom(atom: A): Molecule<A>? =
         molecules()

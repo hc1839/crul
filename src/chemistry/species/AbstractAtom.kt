@@ -32,11 +32,11 @@ abstract class AbstractAtom :
 {
     override val element: Element
 
-    override val name: String
-
     override var position: Vector3D
 
     override var formalCharge: Double
+
+    override val id: String
 
     /**
      *  @param element
@@ -48,43 +48,38 @@ abstract class AbstractAtom :
      *  @param formalCharge
      *      Formal charge of the atom.
      *
-     *  @param name
-     *      Name of the atom. It must conform to XML NCName production.
+     *  @param id
+     *      Identifier for this atom. It must conform to XML NCName production.
      */
     @JvmOverloads
     constructor(
         element: Element,
         position: Vector3D,
         formalCharge: Double,
-        name: String = crul.uuid.Generator.inNCName()
+        id: String = crul.uuid.Generator.inNCName()
     ) {
-        if (!crul.xml.Datatype.isNCName(name)) {
+        if (!crul.xml.Datatype.isNCName(id)) {
             throw IllegalArgumentException(
-                "Name does not conform to XML NCName production: $name"
+                "ID does not conform to XML NCName production: $id"
             )
         }
 
         this.element = element
         this.position = position
         this.formalCharge = formalCharge
-        this.name = name
+        this.id = id
     }
 
     /**
      *  Copy constructor.
      */
-    constructor(other: AbstractAtom) {
+    @JvmOverloads
+    constructor(other: AbstractAtom, id: String = other.id) {
         this.element = other.element
         this.position = other.position
         this.formalCharge = other.formalCharge
-        this.name = other.name
+        this.id = id
     }
-
-    /**
-     *  Copy constructor using a different atom name.
-     */
-    constructor(other: AbstractAtom, name: String):
-        this(other.element, other.position, other.formalCharge, name)
 
     /**
      *  Initializes from a MessagePack map.
@@ -107,7 +102,7 @@ abstract class AbstractAtom :
             unpackedMap["position"]!!.asBinaryValue().asByteArray()
         ),
         unpackedMap["formal-charge"]!!.asFloatValue().toDouble(),
-        unpackedMap["name"]!!.asStringValue().toString()
+        unpackedMap["id"]!!.asStringValue().toString()
     )
 
     /**
@@ -122,14 +117,14 @@ abstract class AbstractAtom :
     )
 
     override fun hashCode(): Int =
-        listOf(element.hashCode(), name.hashCode()).hashCode()
+        listOf(element.hashCode(), id.hashCode()).hashCode()
 
     override fun equals(other: Any?): Boolean =
         other is AbstractAtom &&
         this::class == other::class &&
         (
             element == other.element &&
-            name == other.name
+            id == other.id
         )
 
     /**
@@ -152,10 +147,6 @@ abstract class AbstractAtom :
 
         packer.writePayload(elementAsBytes)
 
-        packer
-            .packString("name")
-            .packString(name)
-
         val positionAsBytes = position.serialize()
 
         packer
@@ -167,6 +158,10 @@ abstract class AbstractAtom :
         packer
             .packString("formal-charge")
             .packDouble(formalCharge)
+
+        packer
+            .packString("id")
+            .packString(id)
 
         packer.close()
 

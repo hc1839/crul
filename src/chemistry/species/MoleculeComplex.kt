@@ -24,6 +24,13 @@ package crul.chemistry.species
  */
 interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
     /**
+     *  Identifier for this complex.
+     *
+     *  It must conform to XML NCName production.
+     */
+    val id: String
+
+    /**
      *  Formal charge of this complex, which is the sum of the formal charges
      *  of the molecules.
      *

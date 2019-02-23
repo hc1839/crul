@@ -33,13 +33,24 @@ internal class MoleculeComplexImpl<A : Atom> : AbstractMoleculeComplex<A> {
     /**
      *  @param molecules
      *      Molecules of the complex.
+     *
+     *  @param id
+     *      Identifier for this complex.
      */
-    constructor(molecules: Iterable<Molecule<A>>): super(molecules)
+    @JvmOverloads
+    constructor(
+        molecules: Iterable<Molecule<A>>,
+        id: String = crul.uuid.Generator.inNCName()
+    ): super(molecules, id)
 
     /**
      *  Copy constructor.
      */
-    constructor(other: MoleculeComplexImpl<A>): super(other)
+    @JvmOverloads
+    constructor(
+        other: MoleculeComplexImpl<A>,
+        id: String = other.id
+    ): super(other, id)
 
     override fun clone(): MoleculeComplexImpl<A> =
         MoleculeComplexImpl(this)

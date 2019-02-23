@@ -29,6 +29,9 @@ open class ComplexBuilder<B : ComplexBuilder<B>> {
 
     protected constructor()
 
+    protected var _id: String? = null
+        private set
+
     protected val _subspecies: MutableSet<Species> = mutableSetOf()
 
     /**
@@ -66,6 +69,8 @@ open class ComplexBuilder<B : ComplexBuilder<B>> {
 
     /**
      *  Removes all subspecies from this builder.
+     *
+     *  Identifier remains intact.
      */
     fun clear(): B {
         _subspecies.clear()
