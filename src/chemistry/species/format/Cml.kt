@@ -18,17 +18,28 @@
 
 package crul.chemistry.species.format
 
+import java.io.StringReader
 import java.io.StringWriter
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
+import javax.xml.xpath.XPathConstants
+import javax.xml.xpath.XPathFactory
 import kotlin.math.round
 import kotlin.math.roundToInt
+import org.w3c.dom.NodeList
+import org.xml.sax.InputSource
 
 import crul.chemistry.species.Atom
+import crul.chemistry.species.AtomBuilder
+import crul.chemistry.species.Bond
+import crul.chemistry.species.BondBuilder
+import crul.chemistry.species.Element
 import crul.chemistry.species.MoleculeComplex
+import crul.chemistry.species.MoleculeComplexBuilder
 import crul.float.Comparison.nearlyEquals
+import crul.math.coordsys.Vector3D
 import crul.measure.Quantity
 import crul.measure.dimension.BaseDimension
 import crul.measure.unit.UnitOfMeasure
@@ -174,5 +185,180 @@ object Cml {
         transformer.transform(DOMSource(cmlDoc), StreamResult(stringWriter))
 
         return stringWriter.toString()
+    }
+
+    /**
+     *  Parses CML text, and imports the constructs.
+     *
+     *  The `id` attribute of the root element, `molecule`, is used to set the
+     *  complex identifier in this builder.
+     *
+     *  Constructs in the CML text are merged in to the data in this builder.
+     *
+     *  @param cml
+     *      CML to parse and import.
+     *
+     *  @param fromLengthUnit
+     *      Unit of length that the coordinates in the CML text are in.
+     *
+     *  @param toLengthUnit
+     *      Unit of length that the coordinates in the deserialized complex are
+     *      in.
+     *
+     *  @param atomBuilder
+     *      Builder for constructing atoms. Identifier in this builder is
+     *      ignored.
+     *
+     *  @param bondBuilder
+     *      Builder for constructing bonds.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <A : Atom> MoleculeComplexBuilder<*>.parseIn(
+        cml: String,
+        fromLengthUnit: UnitOfMeasure,
+        toLengthUnit: UnitOfMeasure,
+        atomBuilder: AtomBuilder<*> = AtomBuilder.newInstance(),
+        bondBuilder: BondBuilder<*> = BondBuilder.newInstance()
+    ): MoleculeComplexBuilder<*>
+    {
+        val xpathEvaluator = XPathFactory.newInstance().newXPath()
+
+        // Parse the CML.
+        val cmlDoc = DocumentBuilderFactory
+            .newInstance()
+            .newDocumentBuilder()
+            .parse(InputSource(StringReader(cml)))
+
+        val moleculeNode = cmlDoc.firstChild as org.w3c.dom.Element
+
+        if (moleculeNode.tagName != "molecule") {
+            throw IllegalArgumentException(
+                "Root element is not 'molecule'."
+            )
+        }
+
+        // Get the node list of atom nodes.
+        val atomsNodeList = xpathEvaluator
+            .evaluate("/*/atomArray/atom", cmlDoc, XPathConstants.NODESET)
+            as NodeList
+
+        val atomsById: MutableMap<String, A> = mutableMapOf()
+
+        // Construct each atom using the information stored in the node.
+        for (index in 0 until atomsNodeList.length) {
+            val atomNode = atomsNodeList.item(index)
+                as org.w3c.dom.Element
+
+            val element = Element(atomNode.getAttribute("elementType"))
+
+            val position = Vector3D(
+                listOf("x3", "y3", "z3").map { cmptName ->
+                    Quantity.convertUnit(
+                        atomNode.getAttribute(cmptName).toDouble(),
+                        fromLengthUnit,
+                        toLengthUnit
+                    )
+                }
+            )
+
+            val formalCharge =
+                if (atomNode.hasAttribute("formalCharge")) {
+                    atomNode.getAttribute("formalCharge").toDouble()
+                } else {
+                    0.0
+                }
+
+            val atomId = atomNode.getAttribute("id")
+
+            if (atomsById.containsKey(atomId)) {
+                throw RuntimeException(
+                    "Atom with the same ID has already been added: $atomId"
+                )
+            }
+
+            // Construct the atom.
+            val atom = atomBuilder
+                .element(element)
+                .position(position)
+                .formalCharge(formalCharge)
+                .id(atomId)
+                .build()
+
+            @Suppress("UNCHECKED_CAST")
+            atomsById[atomId] = atom as A
+        }
+
+        // Check that the formal charge specified in the root node matches the
+        // sum of the formal charges of the atoms.
+        if (moleculeNode.hasAttribute("formalCharge")) {
+            val molecularFormalCharge = moleculeNode
+                .getAttribute("formalCharge")
+                .toDouble()
+
+            if (
+                !nearlyEquals(
+                    molecularFormalCharge,
+                    atomsById
+                        .values
+                        .map { it.formalCharge }
+                        .reduce { acc, item -> acc + item }
+                )
+            ) {
+                throw RuntimeException(
+                    "Formal charge of the complex does not equal " +
+                    "to the sum of the formal charges of the atoms."
+                )
+            }
+        }
+
+        // Get the node list of bond nodes.
+        val bondsNodeList = xpathEvaluator
+            .evaluate("/*/bondArray/bond", cmlDoc, XPathConstants.NODESET)
+            as NodeList
+
+        val bondNodes = (0 until bondsNodeList.length)
+            .map { index ->
+                bondsNodeList.item(index) as org.w3c.dom.Element
+            }
+
+        val bonds: MutableList<Bond<Atom>> = mutableListOf()
+
+        // Construct each bond.
+        for (bondNode in bondNodes) {
+            val atomRefids = bondNode
+                .getAttribute("atomRefs2")
+                .trim()
+                .split(Regex("\\s+"))
+
+            if (atomRefids.count() != 2) {
+                throw RuntimeException(
+                    "'bond' element node does not specify " +
+                    "exactly two atom names."
+                )
+            }
+
+            bonds.add(
+                bondBuilder
+                    .atom1(atomsById[atomRefids[0]]!!)
+                    .atom2(atomsById[atomRefids[1]]!!)
+                    .order(bondNode.getAttribute("order"))
+                    .build()
+            )
+        }
+
+        id(moleculeNode.getAttribute("id"))
+
+        // Add the atoms to the builder.
+        for (atom in atomsById.values) {
+            addAtom(atom)
+        }
+
+        // Add the bonds to the builder.
+        for (bond in bonds) {
+            addBond(bond)
+        }
+
+        return this
     }
 }
