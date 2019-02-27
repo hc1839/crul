@@ -14,6 +14,7 @@
  *  under the License.
  */
 
+@file:JvmName("Xyz")
 @file:JvmMultifileClass
 
 package crul.chemistry.species.format
@@ -24,63 +25,57 @@ import crul.measure.dimension.BaseDimension
 import crul.measure.unit.UnitOfMeasure
 
 /**
- *  Functions related to XYZ.
+ *  Serializes this complex to XYZ.
+ *
+ *  @param fromLengthUnit
+ *      The unit of length that the coordinates are in.
+ *
+ *  @param toLengthUnit
+ *      The unit of length that the coordinates in the XYZ output are in.
+ *
+ *  @param label
+ *      Label to use for the complex in the XYZ output.
+ *
+ *  @param separator
+ *      Separator to use between columns in the output.
  */
-object Xyz {
-    /**
-     *  Serializes this complex to XYZ.
-     *
-     *  @param fromLengthUnit
-     *      The unit of length that the coordinates are in.
-     *
-     *  @param toLengthUnit
-     *      The unit of length that the coordinates in the XYZ output are in.
-     *
-     *  @param label
-     *      Label to use for the complex in the XYZ output.
-     *
-     *  @param separator
-     *      Separator to use between columns in the output.
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun <A : Atom> MoleculeComplex<A>.toXyz(
-        fromLengthUnit: UnitOfMeasure,
-        toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
-        label: String = crul.uuid.Generator.inNCName(),
-        separator: String = " "
-    ): String
-    {
-        if (!fromLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
-            throw IllegalArgumentException(
-                "Unit of a coordinate must be a unit of length."
-            )
-        }
-
-        if (!toLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
-            throw IllegalArgumentException(
-                "Unit of a coordinate must be a unit of length."
-            )
-        }
-
-        var xyzBuilder = ""
-        val atomsBuf = atoms().asSequence().toList()
-
-        xyzBuilder += atomsBuf.count().toString() + "\n"
-        xyzBuilder += label + "\n"
-
-        for (atom in atomsBuf) {
-            xyzBuilder += atom.element.symbol + separator
-            xyzBuilder += atom
-                .position
-                .components
-                .map { it.toString() }
-                .joinToString(separator)
-            xyzBuilder += "\n"
-        }
-
-        xyzBuilder = xyzBuilder.trim() + "\n"
-
-        return xyzBuilder
+@JvmOverloads
+fun <A : Atom> MoleculeComplex<A>.toXyz(
+    fromLengthUnit: UnitOfMeasure,
+    toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
+    label: String = crul.uuid.Generator.inNCName(),
+    separator: String = " "
+): String
+{
+    if (!fromLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
+        throw IllegalArgumentException(
+            "Unit of a coordinate must be a unit of length."
+        )
     }
+
+    if (!toLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
+        throw IllegalArgumentException(
+            "Unit of a coordinate must be a unit of length."
+        )
+    }
+
+    var xyzBuilder = ""
+    val atomsBuf = atoms().asSequence().toList()
+
+    xyzBuilder += atomsBuf.count().toString() + "\n"
+    xyzBuilder += label + "\n"
+
+    for (atom in atomsBuf) {
+        xyzBuilder += atom.element.symbol + separator
+        xyzBuilder += atom
+            .position
+            .components
+            .map { it.toString() }
+            .joinToString(separator)
+        xyzBuilder += "\n"
+    }
+
+    xyzBuilder = xyzBuilder.trim() + "\n"
+
+    return xyzBuilder
 }

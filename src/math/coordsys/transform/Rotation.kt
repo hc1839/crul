@@ -14,6 +14,7 @@
  *  under the License.
  */
 
+@file:JvmName("Rotation")
 @file:JvmMultifileClass
 
 package crul.math.coordsys.transform
@@ -24,30 +25,23 @@ import crul.math.coordsys.Vector3D
 import crul.math.number.quaternion.Quaternion
 
 /**
- *  Functions for perform rotations of a position.
+ *  Rotates a position pointed by this vector for `angle` (in radians) with
+ *  respect to `axis` that crosses the origin.
  */
-object Rotation {
-    /**
-     *  Rotates a position pointed by this vector for `angle` (in radians) with
-     *  respect to `axis` that crosses the origin.
-     */
-    @JvmStatic
-    fun Vector3D.rotate(axis: Vector3D, angle: Double): Vector3D {
-        val origPos = Quaternion(0.0, this)
+fun Vector3D.rotate(axis: Vector3D, angle: Double): Vector3D {
+    val origPos = Quaternion(0.0, this)
 
-        val rotation =
-            Quaternion(0.0, axis / axis.magnitude()) *
-                kotlin.math.sin(angle / 2.0) +
-                kotlin.math.cos(angle / 2.0)
+    val rotation =
+        Quaternion(0.0, axis / axis.magnitude()) *
+            kotlin.math.sin(angle / 2.0) +
+            kotlin.math.cos(angle / 2.0)
 
-        return (rotation * origPos * rotation.conjugate()).vector
-    }
-
-    /**
-     *  Rotates a position pointed by this vector for `angle` (in radians) with
-     *  respect to `axis` that crosses `point`.
-     */
-    @JvmStatic
-    fun Vector3D.rotate(point: Vector3D, axis: Vector3D, angle: Double) =
-        point + (this - point).rotate(axis, angle)
+    return (rotation * origPos * rotation.conjugate()).vector
 }
+
+/**
+ *  Rotates a position pointed by this vector for `angle` (in radians) with
+ *  respect to `axis` that crosses `point`.
+ */
+fun Vector3D.rotate(point: Vector3D, axis: Vector3D, angle: Double) =
+    point + (this - point).rotate(axis, angle)

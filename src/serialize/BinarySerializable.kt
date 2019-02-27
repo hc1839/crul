@@ -14,8 +14,6 @@
  *  under the License.
  */
 
-@file:JvmMultifileClass
-
 package crul.serialize
 
 import org.msgpack.core.MessagePack
