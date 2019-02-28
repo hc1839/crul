@@ -17,7 +17,7 @@
 @file:JvmName("Xyz")
 @file:JvmMultifileClass
 
-package crul.chemistry.species.format
+package crul.chemistry.species.format.xyz
 
 import crul.chemistry.species.Atom
 import crul.chemistry.species.MoleculeComplex

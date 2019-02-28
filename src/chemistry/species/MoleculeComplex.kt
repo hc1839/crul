@@ -23,6 +23,16 @@ package crul.chemistry.species
  *      Type of atoms in the molecules.
  */
 interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
+    override fun atoms(): Iterator<A> =
+        super
+            .atoms()
+            .asSequence()
+            .map {
+                @Suppress("UNCHECKED_CAST")
+                it as A
+            }
+            .iterator()
+
     /**
      *  Identifier for this complex.
      *

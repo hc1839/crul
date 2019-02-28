@@ -115,6 +115,17 @@ internal class BondImpl<A : Atom> :
         msgpack
     )
 
+    override fun hashCode(): Int =
+        atomPair.toList().toSet().hashCode()
+
+    override fun equals(other: Any?): Boolean =
+        other is BondImpl<*> &&
+        this::class == other::class &&
+        (
+            atomPair.toList().toSet() == other.atomPair.toList().toSet() &&
+            order == other.order
+        )
+
     override fun iterator(): Iterator<A> =
         atomPair.toList().iterator()
 

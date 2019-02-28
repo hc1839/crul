@@ -17,7 +17,7 @@
 @file:JvmName("Cml")
 @file:JvmMultifileClass
 
-package crul.chemistry.species.format
+package crul.chemistry.species.format.cml
 
 import java.io.StringReader
 import java.io.StringWriter
@@ -207,7 +207,7 @@ fun <A : Atom> MoleculeComplex<A>.toCml(
  *      Builder for constructing bonds.
  */
 @JvmOverloads
-fun <A : Atom> MoleculeComplexBuilder<*>.parseIn(
+fun <A : Atom> MoleculeComplexBuilder<*>.parseInCml(
     cml: String,
     fromLengthUnit: UnitOfMeasure,
     toLengthUnit: UnitOfMeasure,
@@ -215,6 +215,18 @@ fun <A : Atom> MoleculeComplexBuilder<*>.parseIn(
     bondBuilder: BondBuilder<*> = BondBuilder.newInstance()
 ): MoleculeComplexBuilder<*>
 {
+    if (!fromLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
+        throw IllegalArgumentException(
+            "Unit of a coordinate must be a unit of length."
+        )
+    }
+
+    if (!toLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
+        throw IllegalArgumentException(
+            "Unit of a coordinate must be a unit of length."
+        )
+    }
+
     val xpathEvaluator = XPathFactory.newInstance().newXPath()
 
     // Parse the CML.

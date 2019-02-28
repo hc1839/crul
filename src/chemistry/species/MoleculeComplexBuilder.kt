@@ -45,7 +45,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
     /**
      *  Backing property for the bonds in the complex.
      */
-    private val _bonds: MutableSet<Bond<Atom>> = mutableSetOf()
+    private val _bonds: MutableSet<Bond<*>> = mutableSetOf()
 
     /**
      *  Backing property for the atoms as singleton molecules in the complex.
@@ -62,7 +62,6 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
     constructor(other: MoleculeComplexBuilder<B>) {
         this._bonds.addAll(other._bonds.map { it.clone() })
         this._singletons.addAll(other._singletons.map { it.clone() })
-
         this._id = other._id
     }
 
@@ -84,14 +83,14 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      *
      *  Nothing is done if an equal bond already exists.
      *
-     *  An exception is raised in the following scenarios.
+     *  An exception is raised in the following scenarios:
      *      - An unequal bond with both atoms being equal to the atoms in the
      *        given bond, regardless of the equality of the bond order.
      *      - Another bond has an unequal atom with the same ID or an equal
      *        atom with a different ID compared to one of the atoms in the given
      *        bond.
      */
-    open fun addBond(newBond: Bond<Atom>): B {
+    open fun addBond(newBond: Bond<*>): B {
         if (_bonds.contains(newBond)) {
             return _this
         }
@@ -146,7 +145,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
     /**
      *  Removes a bond.
      */
-    open fun removeBond(oldBond: Bond<Atom>): B {
+    open fun removeBond(oldBond: Bond<*>): B {
         _bonds.remove(oldBond)
 
         return _this
@@ -270,7 +269,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
             // Create a proxy for the fragment to store its bonds.
             val fragmentEdgeProxy = graph.createVertex()
             fragmentEdge.proxy = fragmentEdgeProxy
-            fragmentEdgeProxy.userData = mutableSetOf<Bond<Atom>>()
+            fragmentEdgeProxy.userData = mutableSetOf<Bond<*>>()
         }
 
         // Combine fragments based on atom connectivity.
@@ -295,7 +294,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
                 val fragment1EdgeProxy = fragment1Edge.proxy!! as Vertex
 
                 @Suppress("UNCHECKED_CAST")
-                (fragment1EdgeProxy.userData as MutableSet<Bond<Atom>>)
+                (fragment1EdgeProxy.userData as MutableSet<Bond<*>>)
                     .add(bond)
             } else {
                 // Combine the two different fragments with the second fragment
@@ -310,7 +309,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
 
                 @Suppress("UNCHECKED_CAST")
                 val fragment1Bonds = fragment1EdgeProxy
-                    .userData as Set<Bond<Atom>>
+                    .userData as Set<Bond<*>>
 
                 fragment1Edge.proxy = null
                 fragment1Edge.remove()
@@ -319,7 +318,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
 
                 @Suppress("UNCHECKED_CAST")
                 val fragment2Bonds = fragment2EdgeProxy
-                    .userData as MutableSet<Bond<Atom>>
+                    .userData as MutableSet<Bond<*>>
 
                 fragment2Bonds.add(bond)
 
@@ -354,7 +353,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
                 val fragmentEdgeProxy = fragmentEdge.proxy!! as Vertex
 
                 @Suppress("UNCHECKED_CAST")
-                val bonds = fragmentEdgeProxy.userData as Set<Bond<Atom>>
+                val bonds = fragmentEdgeProxy.userData as Set<Bond<*>>
 
                 complexBuilder.clear()
 
