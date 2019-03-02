@@ -42,17 +42,7 @@ internal class BondImpl<A : Atom> :
     override val order: String
 
     /**
-     *  If the given atoms are equal or have the same name, an exception is
-     *  raised.
-     *
-     *  @param atom1
-     *      First atom.
-     *
-     *  @param atom2
-     *      Second atom.
-     *
-     *  @param order
-     *      Bond order as an arbitrary string.
+     *  See [crul.chemistry.species.BondFactory.create] for the description.
      */
     constructor(
         atom1: A,

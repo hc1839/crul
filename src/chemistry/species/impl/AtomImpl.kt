@@ -28,16 +28,19 @@ import crul.math.coordsys.Vector3D
  *  Default implementation of [Atom].
  */
 internal class AtomImpl : AbstractAtom {
+    /**
+     *  See [crul.chemistry.species.AtomFactory.create] for the description.
+     */
     constructor(
         element: Element,
         position: Vector3D,
         formalCharge: Double,
-        name: String = crul.uuid.Generator.inNCName()
+        id: String = crul.uuid.Generator.inNCName()
     ): super(
         element,
         position,
         formalCharge,
-        name
+        id
     )
 
     /**

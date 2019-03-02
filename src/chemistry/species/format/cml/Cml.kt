@@ -33,9 +33,9 @@ import org.w3c.dom.NodeList
 import org.xml.sax.InputSource
 
 import crul.chemistry.species.Atom
-import crul.chemistry.species.AtomBuilder
+import crul.chemistry.species.AtomFactory
 import crul.chemistry.species.Bond
-import crul.chemistry.species.BondBuilder
+import crul.chemistry.species.BondFactory
 import crul.chemistry.species.Element
 import crul.chemistry.species.MoleculeComplex
 import crul.chemistry.species.MoleculeComplexBuilder
@@ -200,19 +200,19 @@ fun <A : Atom> MoleculeComplex<A>.toCml(
  *  @param toLengthUnit
  *      Unit of length that the coordinates in the deserialized complex are in.
  *
- *  @param atomBuilder
- *      Builder for constructing atoms. Identifier in this builder is ignored.
+ *  @param atomFactory
+ *      Factory for atoms.
  *
- *  @param bondBuilder
- *      Builder for constructing bonds.
+ *  @param bondFactory
+ *      Factory for bonds.
  */
 @JvmOverloads
 fun <A : Atom> MoleculeComplexBuilder<*>.parseInCml(
     cml: String,
     fromLengthUnit: UnitOfMeasure,
     toLengthUnit: UnitOfMeasure,
-    atomBuilder: AtomBuilder<*> = AtomBuilder.newInstance(),
-    bondBuilder: BondBuilder<*> = BondBuilder.newInstance()
+    atomFactory: AtomFactory = AtomFactory(),
+    bondFactory: BondFactory<A> = BondFactory()
 ): MoleculeComplexBuilder<*>
 {
     if (!fromLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
@@ -227,7 +227,7 @@ fun <A : Atom> MoleculeComplexBuilder<*>.parseInCml(
         )
     }
 
-    val xpathEvaluator = XPathFactory.newInstance().newXPath()
+    val xpath = XPathFactory.newInstance().newXPath()
 
     // Parse the CML.
     val cmlDoc = DocumentBuilderFactory
@@ -244,7 +244,7 @@ fun <A : Atom> MoleculeComplexBuilder<*>.parseInCml(
     }
 
     // Get the node list of atom nodes.
-    val atomsNodeList = xpathEvaluator
+    val atomsNodeList = xpath
         .evaluate("/*/atomArray/atom", cmlDoc, XPathConstants.NODESET)
         as NodeList
 
@@ -283,12 +283,12 @@ fun <A : Atom> MoleculeComplexBuilder<*>.parseInCml(
         }
 
         // Construct the atom.
-        val atom = atomBuilder
-            .element(element)
-            .position(position)
-            .formalCharge(formalCharge)
-            .id(atomId)
-            .build()
+        val atom = atomFactory.create(
+            element,
+            position,
+            formalCharge,
+            atomId
+        )
 
         @Suppress("UNCHECKED_CAST")
         atomsById[atomId] = atom as A
@@ -318,7 +318,7 @@ fun <A : Atom> MoleculeComplexBuilder<*>.parseInCml(
     }
 
     // Get the node list of bond nodes.
-    val bondsNodeList = xpathEvaluator
+    val bondsNodeList = xpath
         .evaluate("/*/bondArray/bond", cmlDoc, XPathConstants.NODESET)
         as NodeList
 
@@ -327,7 +327,7 @@ fun <A : Atom> MoleculeComplexBuilder<*>.parseInCml(
             bondsNodeList.item(index) as org.w3c.dom.Element
         }
 
-    val bonds: MutableList<Bond<Atom>> = mutableListOf()
+    val bonds: MutableList<Bond<*>> = mutableListOf()
 
     // Construct each bond.
     for (bondNode in bondNodes) {
@@ -344,11 +344,11 @@ fun <A : Atom> MoleculeComplexBuilder<*>.parseInCml(
         }
 
         bonds.add(
-            bondBuilder
-                .atom1(atomsById[atomRefids[0]]!!)
-                .atom2(atomsById[atomRefids[1]]!!)
-                .order(bondNode.getAttribute("order"))
-                .build()
+            bondFactory.create(
+                atomsById[atomRefids[0]]!!,
+                atomsById[atomRefids[1]]!!,
+                bondNode.getAttribute("order")
+            )
         )
     }
 
