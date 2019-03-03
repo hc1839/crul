@@ -14,7 +14,6 @@
  *  under the License.
  */
 
-@file:JvmName("Hashing")
 @file:JvmMultifileClass
 
 package crul.hypergraph.compare

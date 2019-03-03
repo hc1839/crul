@@ -16,22 +16,27 @@
 
 @file:JvmMultifileClass
 
-package crul.xml
+package crul.xml.xslt
 
 /**
- *  Functions related to data types in XML.
+ *  Identity transform.
  */
-object Datatype {
+object Identity {
     /**
-     *  Regular expression, as a string, of the NCName production.
+     *  XSLT stylesheet as a string for the identity transform.
      */
-    fun NCNameRegexString(): String =
-        """[a-zA-Z_][a-zA-Z0-9\.\-_]*"""
+    @JvmField
+    val stylesheet: String = """
+<xsl:stylesheet
+    version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-    /**
-     *  Whether `string` conforms to the NCName production.
-     */
-    @JvmStatic
-    fun isNCName(string: String): Boolean =
-        kotlin.text.Regex("^${NCNameRegexString()}$") in string
+    <xsl:template match="@*|node()">
+        <xsl:copy>
+            <xsl:apply-templates select="@*|node()"/>
+        </xsl:copy>
+    </xsl:template>
+
+</xsl:stylesheet>
+"""
 }

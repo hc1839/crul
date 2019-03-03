@@ -14,7 +14,6 @@
  *  under the License.
  */
 
-@file:JvmName("Equality")
 @file:JvmMultifileClass
 
 package crul.hypergraph.compare
