@@ -26,7 +26,7 @@ import crul.chemistry.species.Species
  *      Type of subspecies in this complex.
  */
 internal class ComplexImpl<S : Species> : AbstractComplex<S> {
-    constructor(species: Iterable<S>): super(species)
+    constructor(species: Collection<S>): super(species)
 
     /**
      *  Copy constructor.

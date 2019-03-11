@@ -29,10 +29,14 @@ package crul.chemistry.species
  */
 interface Molecule<A : Atom> : Fragment<A> {
     /**
-     *  Bonds that are in this molecule, or an empty iterator if this molecule
-     *  is a singleton.
+     *  Bonds in this molecule.
+     *
+     *  Collection may be empty. Bonds are unique and are in the same order
+     *  between iterations. Bonds in the collection are not guaranteed to be in
+     *  any particular order. A subinterface or an implementation, however, is
+     *  allowed to make specified guarantees.
      */
-    fun bonds(): Iterator<Bond<A>>
+    fun bonds(): Collection<Bond<A>>
 
     /**
      *  Gets the bonds that an atom is participating in.

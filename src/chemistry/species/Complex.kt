@@ -21,12 +21,14 @@ import crul.math.coordsys.Vector3D
 /**
  *  Interface for a complex, which is a species that is also set of subspecies.
  *
+ *  Subspecies are unique and are in the same order between iterations.
+ *
  *  @param S
  *      Type of subspecies in this complex.
  */
 interface Complex<S : Species> :
     Species,
-    Set<S>
+    Collection<S>
 {
     override val size: Int
         get() = iterator().asSequence().count()
@@ -42,11 +44,11 @@ interface Complex<S : Species> :
     override fun isEmpty(): Boolean =
         iterator().asSequence().count() == 0
 
-    override fun atoms(): Iterator<Atom> =
+    override fun atoms(): Collection<Atom> =
         iterator()
             .asSequence()
             .flatMap { it.atoms().asSequence() }
-            .iterator()
+            .toList()
 
     /**
      *  Clones this complex along with its subspecies.

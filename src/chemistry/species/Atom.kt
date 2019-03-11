@@ -26,10 +26,10 @@ import crul.math.coordsys.Vector3D
  */
 interface Atom : Species {
     /**
-     *  Iterator over itself.
+     *  Singleton collection containing itself.
      */
-    override fun atoms(): Iterator<Atom> =
-        listOf(this).iterator()
+    override fun atoms(): Collection<Atom> =
+        listOf(this)
 
     /**
      *  Element.

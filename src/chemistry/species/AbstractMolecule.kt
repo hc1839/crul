@@ -69,7 +69,7 @@ abstract class AbstractMolecule<A : Atom> :
      *
      *  It is an initializer that is to be called from a constructor.
      */
-    private fun initialize(bonds: Iterator<Bond<A>>) {
+    private fun initialize(bonds: Collection<Bond<A>>) {
         // Add each bond as an edge.
         for (bond in bonds) {
             // Add and store each atom as a vertex.
@@ -143,7 +143,7 @@ abstract class AbstractMolecule<A : Atom> :
      *      Builder for constructing bonds.
      */
     constructor(
-        bonds: Set<Bond<A>>,
+        bonds: Collection<Bond<A>>,
         bondBuilder: BondBuilder<*> = BondBuilder.newInstance()
     ): super(
         bonds
@@ -157,7 +157,7 @@ abstract class AbstractMolecule<A : Atom> :
         this.bondOrderPropertyType = this.graph.createVertex()
         this.bondBuilder = bondBuilder
 
-        initialize(bonds.iterator())
+        initialize(bonds)
     }
 
     /**
@@ -185,7 +185,7 @@ abstract class AbstractMolecule<A : Atom> :
         this.bondBuilder = other.bondBuilder
 
         if (other.bonds().asSequence().firstOrNull() == null) {
-            initialize(other.atoms().asSequence().first())
+            initialize(other.atoms().first())
         } else {
             initialize(other.bonds())
         }
@@ -204,42 +204,27 @@ abstract class AbstractMolecule<A : Atom> :
         return atomVertex?.userData == atom
     }
 
-    override fun bonds(): Iterator<Bond<A>> =
-        object : AbstractIterator<Bond<A>>() {
-            private val bondEdges: Iterator<Edge> = graph
-                .getEdgesByType(bondEdgeType)
-                .iterator()
-
-            override fun computeNext() {
-                if (!bondEdges.hasNext()) {
-                    done()
-                    return
+    override fun bonds(): Collection<Bond<A>> =
+        graph.getEdgesByType(bondEdgeType).map { bondEdge ->
+            // Atoms of the bond.
+            val atoms = bondEdge
+                .vertices
+                .map {
+                    @Suppress("UNCHECKED_CAST")
+                    it.userData as A
                 }
 
-                val bondEdge = bondEdges.next()
+            val bondOrder = bondEdge
+                .proxy!!
+                .getPropertiesByType(bondOrderPropertyType)
+                .first()
+                .value
 
-                // Atoms of the bond.
-                val atoms = bondEdge
-                    .vertices
-                    .map {
-                        @Suppress("UNCHECKED_CAST")
-                        it.userData as A
-                    }
-
-                val bondOrder = bondEdge
-                    .proxy!!
-                    .getPropertiesByType(bondOrderPropertyType)
-                    .first()
-                    .value
-
-                setNext(
-                    bondBuilder!!
-                        .atom1(atoms[0])
-                        .atom2(atoms[1])
-                        .order(bondOrder)
-                        .build<A>()
-                )
-            }
+            bondBuilder!!
+                .atom1(atoms[0])
+                .atom2(atoms[1])
+                .order(bondOrder)
+                .build<A>()
         }
 
     override fun getBondsByAtom(atom: A): Set<Bond<A>> {

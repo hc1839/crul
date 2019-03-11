@@ -37,7 +37,7 @@ internal class MoleculeImpl<A : Atom> : AbstractMolecule<A> {
      *  @param bonds
      *      Bonds of the molecule.
      */
-    constructor(bonds: Set<Bond<A>>): super(bonds)
+    constructor(bonds: Collection<Bond<A>>): super(bonds)
 
     /**
      *  Constructs a singleton molecule.

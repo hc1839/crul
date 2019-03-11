@@ -39,7 +39,7 @@ internal class MoleculeComplexImpl<A : Atom> : AbstractMoleculeComplex<A> {
      */
     @JvmOverloads
     constructor(
-        molecules: Iterable<Molecule<A>>,
+        molecules: Collection<Molecule<A>>,
         id: String = crul.uuid.Generator.inNCName()
     ): super(molecules, id)
 

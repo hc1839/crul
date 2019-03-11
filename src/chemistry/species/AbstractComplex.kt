@@ -19,6 +19,8 @@ package crul.chemistry.species
 /**
  *  Skeletal implementation of [Complex].
  *
+ *  Iterating over the subspecies is guaranteed to be in the same order.
+ *
  *  @param S
  *      Type of subspecies in this complex.
  */
@@ -32,7 +34,7 @@ abstract class AbstractComplex<S : Species> : Complex<S> {
      *  @param subspecies
      *      Subspecies within this complex.
      */
-    constructor(subspecies: Iterable<S>) {
+    constructor(subspecies: Collection<S>) {
         this._subspecies = subspecies.toMutableList()
     }
 

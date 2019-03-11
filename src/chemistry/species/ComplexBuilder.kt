@@ -82,7 +82,7 @@ open class ComplexBuilder<B : ComplexBuilder<B>> {
      */
     open fun <S : Species> build(): Complex<S> =
         @Suppress("UNCHECKED_CAST")
-        ComplexImpl<S>(_subspecies.toSet() as Iterable<S>)
+        ComplexImpl<S>(_subspecies.toSet() as Collection<S>)
 
     companion object {
         private class ComplexBuilderImpl():

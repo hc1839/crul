@@ -38,7 +38,7 @@
     <!-- Properties related to dependency management. -->
 
     <!-- Path to the directory of the JAR dependencies managed by Ivy. -->
-    <property name="config.lib.path" value="lib"/>
+    <property name="config.lib.dir" value="lib"/>
 
 
     <!-- Properties related to building. -->
@@ -47,16 +47,16 @@
     <property name="config.kotlin.home" value="${env.KOTLIN_HOME}"/>
 
     <!-- Path to the source directory. -->
-    <property name="src.path" value="src"/>
+    <property name="src.dir" value="src"/>
 
     <!-- Path to the target directory. -->
-    <property name="config.target.path" value="target"/>
+    <property name="config.target.dir" value="target"/>
 
     <!-- Path to the compile directory. -->
-    <property name="compile.path" value="${config.target.path}/compile"/>
+    <property name="compile.dir" value="${config.target.dir}/compile"/>
 
     <!-- Path to the build directory. -->
-    <property name="build.path" value="${config.target.path}/build"/>
+    <property name="build.dir" value="${config.target.dir}/build"/>
 
 
     <!-- Properties related to project information. -->
@@ -80,7 +80,7 @@
     <property name="config.dokka.output.format" value="html"/>
 
     <!-- Path to the output directory for the generated documentation. -->
-    <property name="doc.path" value="${config.target.path}/doc"/>
+    <property name="doc.dir" value="${config.target.dir}/doc"/>
 
 
     <typedef
@@ -97,16 +97,16 @@
         name="resolve.deps"
         description="Retrieves dependencies with Ivy.">
 
-        <ivy:retrieve pattern="${config.lib.path}/[artifact]-[revision](-[classifier]).[ext]"/>
+        <ivy:retrieve pattern="${config.lib.dir}/[artifact]-[revision](-[classifier]).[ext]"/>
     </target>
 
     <!-- Paths to all dependencies, including the build directory. -->
     <path id="classpath.all">
-        <fileset dir="${config.lib.path}">
+        <fileset dir="${config.lib.dir}">
             <include name="**/*.jar"/>
             <exclude name="**/${proj.jar.name}"/>
         </fileset>
-        <pathelement location="${config.target.path}/compile"/>
+        <pathelement location="${config.target.dir}/compile"/>
     </path>
 
     <target
@@ -120,7 +120,7 @@
         name="create.compile.dir"
         depends="init-ivy,resolve.deps">
 
-        <mkdir dir="${compile.path}"/>
+        <mkdir dir="${compile.dir}"/>
     </target>
 
     <!-- Copies the information stores. -->
@@ -128,9 +128,9 @@
         name="copy.info.stores"
         depends="create.compile.dir">
 
-        <copy todir="${compile.path}" preservelastmodified="true">
-            <fileset dir="${src.path}" includes="**/*.xml"/>
-            <fileset dir="${src.path}" includes="**/*.json"/>
+        <copy todir="${compile.dir}" preservelastmodified="true">
+            <fileset dir="${src.dir}" includes="**/*.xml"/>
+            <fileset dir="${src.dir}" includes="**/*.json"/>
         </copy>
     </target>
 
@@ -142,8 +142,8 @@
 
         <kotlinc
             classpathref="classpath.all"
-            src="${src.path}"
-            output="${compile.path}">
+            src="${src.dir}"
+            output="${compile.dir}">
 
             <compilerarg value="-jvm-target"/>
             <compilerarg value="1.8"/>
@@ -156,26 +156,26 @@
         description="Builds the project by compiling and packaging it as a JAR.">
 
         <delete quiet="true">
-            <fileset dir="${build.path}" includes="${proj.jar.name}"/>
+            <fileset dir="${build.dir}" includes="${proj.jar.name}"/>
         </delete>
 
-        <mkdir dir="${build.path}"/>
+        <mkdir dir="${build.dir}"/>
 
         <jar
-            basedir="${compile.path}"
-            destfile="${build.path}/${proj.jar.name}"/>
+            basedir="${compile.dir}"
+            destfile="${build.dir}/${proj.jar.name}"/>
     </target>
 
     <target
         name="doc"
         description="Generates the library documentation.">
 
-        <mkdir dir="${doc.path}"/>
+        <mkdir dir="${doc.dir}"/>
 
         <dokka
             classpathref="classpath.all"
-            src="${src.path}"
-            outputDir="${doc.path}"
+            src="${src.dir}"
+            outputDir="${doc.dir}"
             moduleName="${project.name}"
             outputFormat="${config.dokka.output.format}"/>
     </target>
@@ -185,7 +185,7 @@
         description="Removes the build directory.">
 
         <delete quiet="true" includeEmptyDirs="true">
-            <fileset dir="${build.path}"/>
+            <fileset dir="${build.dir}"/>
         </delete>
     </target>
 
@@ -194,7 +194,7 @@
         description="Removes the doc directory.">
 
         <delete quiet="true" includeEmptyDirs="true">
-            <fileset dir="${doc.path}"/>
+            <fileset dir="${doc.dir}"/>
         </delete>
     </target>
 
@@ -203,7 +203,7 @@
         description="Removes the target directory.">
 
         <delete quiet="true" includeEmptyDirs="true">
-            <fileset dir="${config.target.path}"/>
+            <fileset dir="${config.target.dir}"/>
         </delete>
     </target>
 </project>

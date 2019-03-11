@@ -28,11 +28,10 @@ interface Species : Cloneable {
     /**
      *  Atoms in this species, or itself if [Atom].
      *
-     *  Sequence may be empty for an "empty" species. The atoms in the sequence
-     *  are not guaranteed to be in any particular order, are not guaranteed to
-     *  be in the same order between calls, and are not guaranteed to have no
-     *  duplicates. A subinterface or an implementation, however, is allowed to
-     *  make specified guarantees.
+     *  Collection may be empty. Atoms are unique and are in the same order
+     *  between iterations. Atoms in the collection are not guaranteed to be in
+     *  any particular order. A subinterface or an implementation, however, is
+     *  allowed to make specified guarantees.
      */
-    fun atoms(): Iterator<Atom>
+    fun atoms(): Collection<Atom>
 }

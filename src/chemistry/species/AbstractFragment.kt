@@ -30,7 +30,7 @@ abstract class AbstractFragment<A : Atom> :
      *  @param atoms
      *      Atoms of the fragment.
      */
-    constructor(atoms: Iterable<A>): super(atoms) {
+    constructor(atoms: Collection<A>): super(atoms) {
         if (atoms.firstOrNull() == null) {
             throw IllegalArgumentException(
                 "Fragment must have at least one atom."
@@ -47,8 +47,6 @@ abstract class AbstractFragment<A : Atom> :
         @Suppress("UNCHECKED_CAST")
         other
             .atoms()
-            .asSequence()
             .map { it.clone() as A }
-            .asIterable()
     )
 }

@@ -23,7 +23,7 @@ package crul.chemistry.species
  *      Type of atoms in the molecules.
  */
 interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
-    override fun atoms(): Iterator<A> =
+    override fun atoms(): Collection<A> =
         super
             .atoms()
             .asSequence()
@@ -31,7 +31,7 @@ interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
                 @Suppress("UNCHECKED_CAST")
                 it as A
             }
-            .iterator()
+            .toList()
 
     /**
      *  Identifier for this complex.
@@ -54,9 +54,14 @@ interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
 
     /**
      *  Molecules in this complex.
+     *
+     *  Collection may be empty. Molecules are unique and are in the same order
+     *  between iterations. Molecules in the collection are not guaranteed to
+     *  be in any particular order. A subinterface or an implementation,
+     *  however, is allowed to make specified guarantees.
      */
-    fun molecules(): Iterator<Molecule<A>> =
-        iterator()
+    fun molecules(): Collection<Molecule<A>> =
+        iterator().asSequence().toList()
 
     /**
      *  Gets the molecule that contains a given atom, or `null` if there is no

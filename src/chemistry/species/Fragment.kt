@@ -53,9 +53,9 @@ interface Fragment<A : Atom> : Complex<A> {
                 .firstOrNull { it.id == atomId }
         )
 
-    override fun atoms(): Iterator<A> =
+    override fun atoms(): Collection<A> =
         @Suppress("UNCHECKED_CAST") (
-            super.atoms() as Iterator<A>
+            super.atoms() as Collection<A>
         )
 
     /**
