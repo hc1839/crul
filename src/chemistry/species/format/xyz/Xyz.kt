@@ -20,6 +20,7 @@
 package crul.chemistry.species.format.xyz
 
 import crul.chemistry.species.Atom
+import crul.chemistry.species.Molecule
 import crul.chemistry.species.MoleculeComplex
 import crul.measure.Quantity
 import crul.measure.dimension.BaseDimension
@@ -27,6 +28,10 @@ import crul.measure.unit.UnitOfMeasure
 
 /**
  *  Serializes this complex to XYZ.
+ *
+ *  Molecules are outputted in the order as returned by
+ *  [MoleculeComplex.molecules]. For each molecule, atoms are outputted in the
+ *  order as returned by [Molecule.atoms].
  *
  *  @param fromLengthUnit
  *      The unit of length that the coordinates are in.
@@ -61,23 +66,24 @@ fun <A : Atom> MoleculeComplex<A>.toXyz(
     }
 
     var xyzBuilder = ""
-    val atomsBuf = atoms().asSequence().toList()
 
-    xyzBuilder += atomsBuf.count().toString() + "\n"
+    xyzBuilder += atoms().count().toString() + "\n"
     xyzBuilder += label + "\n"
 
-    for (atom in atomsBuf) {
-        xyzBuilder += atom.element.symbol + separator
-        xyzBuilder += atom
-            .position
-            .components
-            .map {
-                Quantity
-                    .convertUnit(it, fromLengthUnit, toLengthUnit)
-                    .toString()
-            }
-            .joinToString(separator)
-        xyzBuilder += "\n"
+    for (molecule in molecules()) {
+        for (atom in molecule.atoms()) {
+            xyzBuilder += atom.element.symbol + separator
+            xyzBuilder += atom
+                .position
+                .components
+                .map {
+                    Quantity
+                        .convertUnit(it, fromLengthUnit, toLengthUnit)
+                        .toString()
+                }
+                .joinToString(separator)
+            xyzBuilder += "\n"
+        }
     }
 
     xyzBuilder = xyzBuilder.trim() + "\n"

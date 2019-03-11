@@ -26,12 +26,10 @@ interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
     override fun atoms(): Collection<A> =
         super
             .atoms()
-            .asSequence()
             .map {
                 @Suppress("UNCHECKED_CAST")
                 it as A
             }
-            .toList()
 
     /**
      *  Identifier for this complex.
@@ -48,7 +46,6 @@ interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
      */
     val formalCharge: Double
         get() = molecules()
-            .asSequence()
             .map { it.formalCharge }
             .reduce { acc, item -> acc + item }
 

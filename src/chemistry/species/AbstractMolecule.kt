@@ -75,7 +75,6 @@ abstract class AbstractMolecule<A : Atom> :
             // Add and store each atom as a vertex.
             val atomVertices = bond
                 .atoms()
-                .asSequence()
                 .map { atom ->
                     val existingVertex = this
                         .graph
@@ -103,7 +102,6 @@ abstract class AbstractMolecule<A : Atom> :
                         existingVertex
                     }
                 }
-                .toList()
 
             // Create a bond edge, and add atom vertices to it.
             val bondEdge = this.graph.createEdge(this.bondEdgeType)
@@ -147,9 +145,7 @@ abstract class AbstractMolecule<A : Atom> :
         bondBuilder: BondBuilder<*> = BondBuilder.newInstance()
     ): super(
         bonds
-            .flatMap {
-                it.atoms().asSequence().distinct().toList()
-            }
+            .flatMap { it.atoms().distinct() }
             .toSet()
     ) {
         this.graphSystem.createGraph(crul.uuid.Generator.inNCName())
@@ -184,7 +180,7 @@ abstract class AbstractMolecule<A : Atom> :
         this.bondOrderPropertyType = this.graph.createVertex()
         this.bondBuilder = other.bondBuilder
 
-        if (other.bonds().asSequence().firstOrNull() == null) {
+        if (other.bonds().firstOrNull() == null) {
             initialize(other.atoms().first())
         } else {
             initialize(other.bonds())

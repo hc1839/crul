@@ -151,12 +151,8 @@ fun <A : Atom> MoleculeComplex<A>.toCml(
     val bondArrayNode = cmlDoc.createElement("bondArray")
     moleculeNode.appendChild(bondArrayNode)
 
-    val bonds = molecules()
-        .asSequence()
-        .flatMap { it.bonds().asSequence() }
-
     // Create and append a node for each bond.
-    for (bond in bonds) {
+    for (bond in molecules().flatMap { it.bonds() }) {
         val bondNode = cmlDoc.createElement("bond")
         bondArrayNode.appendChild(bondNode)
 
@@ -164,7 +160,6 @@ fun <A : Atom> MoleculeComplex<A>.toCml(
             "atomRefs2",
             bond
                 .atoms()
-                .asSequence()
                 .map { it.id }
                 .joinToString(" ")
         )

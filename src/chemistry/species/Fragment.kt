@@ -31,7 +31,6 @@ interface Fragment<A : Atom> : Complex<A> {
      */
     val formalCharge: Double
         get() = atoms()
-            .asSequence()
             .map { it.formalCharge }
             .reduce { acc, item -> acc + item }
 
@@ -47,11 +46,8 @@ interface Fragment<A : Atom> : Complex<A> {
      *  first one encountered is returned.
      */
     fun getAtomById(atomId: String): A? =
-        @Suppress("UNCHECKED_CAST") (
-            atoms()
-                .asSequence()
-                .firstOrNull { it.id == atomId }
-        )
+        @Suppress("UNCHECKED_CAST")
+        atoms().firstOrNull { it.id == atomId }
 
     override fun atoms(): Collection<A> =
         @Suppress("UNCHECKED_CAST") (

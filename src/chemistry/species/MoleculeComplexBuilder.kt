@@ -344,7 +344,6 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
         // Construct a temporary sequence of complexes of bonds.
         val bondComplexes = graph
             .getEdgesByType(fragmentEdgeType)
-            .asSequence()
             .filter { fragmentEdge ->
                 fragmentEdge.vertices.count() > 1
             }
@@ -369,7 +368,6 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
         // Construct a temporary sequence of complexes of atoms.
         val atomComplexes = graph
             .getEdgesByType(fragmentEdgeType)
-            .asSequence()
             .filter { fragmentEdge ->
                 fragmentEdge.vertices.count() == 1
             }

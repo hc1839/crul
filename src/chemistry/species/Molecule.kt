@@ -52,7 +52,6 @@ interface Molecule<A : Atom> : Fragment<A> {
      */
     fun getBondsByAtom(atom: A): Set<Bond<A>> =
         bonds()
-            .asSequence()
             .filter { it.containsAtom(atom) }
             .toSet()
 
@@ -76,7 +75,6 @@ interface Molecule<A : Atom> : Fragment<A> {
      */
     fun getBond(atom1: A, atom2: A): Bond<A>? =
         bonds()
-            .asSequence()
             .filter {
                 it.containsAtom(atom1) &&
                 it.containsAtom(atom2)

@@ -82,7 +82,6 @@ abstract class AbstractMoleculeComplex<A : Atom> :
 
     override fun getMoleculeWithAtom(atom: A): Molecule<A>? =
         molecules()
-            .asSequence()
             .filter { it.containsAtom(atom) }
             .singleOrNull()
 }
