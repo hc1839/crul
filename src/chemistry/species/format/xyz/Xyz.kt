@@ -21,6 +21,7 @@ package crul.chemistry.species.format.xyz
 
 import crul.chemistry.species.Atom
 import crul.chemistry.species.MoleculeComplex
+import crul.measure.Quantity
 import crul.measure.dimension.BaseDimension
 import crul.measure.unit.UnitOfMeasure
 
@@ -43,7 +44,7 @@ import crul.measure.unit.UnitOfMeasure
 fun <A : Atom> MoleculeComplex<A>.toXyz(
     fromLengthUnit: UnitOfMeasure,
     toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
-    label: String = crul.uuid.Generator.inNCName(),
+    label: String = id,
     separator: String = " "
 ): String
 {
@@ -70,7 +71,11 @@ fun <A : Atom> MoleculeComplex<A>.toXyz(
         xyzBuilder += atom
             .position
             .components
-            .map { it.toString() }
+            .map {
+                Quantity
+                    .convertUnit(it, fromLengthUnit, toLengthUnit)
+                    .toString()
+            }
             .joinToString(separator)
         xyzBuilder += "\n"
     }
