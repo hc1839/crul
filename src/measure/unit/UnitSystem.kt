@@ -31,7 +31,7 @@ class UnitSystem : BinarySerializable {
     /**
      *  Base units associated by base dimensions.
      */
-    val baseUnits: Map<BaseDimension, UnitOfMeasure>
+    private val baseUnits: Map<BaseDimension, UnitOfMeasure>
 
     /**
      *  @param baseUnits
@@ -141,6 +141,18 @@ class UnitSystem : BinarySerializable {
 
         return packer.toByteArray()
     }
+
+    /**
+     *  Gets the base unit that is associated by a given base dimension.
+     *
+     *  @param baseDimension
+     *      Base dimension for which the base unit is to be retrieved.
+     *
+     *  @return
+     *      Base unit associated by `baseDimension`.
+     */
+    fun getBaseUnit(baseDimension: BaseDimension): UnitOfMeasure =
+        baseUnits[baseDimension]!!
 
     /**
      *  Creates a unit by raising each base unit in this unit system to the

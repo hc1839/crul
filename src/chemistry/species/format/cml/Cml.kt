@@ -194,20 +194,11 @@ fun <A : Atom> MoleculeComplex<A>.toCml(
  *
  *  @param toLengthUnit
  *      Unit of length that the coordinates in the deserialized complex are in.
- *
- *  @param atomFactory
- *      Factory for atoms.
- *
- *  @param bondFactory
- *      Factory for bonds.
  */
-@JvmOverloads
-fun <A : Atom> MoleculeComplexBuilder<*>.parseInCml(
+fun MoleculeComplexBuilder<*>.parseInCml(
     cml: String,
     fromLengthUnit: UnitOfMeasure,
-    toLengthUnit: UnitOfMeasure,
-    atomFactory: AtomFactory = AtomFactory(),
-    bondFactory: BondFactory<A> = BondFactory()
+    toLengthUnit: UnitOfMeasure
 ): MoleculeComplexBuilder<*>
 {
     if (!fromLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
@@ -243,7 +234,7 @@ fun <A : Atom> MoleculeComplexBuilder<*>.parseInCml(
         .evaluate("/*/atomArray/atom", cmlDoc, XPathConstants.NODESET)
         as NodeList
 
-    val atomsById: MutableMap<String, A> = mutableMapOf()
+    val atomsById: MutableMap<String, Atom> = mutableMapOf()
 
     // Construct each atom using the information stored in the node.
     for (index in 0 until atomsNodeList.length) {
@@ -278,15 +269,14 @@ fun <A : Atom> MoleculeComplexBuilder<*>.parseInCml(
         }
 
         // Construct the atom.
-        val atom = atomFactory.create(
+        val atom: Atom = AtomFactory().create(
             element,
             position,
             formalCharge,
             atomId
         )
 
-        @Suppress("UNCHECKED_CAST")
-        atomsById[atomId] = atom as A
+        atomsById[atomId] = atom
     }
 
     // Check that the formal charge specified in the root node matches the
@@ -339,7 +329,7 @@ fun <A : Atom> MoleculeComplexBuilder<*>.parseInCml(
         }
 
         bonds.add(
-            bondFactory.create(
+            BondFactory<Atom>().create(
                 atomsById[atomRefids[0]]!!,
                 atomsById[atomRefids[1]]!!,
                 bondNode.getAttribute("order")
