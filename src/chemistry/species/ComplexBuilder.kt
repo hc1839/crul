@@ -16,8 +16,6 @@
 
 package crul.chemistry.species
 
-import crul.chemistry.species.impl.ComplexImpl
-
 /**
  *  Mutable builder for [Complex].
  *

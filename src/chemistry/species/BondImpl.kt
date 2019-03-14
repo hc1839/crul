@@ -14,14 +14,11 @@
  *  under the License.
  */
 
-package crul.chemistry.species.impl
+package crul.chemistry.species
 
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import crul.chemistry.species.Atom
-import crul.chemistry.species.AtomBuilder
-import crul.chemistry.species.Bond
 import crul.serialize.BinarySerializable
 
 /**

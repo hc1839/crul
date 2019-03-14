@@ -16,8 +16,6 @@
 
 package crul.chemistry.species
 
-import crul.chemistry.species.impl.MoleculeComplexImpl
-import crul.chemistry.species.impl.MoleculeImpl
 import crul.hypergraph.Edge
 import crul.hypergraph.Graph
 import crul.hypergraph.GraphSystem

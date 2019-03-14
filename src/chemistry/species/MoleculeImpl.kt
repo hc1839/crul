@@ -14,13 +14,8 @@
  *  under the License.
  */
 
-package crul.chemistry.species.impl
+package crul.chemistry.species
 
-import crul.chemistry.species.AbstractMolecule
-import crul.chemistry.species.Atom
-import crul.chemistry.species.Bond
-import crul.chemistry.species.BondBuilder
-import crul.chemistry.species.Molecule
 import crul.hypergraph.Edge
 import crul.hypergraph.Graph
 import crul.hypergraph.GraphSystem

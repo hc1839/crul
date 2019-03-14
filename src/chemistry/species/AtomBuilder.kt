@@ -17,7 +17,6 @@
 package crul.chemistry.species
 
 import crul.chemistry.species.Element
-import crul.chemistry.species.impl.AtomImpl
 import crul.math.coordsys.Vector3D
 
 /**

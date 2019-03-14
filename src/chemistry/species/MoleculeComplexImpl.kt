@@ -14,12 +14,7 @@
  *  under the License.
  */
 
-package crul.chemistry.species.impl
-
-import crul.chemistry.species.AbstractMoleculeComplex
-import crul.chemistry.species.Atom
-import crul.chemistry.species.Molecule
-import crul.chemistry.species.MoleculeComplex
+package crul.chemistry.species
 
 /**
  *  Default implementation of [MoleculeComplex].
