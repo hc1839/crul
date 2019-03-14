@@ -55,9 +55,9 @@ open class AtomFactory {
         id: String = crul.uuid.Generator.inNCName()
     ): Atom =
         builder
-            .element(element)
-            .position(position)
-            .formalCharge(formalCharge)
-            .id(id)
+            .setElement(element)
+            .setPosition(position)
+            .setFormalCharge(formalCharge)
+            .setId(id)
             .build()
 }

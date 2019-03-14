@@ -50,8 +50,8 @@ internal class NodeIteratorImpl :
     {
         this.treeWalker = TreeWalkerBuilder
             .newInstance()
-            .root(root)
-            .filter(filter)
+            .setRoot(root)
+            .setFilter(filter)
             .build()
     }
 

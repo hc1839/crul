@@ -29,7 +29,7 @@ open class NodeIteratorBuilder<B : NodeIteratorBuilder<B>> {
 
     protected constructor()
 
-    protected var _root: Node? = null
+    protected var root: Node? = null
         private set
 
     /**
@@ -37,23 +37,23 @@ open class NodeIteratorBuilder<B : NodeIteratorBuilder<B>> {
      *
      *  It must be set before [build] is called.
      */
-    fun root(value: Node): B {
-        _root = value
+    fun setRoot(value: Node): B {
+        root = value
         return _this
     }
 
-    protected var _filter: ((Node) -> FilterState)? = null
+    protected var filter: ((Node) -> FilterState)? = null
         private set
 
     /**
      *  Configures the filter.
      */
-    fun filter(value: ((Node) -> FilterState)?): B {
-        _filter = value
+    fun setFilter(value: ((Node) -> FilterState)?): B {
+        filter = value
         return _this
     }
 
-    protected var _order: TraversalOrder? = null
+    protected var order: TraversalOrder? = null
         private set
 
     /**
@@ -61,8 +61,8 @@ open class NodeIteratorBuilder<B : NodeIteratorBuilder<B>> {
      *
      *  It must be set before [build] is called.
      */
-    fun order(value: TraversalOrder): B {
-        _order = value
+    fun setOrder(value: TraversalOrder): B {
+        order = value
         return _this
     }
 
@@ -70,9 +70,9 @@ open class NodeIteratorBuilder<B : NodeIteratorBuilder<B>> {
      *  Constructs a [NodeIterator] from the data in this builder.
      */
     open fun build(): NodeIterator =
-        when (_order!!) {
+        when (order!!) {
             TraversalOrder.PREORDER_DEPTH ->
-                NodeIteratorImpl(_root!!, _filter)
+                NodeIteratorImpl(root!!, filter)
         }
 
     companion object {

@@ -217,9 +217,9 @@ abstract class AbstractMolecule<A : Atom> :
                 .value
 
             bondBuilder!!
-                .atom1(atoms[0])
-                .atom2(atoms[1])
-                .order(bondOrder)
+                .setAtom1(atoms[0])
+                .setAtom2(atoms[1])
+                .setOrder(bondOrder)
                 .build<A>()
         }
 
@@ -254,9 +254,9 @@ abstract class AbstractMolecule<A : Atom> :
                 .value
 
             bondBuilder!!
-                .atom1(atom)
-                .atom2(otherAtom)
-                .order(bondOrder)
+                .setAtom1(atom)
+                .setAtom2(otherAtom)
+                .setOrder(bondOrder)
                 .build<A>()
         }
 
@@ -294,9 +294,9 @@ abstract class AbstractMolecule<A : Atom> :
                 .first().value
 
             bondBuilder!!
-                .atom1(atom1)
-                .atom2(atom2)
-                .order(bondOrder)
+                .setAtom1(atom1)
+                .setAtom2(atom2)
+                .setOrder(bondOrder)
                 .build<A>()
         }
     }

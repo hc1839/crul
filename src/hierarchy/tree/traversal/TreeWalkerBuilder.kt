@@ -29,7 +29,7 @@ open class TreeWalkerBuilder<B : TreeWalkerBuilder<B>> {
 
     protected constructor()
 
-    protected var _root: Node? = null
+    protected var root: Node? = null
         private set
 
     /**
@@ -37,19 +37,19 @@ open class TreeWalkerBuilder<B : TreeWalkerBuilder<B>> {
      *
      *  It must be set before [build] is called.
      */
-    fun root(value: Node): B {
-        _root = value
+    fun setRoot(value: Node): B {
+        root = value
         return _this
     }
 
-    protected var _filter: ((Node) -> FilterState)? = null
+    protected var filter: ((Node) -> FilterState)? = null
         private set
 
     /**
      *  Configures the filter.
      */
-    fun filter(value: ((Node) -> FilterState)?): B {
-        _filter = value
+    fun setFilter(value: ((Node) -> FilterState)?): B {
+        filter = value
         return _this
     }
 
@@ -57,7 +57,7 @@ open class TreeWalkerBuilder<B : TreeWalkerBuilder<B>> {
      *  Constructs a default implementation of [TreeWalker].
      */
     open fun build(): TreeWalker =
-        TreeWalkerImpl(_root!!, _filter)
+        TreeWalkerImpl(root!!, filter)
 
     companion object {
         private class TreeWalkerBuilderImpl() :

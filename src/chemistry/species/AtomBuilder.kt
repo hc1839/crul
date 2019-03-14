@@ -31,7 +31,7 @@ open class AtomBuilder<B : AtomBuilder<B>> {
 
     protected constructor()
 
-    protected var _element: Element? = null
+    protected var element: Element? = null
         private set
 
     /**
@@ -39,12 +39,12 @@ open class AtomBuilder<B : AtomBuilder<B>> {
      *
      *  It must be set before [build] is called.
      */
-    fun element(value: Element): B {
-        _element = value
+    fun setElement(value: Element): B {
+        element = value
         return _this
     }
 
-    protected var _id: String? = null
+    protected var id: String? = null
         private set
 
     /**
@@ -52,12 +52,12 @@ open class AtomBuilder<B : AtomBuilder<B>> {
      *
      *  If it is not set, UUID Version 4 is used.
      */
-    fun id(value: String?): B {
-        _id = value
+    fun setId(value: String?): B {
+        id = value
         return _this
     }
 
-    protected var _position: Vector3D? = null
+    protected var position: Vector3D? = null
         private set
 
     /**
@@ -65,12 +65,12 @@ open class AtomBuilder<B : AtomBuilder<B>> {
      *
      *  It must be set before [build] is called.
      */
-    fun position(value: Vector3D): B {
-        _position = value
+    fun setPosition(value: Vector3D): B {
+        position = value
         return _this
     }
 
-    protected var _formalCharge: Double? = null
+    protected var formalCharge: Double? = null
         private set
 
     /**
@@ -78,8 +78,8 @@ open class AtomBuilder<B : AtomBuilder<B>> {
      *
      *  It must be set before [build] is called.
      */
-    fun formalCharge(value: Double): B {
-        _formalCharge = value
+    fun setFormalCharge(value: Double): B {
+        formalCharge = value
         return _this
     }
 
@@ -88,10 +88,10 @@ open class AtomBuilder<B : AtomBuilder<B>> {
      */
     open fun build(): Atom =
         AtomImpl(
-            _element!!,
-            _position!!,
-            _formalCharge!!,
-            _id ?: crul.uuid.Generator.inNCName()
+            element!!,
+            position!!,
+            formalCharge!!,
+            id ?: crul.uuid.Generator.inNCName()
         )
 
     companion object {

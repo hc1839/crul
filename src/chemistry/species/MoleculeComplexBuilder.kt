@@ -45,12 +45,12 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
     /**
      *  Backing property for the bonds in the complex.
      */
-    private val _bonds: MutableSet<Bond<*>> = mutableSetOf()
+    private val bondSet: MutableSet<Bond<*>> = mutableSetOf()
 
     /**
      *  Backing property for the atoms as singleton molecules in the complex.
      */
-    private val _singletons: MutableSet<Atom> = mutableSetOf()
+    private val singletonSet: MutableSet<Atom> = mutableSetOf()
 
     protected constructor()
 
@@ -60,12 +60,12 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      *  Atoms and bonds are cloned.
      */
     constructor(other: MoleculeComplexBuilder<B>) {
-        this._bonds.addAll(other._bonds.map { it.clone() })
-        this._singletons.addAll(other._singletons.map { it.clone() })
-        this._id = other._id
+        this.bondSet.addAll(other.bondSet.map { it.clone() })
+        this.singletonSet.addAll(other.singletonSet.map { it.clone() })
+        this.id = other.id
     }
 
-    protected var _id: String? = null
+    protected var id: String? = null
         private set
 
     /**
@@ -73,8 +73,8 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      *
      *  If it is not set, UUID Version 4 is used.
      */
-    fun id(value: String?): B {
-        _id = value
+    fun setId(value: String?): B {
+        id = value
         return _this
     }
 
@@ -91,7 +91,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      *        bond.
      */
     open fun addBond(newBond: Bond<*>): B {
-        if (_bonds.contains(newBond)) {
+        if (bondSet.contains(newBond)) {
             return _this
         }
 
@@ -99,7 +99,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
         val newAtoms = newBond.toAtomPair().toList().toSet()
 
         // Sanity checks.
-        for (existingBond in _bonds) {
+        for (existingBond in bondSet) {
             val existingAtoms = existingBond.toAtomPair().toList().toSet()
 
             if (newAtoms == existingAtoms) {
@@ -137,7 +137,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
             }
         }
 
-        _bonds.add(newBond)
+        bondSet.add(newBond)
 
         return _this
     }
@@ -146,7 +146,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      *  Removes a bond.
      */
     open fun removeBond(oldBond: Bond<*>): B {
-        _bonds.remove(oldBond)
+        bondSet.remove(oldBond)
 
         return _this
     }
@@ -162,8 +162,8 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
         // All atoms in the complex.
         val existingAtomsAll =
             (
-                _singletons.asSequence() +
-                _bonds.asSequence().flatMap { it.atoms().asSequence() }
+                singletonSet.asSequence() +
+                bondSet.asSequence().flatMap { it.atoms().asSequence() }
             )
             .distinct()
 
@@ -190,7 +190,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
             }
         }
 
-        _singletons.add(newAtom)
+        singletonSet.add(newAtom)
 
         return _this
     }
@@ -202,7 +202,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      *  ID exists (only as a singleton molecule), an exception is raised.
      */
     open fun removeAtom(oldAtom: Atom): B {
-        val existingAtomOfSameId = _singletons
+        val existingAtomOfSameId = singletonSet
             .find { it.id == oldAtom.id }
 
         if (
@@ -215,7 +215,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
             )
         }
 
-        val equivalentExistingAtom = _singletons
+        val equivalentExistingAtom = singletonSet
             .find { it == oldAtom }
 
         if (
@@ -228,7 +228,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
             )
         }
 
-        _singletons.remove(oldAtom)
+        singletonSet.remove(oldAtom)
 
         return _this
     }
@@ -250,8 +250,8 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
         // All atoms in the complex.
         val atomsAll =
             (
-                _singletons.asSequence() +
-                _bonds.asSequence().flatMap { it.atoms().asSequence() }
+                singletonSet.asSequence() +
+                bondSet.asSequence().flatMap { it.atoms().asSequence() }
             )
             .distinct()
 
@@ -273,7 +273,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
         }
 
         // Combine fragments based on atom connectivity.
-        for (bond in _bonds) {
+        for (bond in bondSet) {
             val (atom1, atom2) = bond.toAtomPair()
             val atom1Vertex = graph.getVertexByName(atom1.id)!!
             val atom2Vertex = graph.getVertexByName(atom2.id)!!
@@ -396,9 +396,10 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      *
      *  Identifier remains intact.
      */
-    fun clear(): B {
-        _bonds.clear()
-        _singletons.clear()
+    protected fun clear(): B {
+        bondSet.clear()
+        singletonSet.clear()
+
         return _this
     }
 
@@ -428,7 +429,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
                     )
                 }
             },
-            _id ?: crul.uuid.Generator.inNCName()
+            id ?: crul.uuid.Generator.inNCName()
         )
 
     /**

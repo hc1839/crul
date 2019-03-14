@@ -337,7 +337,7 @@ fun MoleculeComplexBuilder<*>.parseInCml(
         )
     }
 
-    id(moleculeNode.getAttribute("id"))
+    setId(moleculeNode.getAttribute("id"))
 
     // Add the atoms to the builder.
     for (atom in atomsById.values) {

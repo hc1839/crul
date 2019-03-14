@@ -49,8 +49,8 @@ open class BondFactory<A : Atom> {
      */
     open fun create(atom1: A, atom2: A, order: String): Bond<A> =
         builder
-            .atom1(atom1)
-            .atom2(atom2)
-            .order(order)
+            .setAtom1(atom1)
+            .setAtom2(atom2)
+            .setOrder(order)
             .build<A>()
 }

@@ -29,7 +29,7 @@ open class BondBuilder<B : BondBuilder<B>> {
 
     protected constructor()
 
-    protected var _atom1: Atom? = null
+    protected var atom1: Atom? = null
         private set
 
     /**
@@ -37,12 +37,12 @@ open class BondBuilder<B : BondBuilder<B>> {
      *
      *  It must be set before [build] is called.
      */
-    fun atom1(value: Atom): B {
-        _atom1 = value
+    fun setAtom1(value: Atom): B {
+        atom1 = value
         return _this
     }
 
-    protected var _atom2: Atom? = null
+    protected var atom2: Atom? = null
         private set
 
     /**
@@ -50,12 +50,12 @@ open class BondBuilder<B : BondBuilder<B>> {
      *
      *  It must be set before [build] is called.
      */
-    fun atom2(value: Atom): B {
-        _atom2 = value
+    fun setAtom2(value: Atom): B {
+        atom2 = value
         return _this
     }
 
-    protected var _order: String? = null
+    protected var order: String? = null
         private set
 
     /**
@@ -63,8 +63,8 @@ open class BondBuilder<B : BondBuilder<B>> {
      *
      *  It must be set before [build] is called.
      */
-    fun order(value: String): B {
-        _order = value
+    fun setOrder(value: String): B {
+        order = value
         return _this
     }
 
@@ -78,9 +78,9 @@ open class BondBuilder<B : BondBuilder<B>> {
     open fun <A : Atom> build(): Bond<A> =
         @Suppress("UNCHECKED_CAST")
         BondImpl<A>(
-            _atom1!! as A,
-            _atom2!! as A,
-            _order!!
+            atom1!! as A,
+            atom2!! as A,
+            order!!
         )
 
     companion object {

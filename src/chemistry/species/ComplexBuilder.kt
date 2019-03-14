@@ -29,16 +29,16 @@ open class ComplexBuilder<B : ComplexBuilder<B>> {
 
     protected constructor()
 
-    protected var _id: String? = null
+    protected var id: String? = null
         private set
 
-    protected val _subspecies: MutableSet<Species> = mutableSetOf()
+    protected val subspeciesSet: MutableSet<Species> = mutableSetOf()
 
     /**
      *  Adds a subspecies.
      */
     fun add(subspecies: Species): B {
-        _subspecies.add(subspecies)
+        subspeciesSet.add(subspecies)
         return _this
     }
 
@@ -46,7 +46,7 @@ open class ComplexBuilder<B : ComplexBuilder<B>> {
      *  Adds to this builder all of the subspecies specified in a collection.
      */
     fun addAll(subspeciesCollection: Collection<Species>): B {
-        _subspecies.addAll(subspeciesCollection)
+        subspeciesSet.addAll(subspeciesCollection)
         return _this
     }
 
@@ -54,7 +54,7 @@ open class ComplexBuilder<B : ComplexBuilder<B>> {
      *  Removes a subspecies.
      */
     fun remove(subspecies: Species): B {
-        _subspecies.remove(subspecies)
+        subspeciesSet.remove(subspecies)
         return _this
     }
 
@@ -63,7 +63,7 @@ open class ComplexBuilder<B : ComplexBuilder<B>> {
      *  collection.
      */
     fun removeAll(subspeciesCollection: Collection<Species>): B {
-        _subspecies.removeAll(subspeciesCollection)
+        subspeciesSet.removeAll(subspeciesCollection)
         return _this
     }
 
@@ -73,7 +73,7 @@ open class ComplexBuilder<B : ComplexBuilder<B>> {
      *  Identifier remains intact.
      */
     fun clear(): B {
-        _subspecies.clear()
+        subspeciesSet.clear()
         return _this
     }
 
@@ -82,7 +82,7 @@ open class ComplexBuilder<B : ComplexBuilder<B>> {
      */
     open fun <S : Species> build(): Complex<S> =
         @Suppress("UNCHECKED_CAST")
-        ComplexImpl<S>(_subspecies.toSet() as Collection<S>)
+        ComplexImpl<S>(subspeciesSet.toSet() as Collection<S>)
 
     companion object {
         private class ComplexBuilderImpl():

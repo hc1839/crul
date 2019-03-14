@@ -182,8 +182,8 @@ abstract class AbstractNode : Node {
     ): TreeWalker =
         TreeWalkerBuilder
             .newInstance()
-            .root(this)
-            .filter(filter)
+            .setRoot(this)
+            .setFilter(filter)
             .build()
 
     override fun createNodeIterator(
@@ -192,9 +192,9 @@ abstract class AbstractNode : Node {
     ): NodeIterator =
         NodeIteratorBuilder
             .newInstance()
-            .root(this)
-            .filter(filter)
-            .order(order)
+            .setRoot(this)
+            .setFilter(filter)
+            .setOrder(order)
             .build()
 
     override fun appendChild(newChild: Node): Node {
