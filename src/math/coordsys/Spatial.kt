@@ -34,11 +34,11 @@ open class Spatial : BinarySerializable {
      *  @param components
      *      Components of the coordinate tuple or vector.
      */
-    constructor(components: Iterable<Double>) {
+    constructor(components: List<Double>) {
         this._components = components.toMutableList()
     }
 
-    constructor(vararg components: Double): this(components.asIterable())
+    constructor(vararg components: Double): this(components.toList())
 
     /**
      *  Initializes from a MessagePack map.

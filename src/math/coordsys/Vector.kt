@@ -22,9 +22,9 @@ import kotlin.math.pow
  *  Vector with an arbitrary number of components.
  */
 open class Vector : Spatial {
-    constructor(components: Iterable<Double>): super(components)
+    constructor(components: List<Double>): super(components)
 
-    constructor(vararg components: Double): this(components.asIterable())
+    constructor(vararg components: Double): this(components.toList())
 
     /**
      *  Deserialization constructor.

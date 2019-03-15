@@ -20,7 +20,7 @@ package crul.math.coordsys
  *  Vector in three dimensions.
  */
 open class Vector3D : Vector {
-    constructor(components: Iterable<Double>): super(components) {
+    constructor(components: List<Double>): super(components) {
         if (dimensionality != 3) {
             throw IllegalArgumentException(
                 "Not a three-dimensional vector."
