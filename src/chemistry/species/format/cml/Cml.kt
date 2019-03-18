@@ -243,7 +243,7 @@ fun MoleculeComplexBuilder<*>.parseInCml(
 
         val element = Element(atomNode.getAttribute("elementType"))
 
-        val position = Vector3D(
+        val positionCmpts =
             listOf("x3", "y3", "z3").map { cmptName ->
                 Quantity.convertUnit(
                     atomNode.getAttribute(cmptName).toDouble(),
@@ -251,6 +251,11 @@ fun MoleculeComplexBuilder<*>.parseInCml(
                     toLengthUnit
                 )
             }
+
+        val position = Vector3D(
+            positionCmpts[0],
+            positionCmpts[1],
+            positionCmpts[2]
         )
 
         val formalCharge =

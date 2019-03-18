@@ -20,19 +20,31 @@ package crul.math.coordsys
  *  Vector in three dimensions.
  */
 open class Vector3D : Vector {
-    constructor(components: List<Double>): super(components) {
-        if (dimensionality != 3) {
+    constructor(
+        component1: Double,
+        component2: Double,
+        component3: Double
+    ): super(
+        listOf(component1, component2, component3)
+    )
+
+    /**
+     *  Convenience constructor for operator overloading that needs to return
+     *  an instance of a subclass.
+     */
+    protected constructor(
+        components: List<Double>
+    ): this(
+        components[0],
+        components[1],
+        components[2]
+    ) {
+        if (components.count() != 3) {
             throw IllegalArgumentException(
                 "Not a three-dimensional vector."
             )
         }
     }
-
-    constructor(
-        component1: Double,
-        component2: Double,
-        component3: Double
-    ): this(listOf(component1, component2, component3))
 
     /**
      *  Deserialization constructor.
