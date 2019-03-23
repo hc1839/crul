@@ -19,20 +19,13 @@ package crul.math.stat.descriptive
 import org.apache.commons.math3.stat.descriptive.rank.Percentile
 
 /**
- *  Implementation of Tukey Fences for determining outliers.
- *
- *  @constructor
- *
- *  @param k
- *      Non-negative value for the `k` constant. `k = 1.5` (default) is
- *      considered to be an "outlier", whereas `k = 3.0` is considered to be
- *      "far out".
+ *  Tukey Fences for determining outliers.
  */
-class TukeyFences @JvmOverloads constructor(k: Double = 1.5) {
+class TukeyFences {
     /**
      *  The `k` constant.
      */
-    var k: Double = k
+    var k: Double
         set(value) {
             if (value < 0.0) {
                 throw IllegalArgumentException(
@@ -43,19 +36,25 @@ class TukeyFences @JvmOverloads constructor(k: Double = 1.5) {
             field = value
         }
 
-    init {
+    /**
+     *  @param k
+     *      Non-negative value for the `k` constant. `k = 1.5` (default) is
+     *      considered to be an "outlier", whereas `k = 3.0` is considered to
+     *      be "far out".
+     */
+    @JvmOverloads
+    constructor(k: Double = 1.5) {
         this.k = k
     }
 
     /**
-     *  Zero-based indices of a given `Iterable` that are considered to be
-     *  outliers according to Tukey Fences with respect to [k].
+     *  Truth values that indicate whether the corresponding element of a given
+     *  list is considered to be an outlier according to Tukey Fences with
+     *  respect to [k].
      */
-    fun outlierIndices(dataListIter: Iterable<Double>): List<Int> {
-        val dataList = dataListIter.toList()
-
-        return if (dataList.isEmpty()) {
-            listOf<Int>()
+    fun isOutlier(dataList: List<Double>): List<Boolean> =
+        if (dataList.isEmpty()) {
+            listOf()
         } else {
             val percentile = Percentile()
 
@@ -68,9 +67,8 @@ class TukeyFences @JvmOverloads constructor(k: Double = 1.5) {
                 quartiles[1] + k * (quartiles[1] - quartiles[0])
             )
 
-            dataList.indices.filter {
-                dataList[it] < tukeyFences[0] || dataList[it] > tukeyFences[1]
+            dataList.map {
+                it < tukeyFences[0] || it > tukeyFences[1]
             }
         }
-    }
 }
