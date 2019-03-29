@@ -44,6 +44,12 @@ class TukeyFences {
      */
     @JvmOverloads
     constructor(k: Double = 1.5) {
+        if (k < 0.0) {
+            throw IllegalArgumentException(
+                "'k' is negative."
+            )
+        }
+
         this.k = k
     }
 
