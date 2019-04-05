@@ -30,21 +30,6 @@ import org.apache.avro.generic.GenericDatumWriter
  */
 object AvroSimple {
     /**
-     *  Parses an Avro schema file stored in the JAR file.
-     *
-     *  @param path
-     *      Absolute path with respect to the JAR of the schema file.
-     *
-     *  @return
-     *      Avro schema.
-     */
-    @JvmStatic
-    fun getSchema(path: String): Schema =
-        Schema.Parser().parse(
-            this::class.java.getResourceAsStream(path)
-        )
-
-    /**
      *  Serializes Avro data in binary format.
      *
      *  @param D
