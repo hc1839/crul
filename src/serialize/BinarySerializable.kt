@@ -25,6 +25,23 @@ interface BinarySerializable {
      *
      *  The serialization format is specific to the class implementing this
      *  function.
+     *
+     *  @param args
+     *      Additional arguments.
+     *
+     *  @return
+     *      Serialization of the object as a byte array.
      */
-    fun serialize(): ByteArray
+    fun serialize(args: List<Any?>): ByteArray
+
+    /**
+     *  Serializes the object to a byte array without additional arguments.
+     *
+     *  Default implementation calls [serialize] with an empty list.
+     *
+     *  @return
+     *      Serialization of the object as a byte array.
+     */
+    fun serialize(): ByteArray =
+        serialize(listOf())
 }

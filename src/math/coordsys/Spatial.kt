@@ -93,7 +93,7 @@ open class Spatial : BinarySerializable {
     /**
      *  MessagePack serialization.
      */
-    override fun serialize(): ByteArray {
+    override fun serialize(args: List<Any?>): ByteArray {
         val packer = MessagePack.newDefaultBufferPacker()
 
         packer.packMapHeader(1)
