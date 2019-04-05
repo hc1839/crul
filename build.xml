@@ -131,6 +131,7 @@
         <copy todir="${compile.dir}" preservelastmodified="true">
             <fileset dir="${src.dir}" includes="**/*.xml"/>
             <fileset dir="${src.dir}" includes="**/*.json"/>
+            <fileset dir="${src.dir}" includes="**/*.avsc"/>
         </copy>
     </target>
 
