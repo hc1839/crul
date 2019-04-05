@@ -16,10 +16,6 @@
 
 package crul.serialize
 
-import org.msgpack.core.MessagePack
-import org.msgpack.value.impl.ImmutableArrayValueImpl
-import org.msgpack.value.impl.ImmutableStringValueImpl
-
 /**
  *  Tag for a class whose instances can be serialized to a byte array.
  */
@@ -31,100 +27,4 @@ interface BinarySerializable {
      *  function.
      */
     fun serialize(): ByteArray
-
-    companion object {
-        /**
-         *  Convenience function that gets the map associated with a key in a
-         *  MessagePack map.
-         *
-         *  @param msgpackMap
-         *      MessagePack map of string to another map, which in turn is an
-         *      association of string with a MessagePack value. In essence, it
-         *      is a map that contains the serializations of the objects in an
-         *      inheritance tree.
-         *
-         *  @param key
-         *      Key that is associated with the map within `msgpackMap` to
-         *      retrieve. If it does not exist, an exception is raised.
-         *
-         *  @return
-         *      Map within `msgpackMap` that is associated by `key`.
-         */
-        @JvmStatic
-        fun getInnerMap(msgpackMap: ByteArray, key: String):
-            Map<String, org.msgpack.value.Value>
-        {
-            val unpacker = MessagePack.newDefaultUnpacker(msgpackMap)
-
-            val outerMap = unpacker
-                .unpackValue()
-                .asMapValue()
-                .map()
-                .mapKeys { (keyValue, _) ->
-                    keyValue.asStringValue().toString()
-                }
-
-            unpacker.close()
-
-            val innerMap = outerMap[key]!!
-                .asMapValue()
-                .map()
-                .mapKeys { (keyValue, _) ->
-                    keyValue.asStringValue().toString()
-                }
-
-            return innerMap
-        }
-
-        /**
-         *  Convenience function that returns a new MessagePack map encoded as
-         *  a byte array by adding a key-value entry.
-         *
-         *  @param msgpackMap
-         *      MessagePack map that will have `key` and `addendum` added. It
-         *      is not modified.
-         *
-         *  @param key
-         *      Key that is associated with `addendum`.
-         *
-         *  @param addendum
-         *      MessagePack value that is associated by `key`.
-         */
-        @JvmStatic
-        fun addKeyValueEntry(
-            msgpackMap: ByteArray,
-            key: String,
-            addendum: ByteArray
-        ): ByteArray
-        {
-            val mapUnpacker = MessagePack.newDefaultUnpacker(msgpackMap)
-            val addendumUnpacker = MessagePack.newDefaultUnpacker(addendum)
-
-            var mapAsList = mapUnpacker
-                .unpackValue()
-                .asMapValue()
-                .keyValueArray
-                .toList()
-
-            mapAsList += listOf(
-                ImmutableStringValueImpl(key),
-                addendumUnpacker.unpackValue()
-            )
-
-            mapUnpacker.close()
-            addendumUnpacker.close()
-
-            val packer = MessagePack.newDefaultBufferPacker()
-
-            packer.packValue(
-                ImmutableArrayValueImpl(
-                    Array(mapAsList.count()) { mapAsList[it] }
-                )
-            )
-
-            packer.close()
-
-            return packer.toByteArray()
-        }
-    }
 }

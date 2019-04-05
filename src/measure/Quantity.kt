@@ -25,6 +25,7 @@ import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
 import crul.measure.unit.UnitSystem
 import crul.serialize.BinarySerializable
+import crul.serialize.MessagePackConv
 
 /**
  *  Quantity containing a numerical value and a unit.
@@ -89,7 +90,7 @@ class Quantity : Comparable<Quantity>, BinarySerializable {
      *  Deserialization constructor.
      */
     constructor(msgpack: ByteArray): this(
-        BinarySerializable.getInnerMap(
+        MessagePackConv.getInnerMap(
             msgpack,
             Quantity::class.qualifiedName!!
         ),

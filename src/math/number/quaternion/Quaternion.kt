@@ -21,6 +21,7 @@ import org.msgpack.value.Value
 
 import crul.math.coordsys.Vector3D
 import crul.serialize.BinarySerializable
+import crul.serialize.MessagePackConv
 
 /**
  *  Quaternion.
@@ -65,7 +66,7 @@ open class Quaternion : BinarySerializable {
      *  Deserialization constructor.
      */
     constructor(msgpack: ByteArray): this(
-        BinarySerializable.getInnerMap(
+        MessagePackConv.getInnerMap(
             msgpack,
             Quaternion::class.qualifiedName!!
         ),

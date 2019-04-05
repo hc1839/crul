@@ -20,6 +20,7 @@ import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
 import crul.serialize.BinarySerializable
+import crul.serialize.MessagePackConv
 
 /**
  *  Base class for representing a coordinate tuple or a vector.
@@ -64,7 +65,7 @@ open class Spatial : BinarySerializable {
      *  Deserialization constructor.
      */
     constructor(msgpack: ByteArray): this(
-        BinarySerializable.getInnerMap(
+        MessagePackConv.getInnerMap(
             msgpack,
             Spatial::class.qualifiedName!!
         ),

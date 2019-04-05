@@ -22,6 +22,7 @@ import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
 import crul.serialize.BinarySerializable
+import crul.serialize.MessagePackConv
 
 /**
  *  Storage information for elements.
@@ -95,7 +96,7 @@ class Element : BinarySerializable {
      *  Deserialization constructor.
      */
     constructor(msgpack: ByteArray): this(
-        BinarySerializable.getInnerMap(
+        MessagePackConv.getInnerMap(
             msgpack,
             Element::class.qualifiedName!!
         ),

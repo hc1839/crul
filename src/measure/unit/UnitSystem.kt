@@ -23,6 +23,7 @@ import crul.measure.dimension.BaseDimension
 import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
 import crul.serialize.BinarySerializable
+import crul.serialize.MessagePackConv
 
 /**
  *  Immutable system of units.
@@ -94,7 +95,7 @@ class UnitSystem : BinarySerializable {
      *  Deserialization constructor.
      */
     constructor(msgpack: ByteArray): this(
-        BinarySerializable.getInnerMap(
+        MessagePackConv.getInnerMap(
             msgpack,
             UnitSystem::class.qualifiedName!!
         ),

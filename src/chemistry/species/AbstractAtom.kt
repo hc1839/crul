@@ -22,6 +22,7 @@ import org.msgpack.value.Value
 import crul.chemistry.species.Element
 import crul.math.coordsys.Vector3D
 import crul.serialize.BinarySerializable
+import crul.serialize.MessagePackConv
 
 /**
  *  Skeletal implementation of [Atom].
@@ -109,7 +110,7 @@ abstract class AbstractAtom :
      *  Deserialization constructor.
      */
     constructor(msgpack: ByteArray): this(
-        BinarySerializable.getInnerMap(
+        MessagePackConv.getInnerMap(
             msgpack,
             AbstractAtom::class.qualifiedName!!
         ),
