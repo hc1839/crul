@@ -24,7 +24,7 @@ import org.msgpack.value.impl.ImmutableStringValueImpl
  *  Convenience functions for working with serialization of objects in
  *  MessagePack.
  */
-object MessagePackConv {
+object MessagePackSimple {
     /**
      *  Gets the map associated with a key in a MessagePack map.
      *

@@ -29,7 +29,7 @@ import crul.measure.unit.parse.Production
 import crul.measure.unit.parse.TokenIterator
 import crul.parse.shiftreduce.Actuator
 import crul.serialize.BinarySerializable
-import crul.serialize.MessagePackConv
+import crul.serialize.MessagePackSimple
 
 /**
  *  Storage information for UCUM symbols.
@@ -174,7 +174,7 @@ class UnitOfMeasure : BinarySerializable {
      *  Deserialization constructor.
      */
     constructor(msgpack: ByteArray): this(
-        MessagePackConv.getInnerMap(
+        MessagePackSimple.getInnerMap(
             msgpack,
             UnitOfMeasure::class.qualifiedName!!
         ),

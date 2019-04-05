@@ -24,7 +24,7 @@ import crul.measure.dimension.parse.Production
 import crul.measure.dimension.parse.TokenIterator
 import crul.parse.shiftreduce.Actuator
 import crul.serialize.BinarySerializable
-import crul.serialize.MessagePackConv
+import crul.serialize.MessagePackSimple
 
 /**
  *  Dimension of a quantity according to the International System of Quantities
@@ -92,7 +92,7 @@ class Dimension : BinarySerializable {
      *  Deserialization constructor.
      */
     constructor(msgpack: ByteArray): this(
-        MessagePackConv.getInnerMap(
+        MessagePackSimple.getInnerMap(
             msgpack,
             Dimension::class.qualifiedName!!
         ),

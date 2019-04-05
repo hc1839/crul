@@ -28,7 +28,7 @@ import org.apache.avro.generic.GenericDatumWriter
  *  Convenience functions for working with serialization of objects in Apache
  *  Avro.
  */
-object AvroConv {
+object AvroSimple {
     /**
      *  Parses an Avro schema file stored in the JAR file.
      *

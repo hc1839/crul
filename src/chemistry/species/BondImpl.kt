@@ -20,7 +20,7 @@ import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
 import crul.serialize.BinarySerializable
-import crul.serialize.MessagePackConv
+import crul.serialize.MessagePackSimple
 
 /**
  *  Default implementation of [Bond].
@@ -95,7 +95,7 @@ internal class BondImpl<A : Atom> :
         msgpack: ByteArray,
         atomDeserializer: (ByteArray) -> A
     ): this(
-        MessagePackConv.getInnerMap(
+        MessagePackSimple.getInnerMap(
             msgpack,
             BondImpl::class.qualifiedName!!
         ),
