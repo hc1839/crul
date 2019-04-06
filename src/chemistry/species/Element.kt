@@ -18,6 +18,7 @@ package crul.chemistry.species
 
 import com.google.gson.Gson
 import java.io.File
+import java.nio.ByteBuffer
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
@@ -148,7 +149,7 @@ class Element : BinarySerializable {
     /**
      *  MessagePack serialization.
      */
-    override fun serialize(args: List<Any?>): ByteArray {
+    override fun serialize(args: List<Any?>): ByteBuffer {
         val packer = MessagePack.newDefaultBufferPacker()
 
         packer.packMapHeader(1)
@@ -163,7 +164,7 @@ class Element : BinarySerializable {
 
         packer.close()
 
-        return packer.toByteArray()
+        return ByteBuffer.wrap(packer.toByteArray())
     }
 
     companion object {

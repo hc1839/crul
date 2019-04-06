@@ -16,6 +16,7 @@
 
 package crul.measure.dimension
 
+import java.nio.ByteBuffer
 import kotlin.math.pow
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
@@ -112,7 +113,7 @@ class Dimension : BinarySerializable {
     /**
      *  MessagePack serialization.
      */
-    override fun serialize(args: List<Any?>): ByteArray {
+    override fun serialize(args: List<Any?>): ByteBuffer {
         val packer = MessagePack.newDefaultBufferPacker()
 
         packer.packMapHeader(1)
@@ -135,7 +136,7 @@ class Dimension : BinarySerializable {
 
         packer.close()
 
-        return packer.toByteArray()
+        return ByteBuffer.wrap(packer.toByteArray())
     }
 
     /**

@@ -16,6 +16,7 @@
 
 package crul.measure.unit
 
+import java.nio.ByteBuffer
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
@@ -115,7 +116,7 @@ class UnitSystem : BinarySerializable {
     /**
      *  MessagePack serialization.
      */
-    override fun serialize(args: List<Any?>): ByteArray {
+    override fun serialize(args: List<Any?>): ByteBuffer {
         val packer = MessagePack.newDefaultBufferPacker()
 
         packer.packMapHeader(1)
@@ -129,7 +130,13 @@ class UnitSystem : BinarySerializable {
             .packMapHeader(baseUnits.count())
 
         for ((baseDim, baseUnit) in baseUnits) {
-            val baseUnitAsBytes = baseUnit.serialize()
+            val baseUnitAsByteBuffer = baseUnit.serialize()
+            val baseUnitAsBytes = ByteArray(
+                baseUnitAsByteBuffer.limit() -
+                baseUnitAsByteBuffer.position()
+            ) {
+                baseUnitAsByteBuffer.get()
+            }
 
             packer
                 .packString(baseDim.symbol)
@@ -140,7 +147,7 @@ class UnitSystem : BinarySerializable {
 
         packer.close()
 
-        return packer.toByteArray()
+        return ByteBuffer.wrap(packer.toByteArray())
     }
 
     /**

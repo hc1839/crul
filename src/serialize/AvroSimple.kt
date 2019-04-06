@@ -18,6 +18,7 @@ package crul.serialize
 
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
 import org.apache.avro.Schema
 import org.apache.avro.file.DataFileStream
 import org.apache.avro.file.DataFileWriter
@@ -30,7 +31,7 @@ import org.apache.avro.generic.GenericDatumWriter
  */
 object AvroSimple {
     /**
-     *  Serializes Avro data in binary format.
+     *  Serializes Avro data to a byte buffer.
      *
      *  @param D
      *      Type of each Avro datum (e.g., `GenericRecord`).
@@ -42,10 +43,10 @@ object AvroSimple {
      *      Avro data to serialize.
      *
      *  @return
-     *      Serialized Avro data as a byte array.
+     *      Avro data serialized to a byte buffer.
      */
     @JvmStatic
-    fun <D> serializeData(schema: Schema, datumList: List<D>): ByteArray {
+    fun <D> serializeData(schema: Schema, datumList: List<D>): ByteBuffer {
         val datumWriter = GenericDatumWriter<D>(schema)
         val dataFileWriter = DataFileWriter(datumWriter)
         val outputStream = ByteArrayOutputStream()
@@ -58,11 +59,11 @@ object AvroSimple {
 
         dataFileWriter.close()
 
-        return outputStream.toByteArray()
+        return ByteBuffer.wrap(outputStream.toByteArray())
     }
 
     /**
-     *  Deserializes Avro data in binary format.
+     *  Deserializes Avro data from a byte buffer.
      *
      *  @param D
      *      Type of each Avro datum (e.g., `GenericRecord`).
@@ -71,15 +72,19 @@ object AvroSimple {
      *      Avro schema.
      *
      *  @param avroData
-     *      Avro data to deserialize.
+     *      Byte buffer of the Avro data to deserialize.
      *
      *  @return
      *      Deserialized Avro data as a list of `D`.
      */
     @JvmStatic
-    fun <D> deserializeData(schema: Schema, avroData: ByteArray): List<D> {
+    fun <D> deserializeData(schema: Schema, avroData: ByteBuffer): List<D> {
         val datumReader = GenericDatumReader<D>(schema)
-        val inputStream = ByteArrayInputStream(avroData)
+        val inputStream = ByteArrayInputStream(
+            ByteArray(avroData.limit() - avroData.position()) {
+                avroData.get()
+            }
+        )
         val dataStream = DataFileStream(inputStream, datumReader)
 
         val datumList: MutableList<D> = mutableListOf()

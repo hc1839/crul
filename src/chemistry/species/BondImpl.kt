@@ -16,6 +16,7 @@
 
 package crul.chemistry.species
 
+import java.nio.ByteBuffer
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
@@ -131,7 +132,7 @@ internal class BondImpl<A : Atom> :
      *
      *  Atoms must implement [BinarySerializable].
      */
-    override fun serialize(args: List<Any?>): ByteArray {
+    override fun serialize(args: List<Any?>): ByteBuffer {
         val packer = MessagePack.newDefaultBufferPacker()
 
         packer.packMapHeader(1)
@@ -145,7 +146,13 @@ internal class BondImpl<A : Atom> :
         atom1 as BinarySerializable
         atom2 as BinarySerializable
 
-        val atom1AsBytes = atom1.serialize()
+        val atom1AsByteBuffer = atom1.serialize()
+        val atom1AsBytes = ByteArray(
+            atom1AsByteBuffer.limit() -
+            atom1AsByteBuffer.position()
+        ) {
+            atom1AsByteBuffer.get()
+        }
 
         packer
             .packString("atom1")
@@ -153,7 +160,13 @@ internal class BondImpl<A : Atom> :
 
         packer.writePayload(atom1AsBytes)
 
-        val atom2AsBytes = atom2.serialize()
+        val atom2AsByteBuffer = atom2.serialize()
+        val atom2AsBytes = ByteArray(
+            atom2AsByteBuffer.limit() -
+            atom2AsByteBuffer.position()
+        ) {
+            atom2AsByteBuffer.get()
+        }
 
         packer
             .packString("atom2")
@@ -167,6 +180,6 @@ internal class BondImpl<A : Atom> :
 
         packer.close()
 
-        return packer.toByteArray()
+        return ByteBuffer.wrap(packer.toByteArray())
     }
 }

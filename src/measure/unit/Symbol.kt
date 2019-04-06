@@ -18,6 +18,7 @@ package crul.measure.unit
 
 import com.google.gson.Gson
 import java.io.File
+import java.nio.ByteBuffer
 import kotlin.math.pow
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
@@ -343,7 +344,7 @@ class UnitOfMeasure : BinarySerializable {
     /**
      *  MessagePack serialization.
      */
-    override fun serialize(args: List<Any?>): ByteArray {
+    override fun serialize(args: List<Any?>): ByteBuffer {
         val packer = MessagePack.newDefaultBufferPacker()
 
         packer.packMapHeader(1)
@@ -369,7 +370,7 @@ class UnitOfMeasure : BinarySerializable {
 
         packer.close()
 
-        return packer.toByteArray()
+        return ByteBuffer.wrap(packer.toByteArray())
     }
 
     companion object {

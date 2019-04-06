@@ -16,12 +16,14 @@
 
 package crul.serialize
 
+import java.nio.ByteBuffer
+
 /**
- *  Tag for a class whose instances can be serialized to a byte array.
+ *  Tag for a class whose instances can be serialized to a byte buffer.
  */
 interface BinarySerializable {
     /**
-     *  Serializes the object to a byte array.
+     *  Serializes the object to a byte buffer.
      *
      *  The serialization format is specific to the class implementing this
      *  function.
@@ -30,18 +32,18 @@ interface BinarySerializable {
      *      Additional arguments.
      *
      *  @return
-     *      Serialization of the object as a byte array.
+     *      Object serializated to a byte buffer.
      */
-    fun serialize(args: List<Any?>): ByteArray
+    fun serialize(args: List<Any?>): ByteBuffer
 
     /**
-     *  Serializes the object to a byte array without additional arguments.
+     *  Serializes the object to a byte buffer without additional arguments.
      *
      *  Default implementation calls [serialize] with an empty list.
      *
      *  @return
-     *      Serialization of the object as a byte array.
+     *      Object serializated to a byte buffer.
      */
-    fun serialize(): ByteArray =
+    fun serialize(): ByteBuffer =
         serialize(listOf())
 }

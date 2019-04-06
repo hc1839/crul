@@ -16,6 +16,7 @@
 
 package crul.math.coordsys
 
+import java.nio.ByteBuffer
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
@@ -93,7 +94,7 @@ open class Spatial : BinarySerializable {
     /**
      *  MessagePack serialization.
      */
-    override fun serialize(args: List<Any?>): ByteArray {
+    override fun serialize(args: List<Any?>): ByteBuffer {
         val packer = MessagePack.newDefaultBufferPacker()
 
         packer.packMapHeader(1)
@@ -114,6 +115,6 @@ open class Spatial : BinarySerializable {
 
         packer.close()
 
-        return packer.toByteArray()
+        return ByteBuffer.wrap(packer.toByteArray())
     }
 }

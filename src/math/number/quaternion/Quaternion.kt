@@ -16,6 +16,7 @@
 
 package crul.math.number.quaternion
 
+import java.nio.ByteBuffer
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
@@ -136,7 +137,7 @@ open class Quaternion : BinarySerializable {
     /**
      *  MessagePack serialization.
      */
-    override fun serialize(args: List<Any?>): ByteArray {
+    override fun serialize(args: List<Any?>): ByteBuffer {
         val packer = MessagePack.newDefaultBufferPacker()
 
         packer.packMapHeader(1)
@@ -149,7 +150,13 @@ open class Quaternion : BinarySerializable {
             .packString("scalar")
             .packDouble(scalar)
 
-        val vectorAsBytes = vector.serialize()
+        val vectorAsByteBuffer = vector.serialize()
+        val vectorAsBytes = ByteArray(
+            vectorAsByteBuffer.limit() -
+            vectorAsByteBuffer.position()
+        ) {
+            vectorAsByteBuffer.get()
+        }
 
         packer
             .packString("vector")
@@ -159,7 +166,7 @@ open class Quaternion : BinarySerializable {
 
         packer.close()
 
-        return packer.toByteArray()
+        return ByteBuffer.wrap(packer.toByteArray())
     }
 }
 

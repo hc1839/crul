@@ -30,9 +30,8 @@ object MessagePackSimple {
      *
      *  @param msgpackMap
      *      MessagePack map of string to another map, which in turn is an
-     *      association of string with a MessagePack value. In essence, it is a
-     *      map that contains the serializations of the objects in an
-     *      inheritance tree.
+     *      association of string with a MessagePack value. It is a map that
+     *      contains the serializations of the objects in an inheritance tree.
      *
      *  @param key
      *      Key that is associated with the map within `msgpackMap` to

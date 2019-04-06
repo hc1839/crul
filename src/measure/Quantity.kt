@@ -16,6 +16,7 @@
 
 package crul.measure
 
+import java.nio.ByteBuffer
 import kotlin.math.pow
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
@@ -127,7 +128,7 @@ class Quantity : Comparable<Quantity>, BinarySerializable {
     /**
      *  MessagePack serialization.
      */
-    override fun serialize(args: List<Any?>): ByteArray {
+    override fun serialize(args: List<Any?>): ByteBuffer {
         val packer = MessagePack.newDefaultBufferPacker()
 
         packer.packMapHeader(1)
@@ -140,7 +141,13 @@ class Quantity : Comparable<Quantity>, BinarySerializable {
             .packString("value")
             .packDouble(value)
 
-        val unitAsBytes = unit.serialize()
+        val unitAsByteBuffer = unit.serialize()
+        val unitAsBytes = ByteArray(
+            unitAsByteBuffer.limit() -
+            unitAsByteBuffer.position()
+        ) {
+            unitAsByteBuffer.get()
+        }
 
         packer
             .packString("unit")
@@ -150,7 +157,7 @@ class Quantity : Comparable<Quantity>, BinarySerializable {
 
         packer.close()
 
-        return packer.toByteArray()
+        return ByteBuffer.wrap(packer.toByteArray())
     }
 
     /**

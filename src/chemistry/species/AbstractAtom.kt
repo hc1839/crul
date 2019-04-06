@@ -16,6 +16,7 @@
 
 package crul.chemistry.species
 
+import java.nio.ByteBuffer
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
@@ -131,7 +132,7 @@ abstract class AbstractAtom :
     /**
      *  MessagePack serialization.
      */
-    override fun serialize(args: List<Any?>): ByteArray {
+    override fun serialize(args: List<Any?>): ByteBuffer {
         val packer = MessagePack.newDefaultBufferPacker()
 
         packer.packMapHeader(1)
@@ -140,7 +141,13 @@ abstract class AbstractAtom :
             .packString(this::class.qualifiedName)
             .packMapHeader(4)
 
-        val elementAsBytes = element.serialize()
+        val elementAsByteBuffer = element.serialize()
+        val elementAsBytes = ByteArray(
+            elementAsByteBuffer.limit() -
+            elementAsByteBuffer.position()
+        ) {
+            elementAsByteBuffer.get()
+        }
 
         packer
             .packString("element")
@@ -148,7 +155,13 @@ abstract class AbstractAtom :
 
         packer.writePayload(elementAsBytes)
 
-        val positionAsBytes = position.serialize()
+        val positionAsByteBuffer = position.serialize()
+        val positionAsBytes = ByteArray(
+            positionAsByteBuffer.limit() -
+            positionAsByteBuffer.position()
+        ) {
+            positionAsByteBuffer.get()
+        }
 
         packer
             .packString("position")
@@ -166,6 +179,6 @@ abstract class AbstractAtom :
 
         packer.close()
 
-        return packer.toByteArray()
+        return ByteBuffer.wrap(packer.toByteArray())
     }
 }
