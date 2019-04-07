@@ -20,13 +20,14 @@ import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
 import crul.math.coordsys.Vector3D
+import crul.serialize.MessagePackSimple
 
 /**
  *  Default implementation of [Atom].
  */
 internal class AtomImpl : AbstractAtom {
     /**
-     *  See [crul.chemistry.species.AtomFactory.create] for the description.
+     *  See [crul.chemistry.species.Atom.newInstance] for the description.
      */
     constructor(
         element: Element,
@@ -44,11 +45,6 @@ internal class AtomImpl : AbstractAtom {
      *  Copy constructor.
      */
     constructor(other: AtomImpl): super(other)
-
-    /**
-     *  Deserialization constructor.
-     */
-    constructor(msgpack: ByteArray): super(msgpack)
 
     override fun clone(): Atom =
         AtomImpl(this)

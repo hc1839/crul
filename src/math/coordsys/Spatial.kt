@@ -20,13 +20,12 @@ import java.nio.ByteBuffer
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import crul.serialize.BinarySerializable
 import crul.serialize.MessagePackSimple
 
 /**
  *  Base class for representing a coordinate tuple or a vector.
  */
-open class Spatial : BinarySerializable {
+open class Spatial {
     /**
      *  Components of the coordinate tuple or vector as a backing property.
      */
@@ -45,16 +44,16 @@ open class Spatial : BinarySerializable {
     /**
      *  Initializes from a MessagePack map.
      *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
-     *
      *  @param msgpack
      *      MessagePack map for the entire inheritance tree.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
      */
     private constructor(
-        unpackedMap: Map<String, Value>,
         @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray
+        msgpack: ByteArray,
+        unpackedMap: Map<String, Value>
     ): this(
         unpackedMap["components"]!!
             .asArrayValue()
@@ -65,12 +64,12 @@ open class Spatial : BinarySerializable {
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(
+    protected constructor(msgpack: ByteArray): this(
+        msgpack,
         MessagePackSimple.getInnerMap(
             msgpack,
             Spatial::class.qualifiedName!!
-        ),
-        msgpack
+        )
     )
 
     /**
@@ -91,30 +90,59 @@ open class Spatial : BinarySerializable {
     operator fun get(index: Int) =
         components[index]
 
-    /**
-     *  MessagePack serialization.
-     */
-    override fun serialize(args: List<Any?>): ByteBuffer {
-        val packer = MessagePack.newDefaultBufferPacker()
+    companion object {
+        /**
+         *  Serializes a [Spatial] in MessagePack.
+         *
+         *  @param obj
+         *      [Spatial] to serialize.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: Spatial): ByteBuffer {
+            val packer = MessagePack.newDefaultBufferPacker()
 
-        packer.packMapHeader(1)
+            packer.packMapHeader(1)
 
-        packer
-            .packString(this::class.qualifiedName)
-            .packMapHeader(1)
+            packer
+                .packString(obj::class.qualifiedName)
+                .packMapHeader(1)
 
-        val componentsBuf = components
+            val componentsBuf = obj.components
 
-        packer
-            .packString("components")
-            .packArrayHeader(componentsBuf.count())
+            packer
+                .packString("components")
+                .packArrayHeader(componentsBuf.count())
 
-        for (cmpt in componentsBuf) {
-            packer.packDouble(cmpt)
+            for (cmpt in componentsBuf) {
+                packer.packDouble(cmpt)
+            }
+
+            packer.close()
+
+            return ByteBuffer.wrap(packer.toByteArray())
         }
 
-        packer.close()
+        /**
+         *  Deserializes a [Spatial] in MessagePack.
+         *
+         *  @param msgpack
+         *      Serialized [Spatial] as returned by [serialize].
+         *
+         *  @return
+         *      Deserialized [Spatial].
+         */
+        @JvmStatic
+        fun deserialize(msgpack: ByteBuffer): Spatial {
+            val msgpackByteArray = ByteArray(
+                msgpack.limit() - msgpack.position()
+            ) {
+                msgpack.get()
+            }
 
-        return ByteBuffer.wrap(packer.toByteArray())
+            return Spatial(msgpackByteArray)
+        }
     }
 }

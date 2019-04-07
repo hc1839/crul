@@ -16,6 +16,8 @@
 
 package crul.math.coordsys
 
+import java.nio.ByteBuffer
+
 /**
  *  Spherical coordinate tuple in ISO convention.
  */
@@ -37,7 +39,7 @@ open class Spherical : Position3D {
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): super(msgpack) {
+    protected constructor(msgpack: ByteArray): super(msgpack) {
         this.radius = component1()
         this.polar = component2()
         this.azimuthal = component3()
@@ -58,4 +60,39 @@ open class Spherical : Position3D {
             radius *
                 kotlin.math.cos(polar)
         )
+
+    companion object {
+        /**
+         *  Serializes a [Spherical] in MessagePack.
+         *
+         *  @param obj
+         *      [Spherical] to serialize.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: Spherical): ByteBuffer =
+            Position3D.serialize(obj)
+
+        /**
+         *  Deserializes a [Spherical] in MessagePack.
+         *
+         *  @param msgpack
+         *      Serialized [Spherical] as returned by [serialize].
+         *
+         *  @return
+         *      Deserialized [Spherical].
+         */
+        @JvmStatic
+        fun deserialize(msgpack: ByteBuffer): Spherical {
+            val msgpackByteArray = ByteArray(
+                msgpack.limit() - msgpack.position()
+            ) {
+                msgpack.get()
+            }
+
+            return Spherical(msgpackByteArray)
+        }
+    }
 }

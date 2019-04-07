@@ -33,9 +33,7 @@ import org.w3c.dom.NodeList
 import org.xml.sax.InputSource
 
 import crul.chemistry.species.Atom
-import crul.chemistry.species.AtomFactory
 import crul.chemistry.species.Bond
-import crul.chemistry.species.BondFactory
 import crul.chemistry.species.Element
 import crul.chemistry.species.MoleculeComplex
 import crul.chemistry.species.MoleculeComplexBuilder
@@ -274,7 +272,7 @@ fun MoleculeComplexBuilder<*>.parseInCml(
         }
 
         // Construct the atom.
-        val atom: Atom = AtomFactory().create(
+        val atom: Atom = Atom.newInstance(
             element,
             position,
             formalCharge,
@@ -334,7 +332,7 @@ fun MoleculeComplexBuilder<*>.parseInCml(
         }
 
         bonds.add(
-            BondFactory<Atom>().create(
+            Bond.newInstance<Atom>(
                 atomsById[atomRefids[0]]!!,
                 atomsById[atomRefids[1]]!!,
                 bondNode.getAttribute("order")

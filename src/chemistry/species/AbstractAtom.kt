@@ -22,16 +22,12 @@ import org.msgpack.value.Value
 
 import crul.chemistry.species.Element
 import crul.math.coordsys.Vector3D
-import crul.serialize.BinarySerializable
 import crul.serialize.MessagePackSimple
 
 /**
  *  Skeletal implementation of [Atom].
  */
-abstract class AbstractAtom :
-    Atom,
-    BinarySerializable
-{
+abstract class AbstractAtom : Atom {
     override val element: Element
 
     override var position: Vector3D
@@ -86,22 +82,30 @@ abstract class AbstractAtom :
     /**
      *  Initializes from a MessagePack map.
      *
+     *  @param msgpack
+     *      MessagePack map for the entire inheritance tree.
+     *
      *  @param unpackedMap
      *      Unpacked MessagePack map that is specific to this class.
      *
-     *  @param msgpack
-     *      MessagePack map for the entire inheritance tree.
+     *  @param vector3DDeserializer
+     *      [Vector3D] deserializer.
      */
     private constructor(
-        unpackedMap: Map<String, Value>,
         @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray
+        msgpack: ByteArray,
+        unpackedMap: Map<String, Value>,
+        vector3DDeserializer: (ByteBuffer) -> Vector3D
     ): this(
-        Element(
-            unpackedMap["element"]!!.asBinaryValue().asByteArray()
+        Element.deserialize(
+            ByteBuffer.wrap(
+                unpackedMap["element"]!!.asBinaryValue().asByteArray()
+            )
         ),
-        Vector3D(
-            unpackedMap["position"]!!.asBinaryValue().asByteArray()
+        vector3DDeserializer.invoke(
+            ByteBuffer.wrap(
+                unpackedMap["position"]!!.asBinaryValue().asByteArray()
+            )
         ),
         unpackedMap["formal-charge"]!!.asFloatValue().toDouble(),
         unpackedMap["id"]!!.asStringValue().toString()
@@ -110,12 +114,16 @@ abstract class AbstractAtom :
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(
+    protected constructor(
+        msgpack: ByteArray,
+        vector3DDeserializer: (ByteBuffer) -> Vector3D
+    ): this(
+        msgpack,
         MessagePackSimple.getInnerMap(
             msgpack,
             AbstractAtom::class.qualifiedName!!
         ),
-        msgpack
+        vector3DDeserializer
     )
 
     override fun hashCode(): Int =
@@ -129,56 +137,88 @@ abstract class AbstractAtom :
             id == other.id
         )
 
-    /**
-     *  MessagePack serialization.
-     */
-    override fun serialize(args: List<Any?>): ByteBuffer {
-        val packer = MessagePack.newDefaultBufferPacker()
+    companion object {
+        /**
+         *  Serializes an [AbstractAtom] in MessagePack.
+         *
+         *  @param obj
+         *      [AbstractAtom] to serialize.
+         *
+         *  @param vector3DSerializer
+         *      [Vector3D] serializer.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(
+            obj: AbstractAtom,
+            vector3DSerializer: (Vector3D) -> ByteBuffer
+        ): ByteBuffer
+        {
+            val packer = MessagePack.newDefaultBufferPacker()
 
-        packer.packMapHeader(1)
+            packer.packMapHeader(1)
 
-        packer
-            .packString(this::class.qualifiedName)
-            .packMapHeader(4)
+            packer
+                .packString(obj::class.qualifiedName)
+                .packMapHeader(4)
 
-        val elementAsByteBuffer = element.serialize()
-        val elementAsBytes = ByteArray(
-            elementAsByteBuffer.limit() -
-            elementAsByteBuffer.position()
-        ) {
-            elementAsByteBuffer.get()
+            val elementAsByteBuffer = Element.serialize(obj.element)
+            val elementAsBytes = ByteArray(
+                elementAsByteBuffer.limit() -
+                elementAsByteBuffer.position()
+            ) {
+                elementAsByteBuffer.get()
+            }
+
+            packer
+                .packString("element")
+                .packBinaryHeader(elementAsBytes.count())
+
+            packer.writePayload(elementAsBytes)
+
+            val positionAsByteBuffer = vector3DSerializer
+                .invoke(obj.position)
+
+            val positionAsBytes = ByteArray(
+                positionAsByteBuffer.limit() -
+                positionAsByteBuffer.position()
+            ) {
+                positionAsByteBuffer.get()
+            }
+
+            packer
+                .packString("position")
+                .packBinaryHeader(positionAsBytes.count())
+
+            packer.writePayload(positionAsBytes)
+
+            packer
+                .packString("formal-charge")
+                .packDouble(obj.formalCharge)
+
+            packer
+                .packString("id")
+                .packString(obj.id)
+
+            packer.close()
+
+            return ByteBuffer.wrap(packer.toByteArray())
         }
 
-        packer
-            .packString("element")
-            .packBinaryHeader(elementAsBytes.count())
-
-        packer.writePayload(elementAsBytes)
-
-        val positionAsByteBuffer = position.serialize()
-        val positionAsBytes = ByteArray(
-            positionAsByteBuffer.limit() -
-            positionAsByteBuffer.position()
-        ) {
-            positionAsByteBuffer.get()
-        }
-
-        packer
-            .packString("position")
-            .packBinaryHeader(positionAsBytes.count())
-
-        packer.writePayload(positionAsBytes)
-
-        packer
-            .packString("formal-charge")
-            .packDouble(formalCharge)
-
-        packer
-            .packString("id")
-            .packString(id)
-
-        packer.close()
-
-        return ByteBuffer.wrap(packer.toByteArray())
+        /**
+         *  Serializes an [AbstractAtom] in MessagePack using the default
+         *  [Vector3D] serializer.
+         *
+         *  @param obj
+         *      [AbstractAtom] to serialize.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: AbstractAtom): ByteBuffer =
+            serialize(obj, Vector3D.Companion::serialize)
     }
 }

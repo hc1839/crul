@@ -86,7 +86,7 @@ open class AtomBuilder<B : AtomBuilder<B>> {
      *  Constructs an [Atom] from the data in this builder.
      */
     open fun build(): Atom =
-        AtomImpl(
+        Atom.newInstance(
             element!!,
             position!!,
             formalCharge!!,
@@ -103,13 +103,5 @@ open class AtomBuilder<B : AtomBuilder<B>> {
         @JvmStatic
         fun newInstance(): AtomBuilder<*> =
             AtomBuilderImpl()
-
-        /**
-         *  Deserializes an [Atom] from a MessagePack returned by
-         *  [AbstractAtom.serialize].
-         */
-        @JvmStatic
-        fun deserialize(msgpack: ByteArray): Atom =
-            AtomImpl(msgpack)
     }
 }

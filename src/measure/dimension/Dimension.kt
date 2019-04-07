@@ -24,7 +24,6 @@ import org.msgpack.value.Value
 import crul.measure.dimension.parse.Production
 import crul.measure.dimension.parse.TokenIterator
 import crul.parse.shiftreduce.Actuator
-import crul.serialize.BinarySerializable
 import crul.serialize.MessagePackSimple
 
 /**
@@ -33,7 +32,7 @@ import crul.serialize.MessagePackSimple
  *
  *  Dimension does not include the magnitude or the unit.
  */
-class Dimension : BinarySerializable {
+class Dimension {
     /**
      *  Exponents associated by base dimensions as a backing property.
      */
@@ -62,16 +61,16 @@ class Dimension : BinarySerializable {
     /**
      *  Initializes from a MessagePack map.
      *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
-     *
      *  @param msgpack
      *      MessagePack map for the entire inheritance tree.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
      */
     private constructor(
-        unpackedMap: Map<String, Value>,
         @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray
+        msgpack: ByteArray,
+        unpackedMap: Map<String, Value>
     ) {
         this._exponents.putAll(
             unpackedMap["exponents"]!!
@@ -93,11 +92,11 @@ class Dimension : BinarySerializable {
      *  Deserialization constructor.
      */
     constructor(msgpack: ByteArray): this(
+        msgpack,
         MessagePackSimple.getInnerMap(
             msgpack,
             Dimension::class.qualifiedName!!
-        ),
-        msgpack
+        )
     )
 
     override fun hashCode(): Int =
@@ -109,35 +108,6 @@ class Dimension : BinarySerializable {
         (
             exponents == other.exponents
         )
-
-    /**
-     *  MessagePack serialization.
-     */
-    override fun serialize(args: List<Any?>): ByteBuffer {
-        val packer = MessagePack.newDefaultBufferPacker()
-
-        packer.packMapHeader(1)
-
-        packer
-            .packString(this::class.qualifiedName)
-            .packMapHeader(1)
-
-        val exponentsBuf = exponents
-
-        packer
-            .packString("exponents")
-            .packMapHeader(exponentsBuf.count())
-
-        for ((baseDim, exp) in exponentsBuf) {
-            packer
-                .packString(baseDim.symbol)
-                .packInt(exp)
-        }
-
-        packer.close()
-
-        return ByteBuffer.wrap(packer.toByteArray())
-    }
 
     /**
      *  `n`-th power.
@@ -243,5 +213,61 @@ class Dimension : BinarySerializable {
 
                 parseRoot.getUserData(Production.userDataKey) as Dimension
             }
+
+        /**
+         *  Serializes a [Dimension] in MessagePack.
+         *
+         *  @param obj
+         *      [Dimension] to serialize.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: Dimension): ByteBuffer {
+            val packer = MessagePack.newDefaultBufferPacker()
+
+            packer.packMapHeader(1)
+
+            packer
+                .packString(obj::class.qualifiedName)
+                .packMapHeader(1)
+
+            val exponentsBuf = obj.exponents
+
+            packer
+                .packString("exponents")
+                .packMapHeader(exponentsBuf.count())
+
+            for ((baseDim, exp) in exponentsBuf) {
+                packer
+                    .packString(baseDim.symbol)
+                    .packInt(exp)
+            }
+
+            packer.close()
+
+            return ByteBuffer.wrap(packer.toByteArray())
+        }
+
+        /**
+         *  Deserializes a [Dimension] in MessagePack.
+         *
+         *  @param msgpack
+         *      Serialized [Dimension] as returned by [serialize].
+         *
+         *  @return
+         *      Deserialized [Dimension].
+         */
+        @JvmStatic
+        fun deserialize(msgpack: ByteBuffer): Dimension {
+            val msgpackByteArray = ByteArray(
+                msgpack.limit() - msgpack.position()
+            ) {
+                msgpack.get()
+            }
+
+            return Dimension(msgpackByteArray)
+        }
     }
 }

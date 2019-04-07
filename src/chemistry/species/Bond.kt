@@ -24,6 +24,8 @@ package crul.chemistry.species
  *  the order of the given atoms is preserved, and the atoms are returned as
  *  such.
  *
+ *  To construct an instance of this class, use [newInstance].
+ *
  *  @param A
  *      Type of atoms in this bond.
  */
@@ -42,4 +44,32 @@ interface Bond<A : Atom> : Fragment<A> {
     fun toAtomPair(): Pair<A, A>
 
     abstract override fun clone(): Bond<A>
+
+    companion object {
+        /**
+         *  Constructs a [Bond].
+         *
+         *  If the given atoms are equal or have the same name, an exception is
+         *  raised.
+         *
+         *  @param atom1
+         *      First atom.
+         *
+         *  @param atom2
+         *      Second atom.
+         *
+         *  @param order
+         *      Bond order as an arbitrary string.
+         */
+        @JvmStatic
+        fun <A : Atom> newInstance(
+            atom1: A,
+            atom2: A,
+            order: String
+        ): Bond<A> = BondImpl(
+            atom1,
+            atom2,
+            order
+        )
+    }
 }

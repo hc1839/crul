@@ -16,6 +16,7 @@
 
 package crul.math.coordsys
 
+import java.nio.ByteBuffer
 import kotlin.math.pow
 
 /**
@@ -29,7 +30,7 @@ open class Vector : Spatial {
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): super(msgpack)
+    protected constructor(msgpack: ByteArray): super(msgpack)
 
     /**
      *  Dot product of this and `other`.
@@ -134,4 +135,39 @@ open class Vector : Spatial {
 
     open operator fun div(other: Double): Vector =
         Vector(components.map { it / other })
+
+    companion object {
+        /**
+         *  Serializes a [Vector] in MessagePack.
+         *
+         *  @param obj
+         *      [Vector] to serialize.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: Vector): ByteBuffer =
+            Spatial.serialize(obj)
+
+        /**
+         *  Deserializes a [Vector] in MessagePack.
+         *
+         *  @param msgpack
+         *      Serialized [Vector] as returned by [serialize].
+         *
+         *  @return
+         *      Deserialized [Vector].
+         */
+        @JvmStatic
+        fun deserialize(msgpack: ByteBuffer): Vector {
+            val msgpackByteArray = ByteArray(
+                msgpack.limit() - msgpack.position()
+            ) {
+                msgpack.get()
+            }
+
+            return Vector(msgpackByteArray)
+        }
+    }
 }

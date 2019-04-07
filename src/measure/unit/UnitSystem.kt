@@ -23,13 +23,12 @@ import org.msgpack.value.Value
 import crul.measure.dimension.BaseDimension
 import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
-import crul.serialize.BinarySerializable
 import crul.serialize.MessagePackSimple
 
 /**
  *  Immutable system of units.
  */
-class UnitSystem : BinarySerializable {
+class UnitSystem {
     /**
      *  Base units associated by base dimensions.
      */
@@ -65,16 +64,16 @@ class UnitSystem : BinarySerializable {
     /**
      *  Initializes from a MessagePack map.
      *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
-     *
      *  @param msgpack
      *      MessagePack map for the entire inheritance tree.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
      */
     private constructor(
-        unpackedMap: Map<String, Value>,
         @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray
+        msgpack: ByteArray,
+        unpackedMap: Map<String, Value>
     ): this(
         unpackedMap["base-units"]!!
             .asMapValue()
@@ -96,11 +95,11 @@ class UnitSystem : BinarySerializable {
      *  Deserialization constructor.
      */
     constructor(msgpack: ByteArray): this(
+        msgpack,
         MessagePackSimple.getInnerMap(
             msgpack,
             UnitSystem::class.qualifiedName!!
-        ),
-        msgpack
+        )
     )
 
     override fun hashCode(): Int =
@@ -112,43 +111,6 @@ class UnitSystem : BinarySerializable {
         (
             baseUnits == other.baseUnits
         )
-
-    /**
-     *  MessagePack serialization.
-     */
-    override fun serialize(args: List<Any?>): ByteBuffer {
-        val packer = MessagePack.newDefaultBufferPacker()
-
-        packer.packMapHeader(1)
-
-        packer
-            .packString(this::class.qualifiedName)
-            .packMapHeader(1)
-
-        packer
-            .packString("base-units")
-            .packMapHeader(baseUnits.count())
-
-        for ((baseDim, baseUnit) in baseUnits) {
-            val baseUnitAsByteBuffer = baseUnit.serialize()
-            val baseUnitAsBytes = ByteArray(
-                baseUnitAsByteBuffer.limit() -
-                baseUnitAsByteBuffer.position()
-            ) {
-                baseUnitAsByteBuffer.get()
-            }
-
-            packer
-                .packString(baseDim.symbol)
-                .packBinaryHeader(baseUnitAsBytes.count())
-
-            packer.writePayload(baseUnitAsBytes)
-        }
-
-        packer.close()
-
-        return ByteBuffer.wrap(packer.toByteArray())
-    }
 
     /**
      *  Gets the base unit that is associated by a given base dimension.
@@ -176,4 +138,71 @@ class UnitSystem : BinarySerializable {
                 baseUnits[baseDim]!!.pow(exp)
             }
             .reduce { acc, item -> acc * item }
+
+    companion object {
+        /**
+         *  Serializes a [UnitSystem] in MessagePack.
+         *
+         *  @param obj
+         *      [UnitSystem] to serialize.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: UnitSystem): ByteBuffer {
+            val packer = MessagePack.newDefaultBufferPacker()
+
+            packer.packMapHeader(1)
+
+            packer
+                .packString(obj::class.qualifiedName)
+                .packMapHeader(1)
+
+            packer
+                .packString("base-units")
+                .packMapHeader(obj.baseUnits.count())
+
+            for ((baseDim, baseUnit) in obj.baseUnits) {
+                val baseUnitAsByteBuffer = UnitOfMeasure.serialize(baseUnit)
+
+                val baseUnitAsBytes = ByteArray(
+                    baseUnitAsByteBuffer.limit() -
+                    baseUnitAsByteBuffer.position()
+                ) {
+                    baseUnitAsByteBuffer.get()
+                }
+
+                packer
+                    .packString(baseDim.symbol)
+                    .packBinaryHeader(baseUnitAsBytes.count())
+
+                packer.writePayload(baseUnitAsBytes)
+            }
+
+            packer.close()
+
+            return ByteBuffer.wrap(packer.toByteArray())
+        }
+
+        /**
+         *  Deserializes a [UnitSystem] in MessagePack.
+         *
+         *  @param msgpack
+         *      Serialized [UnitSystem] as returned by [serialize].
+         *
+         *  @return
+         *      Deserialized [UnitSystem].
+         */
+        @JvmStatic
+        fun deserialize(msgpack: ByteBuffer): UnitSystem {
+            val msgpackByteArray = ByteArray(
+                msgpack.limit() - msgpack.position()
+            ) {
+                msgpack.get()
+            }
+
+            return UnitSystem(msgpackByteArray)
+        }
+    }
 }

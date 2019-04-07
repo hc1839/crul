@@ -16,6 +16,8 @@
 
 package crul.math.coordsys
 
+import java.nio.ByteBuffer
+
 /**
  *  Position as a coordinate tuple in three dimensions.
  */
@@ -26,7 +28,7 @@ abstract class Position3D : Spatial {
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): super(msgpack)
+    protected constructor(msgpack: ByteArray): super(msgpack)
 
     operator fun component1() = this.components[0]
     operator fun component2() = this.components[1]
@@ -36,4 +38,19 @@ abstract class Position3D : Spatial {
      *  Converts this position to a vector.
      */
     abstract fun toVector3D(): Vector3D
+
+    companion object {
+        /**
+         *  Serializes a [Position3D] in MessagePack.
+         *
+         *  @param obj
+         *      [Position3D] to serialize.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: Position3D): ByteBuffer =
+            Spatial.serialize(obj)
+    }
 }

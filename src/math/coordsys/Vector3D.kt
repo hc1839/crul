@@ -16,6 +16,8 @@
 
 package crul.math.coordsys
 
+import java.nio.ByteBuffer
+
 /**
  *  Vector in three dimensions.
  */
@@ -49,7 +51,7 @@ open class Vector3D : Vector {
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): super(msgpack)
+    protected constructor(msgpack: ByteArray): super(msgpack)
 
     operator fun component1() = this.components[0]
     operator fun component2() = this.components[1]
@@ -69,4 +71,39 @@ open class Vector3D : Vector {
 
     override fun div(other: Double): Vector3D =
         Vector3D(super.div(other).components)
+
+    companion object {
+        /**
+         *  Serializes a [Vector3D] in MessagePack.
+         *
+         *  @param obj
+         *      [Vector3D] to serialize.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: Vector3D): ByteBuffer =
+            Vector.serialize(obj)
+
+        /**
+         *  Deserializes a [Vector3D] in MessagePack.
+         *
+         *  @param msgpack
+         *      Serialized [Vector3D] as returned by [serialize].
+         *
+         *  @return
+         *      Deserialized [Vector3D].
+         */
+        @JvmStatic
+        fun deserialize(msgpack: ByteBuffer): Vector3D {
+            val msgpackByteArray = ByteArray(
+                msgpack.limit() - msgpack.position()
+            ) {
+                msgpack.get()
+            }
+
+            return Vector3D(msgpackByteArray)
+        }
+    }
 }

@@ -22,7 +22,6 @@ import java.nio.ByteBuffer
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
-import crul.serialize.BinarySerializable
 import crul.serialize.MessagePackSimple
 
 /**
@@ -54,7 +53,7 @@ private object ElementStore {
  *
  *  Element data were obtained from Los Alamos National Laboratory.
  */
-class Element : BinarySerializable {
+class Element {
     /**
      *  Symbol of the element.
      */
@@ -79,16 +78,16 @@ class Element : BinarySerializable {
     /**
      *  Initializes from a MessagePack map.
      *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
-     *
      *  @param msgpack
      *      MessagePack map for the entire inheritance tree.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
      */
     private constructor(
-        unpackedMap: Map<String, Value>,
         @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray
+        msgpack: ByteArray,
+        unpackedMap: Map<String, Value>
     ): this(
         unpackedMap["symbol"]!!.asStringValue().toString()
     )
@@ -96,12 +95,12 @@ class Element : BinarySerializable {
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(
+    private constructor(msgpack: ByteArray): this(
+        msgpack,
         MessagePackSimple.getInnerMap(
             msgpack,
             Element::class.qualifiedName!!
-        ),
-        msgpack
+        )
     )
 
     /**
@@ -146,27 +145,6 @@ class Element : BinarySerializable {
             symbol == other.symbol
         )
 
-    /**
-     *  MessagePack serialization.
-     */
-    override fun serialize(args: List<Any?>): ByteBuffer {
-        val packer = MessagePack.newDefaultBufferPacker()
-
-        packer.packMapHeader(1)
-
-        packer
-            .packString(this::class.qualifiedName)
-            .packMapHeader(1)
-
-        packer
-            .packString("symbol")
-            .packString(symbol)
-
-        packer.close()
-
-        return ByteBuffer.wrap(packer.toByteArray())
-    }
-
     companion object {
         /**
          *  Gets the symbol of an element by its atomic number.
@@ -191,6 +169,54 @@ class Element : BinarySerializable {
                     "No such atomic number: $atomicNumber"
                 )
             }
+        }
+
+        /**
+         *  Serializates an [Element] in MessagePack.
+         *
+         *  @param obj
+         *      [Element] to serialize.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: Element): ByteBuffer {
+            val packer = MessagePack.newDefaultBufferPacker()
+
+            packer.packMapHeader(1)
+
+            packer
+                .packString(obj::class.qualifiedName)
+                .packMapHeader(1)
+
+            packer
+                .packString("symbol")
+                .packString(obj.symbol)
+
+            packer.close()
+
+            return ByteBuffer.wrap(packer.toByteArray())
+        }
+
+        /**
+         *  Deserializes an [Element] in MessagePack.
+         *
+         *  @param msgpack
+         *      Serialized [Element] as returned by [serialize].
+         *
+         *  @return
+         *      Deserialized [Element].
+         */
+        @JvmStatic
+        fun deserialize(msgpack: ByteBuffer): Element {
+            val msgpackByteArray = ByteArray(
+                msgpack.limit() - msgpack.position()
+            ) {
+                msgpack.get()
+            }
+
+            return Element(msgpackByteArray)
         }
     }
 }

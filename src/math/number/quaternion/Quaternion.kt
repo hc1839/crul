@@ -21,7 +21,6 @@ import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
 import crul.math.coordsys.Vector3D
-import crul.serialize.BinarySerializable
 import crul.serialize.MessagePackSimple
 
 /**
@@ -33,7 +32,7 @@ import crul.serialize.MessagePackSimple
  *  @param vector
  *      Vector part.
  */
-open class Quaternion : BinarySerializable {
+open class Quaternion {
     val scalar: Double
 
     val vector: Vector3D
@@ -46,32 +45,39 @@ open class Quaternion : BinarySerializable {
     /**
      *  Initializes from a MessagePack map.
      *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
-     *
      *  @param msgpack
      *      MessagePack map for the entire inheritance tree.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
      */
     private constructor(
-        unpackedMap: Map<String, Value>,
         @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray
+        msgpack: ByteArray,
+        unpackedMap: Map<String, Value>,
+        vector3DDeserializer: (ByteBuffer) -> Vector3D
     ): this(
         unpackedMap["scalar"]!!.asFloatValue().toDouble(),
-        Vector3D(
-            unpackedMap["vector"]!!.asBinaryValue().asByteArray()
+        vector3DDeserializer.invoke(
+            ByteBuffer.wrap(
+                unpackedMap["vector"]!!.asBinaryValue().asByteArray()
+            )
         )
     )
 
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(
+    protected constructor(
+        msgpack: ByteArray,
+        vector3DDeserializer: (ByteBuffer) -> Vector3D
+    ): this(
+        msgpack,
         MessagePackSimple.getInnerMap(
             msgpack,
             Quaternion::class.qualifiedName!!
         ),
-        msgpack
+        vector3DDeserializer
     )
 
     /**
@@ -134,39 +140,110 @@ open class Quaternion : BinarySerializable {
             }
             .reduce { acc, item -> acc + item }
 
-    /**
-     *  MessagePack serialization.
-     */
-    override fun serialize(args: List<Any?>): ByteBuffer {
-        val packer = MessagePack.newDefaultBufferPacker()
+    companion object {
+        /**
+         *  Serializes a [Quaternion] in MessagePack.
+         *
+         *  @param obj
+         *      [Quaternion] to serialize.
+         *
+         *  @param vector3DSerializer
+         *      [Vector3D] serializer.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(
+            obj: Quaternion,
+            vector3DSerializer: (Vector3D) -> ByteBuffer
+        ): ByteBuffer {
+            val packer = MessagePack.newDefaultBufferPacker()
 
-        packer.packMapHeader(1)
+            packer.packMapHeader(1)
 
-        packer
-            .packString(this::class.qualifiedName)
-            .packMapHeader(2)
+            packer
+                .packString(obj::class.qualifiedName)
+                .packMapHeader(2)
 
-        packer
-            .packString("scalar")
-            .packDouble(scalar)
+            packer
+                .packString("scalar")
+                .packDouble(obj.scalar)
 
-        val vectorAsByteBuffer = vector.serialize()
-        val vectorAsBytes = ByteArray(
-            vectorAsByteBuffer.limit() -
-            vectorAsByteBuffer.position()
-        ) {
-            vectorAsByteBuffer.get()
+            val vectorAsByteBuffer = vector3DSerializer
+                .invoke(obj.vector)
+
+            val vectorAsBytes = ByteArray(
+                vectorAsByteBuffer.limit() -
+                vectorAsByteBuffer.position()
+            ) {
+                vectorAsByteBuffer.get()
+            }
+
+            packer
+                .packString("vector")
+                .packBinaryHeader(vectorAsBytes.count())
+
+            packer.writePayload(vectorAsBytes)
+
+            packer.close()
+
+            return ByteBuffer.wrap(packer.toByteArray())
         }
 
-        packer
-            .packString("vector")
-            .packBinaryHeader(vectorAsBytes.count())
+        /**
+         *  Serializes a [Quaternion] in MessagePack using the default
+         *  [Vector3D] serializer.
+         *
+         *  @param obj
+         *      [Quaternion] to serialize.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: Quaternion): ByteBuffer =
+            serialize(obj, Vector3D.Companion::serialize)
 
-        packer.writePayload(vectorAsBytes)
+        /**
+         *  Deserializes a [Quaternion] in MessagePack.
+         *
+         *  @param msgpack
+         *      Serialized [Quaternion] as returned by [serialize].
+         *
+         *  @param vector3DDeserializer
+         *      [Vector3D] deserializer.
+         *
+         *  @return
+         *      Deserialized [Quaternion].
+         */
+        @JvmStatic
+        fun deserialize(
+            msgpack: ByteBuffer,
+            vector3DDeserializer: (ByteBuffer) -> Vector3D
+        ): Quaternion {
+            val msgpackByteArray = ByteArray(
+                msgpack.limit() - msgpack.position()
+            ) {
+                msgpack.get()
+            }
 
-        packer.close()
+            return Quaternion(msgpackByteArray, vector3DDeserializer)
+        }
 
-        return ByteBuffer.wrap(packer.toByteArray())
+        /**
+         *  Deserializes a [Quaternion] in MessagePack using the default
+         *  [Vector3D] deserializer.
+         *
+         *  @param msgpack
+         *      Serialized [Quaternion] as returned by [serialize].
+         *
+         *  @return
+         *      Deserialized [Quaternion].
+         */
+        @JvmStatic
+        fun deserialize(msgpack: ByteBuffer): Quaternion =
+            deserialize(msgpack, Vector3D.Companion::deserialize)
     }
 }
 

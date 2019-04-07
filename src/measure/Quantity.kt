@@ -25,13 +25,12 @@ import crul.measure.dimension.BaseDimension
 import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
 import crul.measure.unit.UnitSystem
-import crul.serialize.BinarySerializable
 import crul.serialize.MessagePackSimple
 
 /**
  *  Quantity containing a numerical value and a unit.
  */
-class Quantity : Comparable<Quantity>, BinarySerializable {
+class Quantity : Comparable<Quantity> {
     /**
      *  Unit of measure.
      */
@@ -70,16 +69,16 @@ class Quantity : Comparable<Quantity>, BinarySerializable {
     /**
      *  Initializes from a MessagePack map.
      *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
-     *
      *  @param msgpack
      *      MessagePack map for the entire inheritance tree.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
      */
     private constructor(
-        unpackedMap: Map<String, Value>,
         @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray
+        msgpack: ByteArray,
+        unpackedMap: Map<String, Value>
     ): this(
         unpackedMap["value"]!!.asFloatValue().toDouble(),
         UnitOfMeasure(
@@ -90,12 +89,12 @@ class Quantity : Comparable<Quantity>, BinarySerializable {
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(
+    protected constructor(msgpack: ByteArray): this(
+        msgpack,
         MessagePackSimple.getInnerMap(
             msgpack,
             Quantity::class.qualifiedName!!
-        ),
-        msgpack
+        )
     )
 
     /**
@@ -124,41 +123,6 @@ class Quantity : Comparable<Quantity>, BinarySerializable {
             ) &&
             unit == other.unit
         )
-
-    /**
-     *  MessagePack serialization.
-     */
-    override fun serialize(args: List<Any?>): ByteBuffer {
-        val packer = MessagePack.newDefaultBufferPacker()
-
-        packer.packMapHeader(1)
-
-        packer
-            .packString(this::class.qualifiedName)
-            .packMapHeader(2)
-
-        packer
-            .packString("value")
-            .packDouble(value)
-
-        val unitAsByteBuffer = unit.serialize()
-        val unitAsBytes = ByteArray(
-            unitAsByteBuffer.limit() -
-            unitAsByteBuffer.position()
-        ) {
-            unitAsByteBuffer.get()
-        }
-
-        packer
-            .packString("unit")
-            .packBinaryHeader(unitAsBytes.count())
-
-        packer.writePayload(unitAsBytes)
-
-        packer.close()
-
-        return ByteBuffer.wrap(packer.toByteArray())
-    }
 
     /**
      *  Numerical value in a given unit.
@@ -286,6 +250,68 @@ class Quantity : Comparable<Quantity>, BinarySerializable {
         ): Double
         {
             return Quantity(value, asDimension, fromUnitSystem).value(toUnit)
+        }
+
+        /**
+         *  Serializes a [Quantity] in MessagePack.
+         *
+         *  @param obj
+         *      [Quantity] to serialize.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: Quantity): ByteBuffer {
+            val packer = MessagePack.newDefaultBufferPacker()
+
+            packer.packMapHeader(1)
+
+            packer
+                .packString(obj::class.qualifiedName)
+                .packMapHeader(2)
+
+            packer
+                .packString("value")
+                .packDouble(obj.value)
+
+            val unitAsByteBuffer = UnitOfMeasure.serialize(obj.unit)
+            val unitAsBytes = ByteArray(
+                unitAsByteBuffer.limit() -
+                unitAsByteBuffer.position()
+            ) {
+                unitAsByteBuffer.get()
+            }
+
+            packer
+                .packString("unit")
+                .packBinaryHeader(unitAsBytes.count())
+
+            packer.writePayload(unitAsBytes)
+
+            packer.close()
+
+            return ByteBuffer.wrap(packer.toByteArray())
+        }
+
+        /**
+         *  Deserializes a [Quantity] in MessagePack.
+         *
+         *  @param msgpack
+         *      Serialized [Quantity] as returned by [serialize].
+         *
+         *  @return
+         *      Deserialized [Quantity].
+         */
+        @JvmStatic
+        fun deserialize(msgpack: ByteBuffer): Quantity {
+            val msgpackByteArray = ByteArray(
+                msgpack.limit() - msgpack.position()
+            ) {
+                msgpack.get()
+            }
+
+            return Quantity(msgpackByteArray)
         }
     }
 }

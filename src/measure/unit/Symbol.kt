@@ -29,7 +29,6 @@ import crul.measure.dimension.Dimension
 import crul.measure.unit.parse.Production
 import crul.measure.unit.parse.TokenIterator
 import crul.parse.shiftreduce.Actuator
-import crul.serialize.BinarySerializable
 import crul.serialize.MessagePackSimple
 
 /**
@@ -103,7 +102,7 @@ object UnitPrefix {
  *
  *  To instantiate this class with a derived unit, use [parse].
  */
-class UnitOfMeasure : BinarySerializable {
+class UnitOfMeasure {
     /**
      *  Magnitude.
      */
@@ -141,16 +140,16 @@ class UnitOfMeasure : BinarySerializable {
     /**
      *  Initializes from a MessagePack map.
      *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
-     *
      *  @param msgpack
      *      MessagePack map for the entire inheritance tree.
+     *
+     *  @param unpackedMap
+     *      Unpacked MessagePack map that is specific to this class.
      */
     private constructor(
-        unpackedMap: Map<String, Value>,
         @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray
+        msgpack: ByteArray,
+        unpackedMap: Map<String, Value>
     ) {
         this.magnitude =
             unpackedMap["magnitude"]!!.asFloatValue().toDouble()
@@ -175,11 +174,11 @@ class UnitOfMeasure : BinarySerializable {
      *  Deserialization constructor.
      */
     constructor(msgpack: ByteArray): this(
+        msgpack,
         MessagePackSimple.getInnerMap(
             msgpack,
             UnitOfMeasure::class.qualifiedName!!
-        ),
-        msgpack
+        )
     )
 
     /**
@@ -341,38 +340,6 @@ class UnitOfMeasure : BinarySerializable {
             dimension == other.dimension
         )
 
-    /**
-     *  MessagePack serialization.
-     */
-    override fun serialize(args: List<Any?>): ByteBuffer {
-        val packer = MessagePack.newDefaultBufferPacker()
-
-        packer.packMapHeader(1)
-
-        packer
-            .packString(this::class.qualifiedName)
-            .packMapHeader(2)
-
-        packer
-            .packString("magnitude")
-            .packDouble(magnitude)
-
-        val dimensionBuf = dimension
-
-        packer
-            .packString("dimension")
-            .packMapHeader(dimensionBuf.count())
-
-        for ((baseUnit, exp) in dimensionBuf) {
-            packer.packString(baseUnit.cs)
-            packer.packInt(exp)
-        }
-
-        packer.close()
-
-        return ByteBuffer.wrap(packer.toByteArray())
-    }
-
     companion object {
         /**
          *  JSON of UCUM derived units parsed by Gson.
@@ -447,5 +414,64 @@ class UnitOfMeasure : BinarySerializable {
 
                 parseRoot.getUserData(Production.userDataKey) as UnitOfMeasure
             }
+
+        /**
+         *  Serializes a [UnitOfMeasure] in MessagePack.
+         *
+         *  @param obj
+         *      [UnitOfMeasure] to serialize.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: UnitOfMeasure): ByteBuffer {
+            val packer = MessagePack.newDefaultBufferPacker()
+
+            packer.packMapHeader(1)
+
+            packer
+                .packString(obj::class.qualifiedName)
+                .packMapHeader(2)
+
+            packer
+                .packString("magnitude")
+                .packDouble(obj.magnitude)
+
+            val dimensionBuf = obj.dimension
+
+            packer
+                .packString("dimension")
+                .packMapHeader(dimensionBuf.count())
+
+            for ((baseUnit, exp) in dimensionBuf) {
+                packer.packString(baseUnit.cs)
+                packer.packInt(exp)
+            }
+
+            packer.close()
+
+            return ByteBuffer.wrap(packer.toByteArray())
+        }
+
+        /**
+         *  Deserializes a [UnitOfMeasure] in MessagePack.
+         *
+         *  @param msgpack
+         *      Serialized [UnitOfMeasure] as returned by [serialize].
+         *
+         *  @return
+         *      Deserialized [UnitOfMeasure].
+         */
+        @JvmStatic
+        fun deserialize(msgpack: ByteBuffer): UnitOfMeasure {
+            val msgpackByteArray = ByteArray(
+                msgpack.limit() - msgpack.position()
+            ) {
+                msgpack.get()
+            }
+
+            return UnitOfMeasure(msgpackByteArray)
+        }
     }
 }

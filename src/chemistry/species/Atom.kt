@@ -16,6 +16,8 @@
 
 package crul.chemistry.species
 
+import java.nio.ByteBuffer
+
 import crul.chemistry.species.Element
 import crul.math.coordsys.Vector3D
 
@@ -23,6 +25,8 @@ import crul.math.coordsys.Vector3D
  *  Interface for an atom.
  *
  *  An atom is a singleton [Species].
+ *
+ *  To construct an instance of this class, use [newInstance].
  */
 interface Atom : Species {
     /**
@@ -54,4 +58,60 @@ interface Atom : Species {
     val id: String
 
     abstract override fun clone(): Atom
+
+    companion object {
+        /**
+         *  Constructs an [Atom].
+         *
+         *  @param element
+         *      Element of the atom.
+         *
+         *  @param position
+         *      Position of the center of the atom.
+         *
+         *  @param formalCharge
+         *      Formal charge of the atom.
+         *
+         *  @param id
+         *      Identifier for this atom. It must conform to XML NCName
+         *      production.
+         */
+        @JvmStatic
+        fun newInstance(
+            element: Element,
+            position: Vector3D,
+            formalCharge: Double,
+            id: String
+        ): Atom = AtomImpl(
+            element,
+            position,
+            formalCharge,
+            id
+        )
+
+        /**
+         *  Constructs an [Atom] using an automatically generated UUID as the
+         *  identifer.
+         *
+         *  @param element
+         *      Element of the atom.
+         *
+         *  @param position
+         *      Position of the center of the atom.
+         *
+         *  @param formalCharge
+         *      Formal charge of the atom.
+         */
+        @JvmStatic
+        fun newInstance(
+            element: Element,
+            position: Vector3D,
+            formalCharge: Double
+        ): Atom = newInstance(
+            element,
+            position,
+            formalCharge,
+            crul.uuid.Generator.inNCName()
+        )
+    }
 }

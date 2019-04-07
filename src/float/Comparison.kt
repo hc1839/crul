@@ -25,8 +25,8 @@ object Comparison {
     /**
      *  Adapted from `https://floating-point-gui.de/errors/comparison/`.
      */
-    @JvmStatic
     @JvmOverloads
+    @JvmStatic
     fun nearlyEquals(a: Float, b: Float, epsilon: Float = 2.0e-16f): Boolean {
         val absA = kotlin.math.abs(a)
         val absB = kotlin.math.abs(b)
@@ -44,8 +44,8 @@ object Comparison {
     /**
      *  Same but for `Double`.
      */
-    @JvmStatic
     @JvmOverloads
+    @JvmStatic
     fun nearlyEquals(a: Double, b: Double, epsilon: Double = 2.0e-16) = nearlyEquals(
         a.toFloat(),
         b.toFloat(),

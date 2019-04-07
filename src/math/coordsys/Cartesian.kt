@@ -16,6 +16,8 @@
 
 package crul.math.coordsys
 
+import java.nio.ByteBuffer
+
 /**
  *  Cartesian coordinate tuple.
  */
@@ -41,7 +43,7 @@ open class Cartesian : Position3D {
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): super(msgpack) {
+    protected constructor(msgpack: ByteArray): super(msgpack) {
         this.x = component1()
         this.y = component2()
         this.z = component3()
@@ -49,4 +51,39 @@ open class Cartesian : Position3D {
 
     override fun toVector3D() =
         Vector3D(x, y, z)
+
+    companion object {
+        /**
+         *  Serializes a [Cartesian] in MessagePack.
+         *
+         *  @param obj
+         *      [Cartesian] to serialize.
+         *
+         *  @return
+         *      MessagePack serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: Cartesian): ByteBuffer =
+            Position3D.serialize(obj)
+
+        /**
+         *  Deserializes a [Cartesian] in MessagePack.
+         *
+         *  @param msgpack
+         *      Serialized [Cartesian] as returned by [serialize].
+         *
+         *  @return
+         *      Deserialized [Cartesian].
+         */
+        @JvmStatic
+        fun deserialize(msgpack: ByteBuffer): Cartesian {
+            val msgpackByteArray = ByteArray(
+                msgpack.limit() - msgpack.position()
+            ) {
+                msgpack.get()
+            }
+
+            return Cartesian(msgpackByteArray)
+        }
+    }
 }

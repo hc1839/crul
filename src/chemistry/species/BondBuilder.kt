@@ -75,7 +75,7 @@ open class BondBuilder<B : BondBuilder<B>> {
      */
     open fun <A : Atom> build(): Bond<A> =
         @Suppress("UNCHECKED_CAST")
-        BondImpl<A>(
+        Bond.newInstance<A>(
             atom1!! as A,
             atom2!! as A,
             order!!
@@ -84,25 +84,6 @@ open class BondBuilder<B : BondBuilder<B>> {
     companion object {
         private class BondBuilderImpl() :
             BondBuilder<BondBuilderImpl>()
-
-        /**
-         *  Deserializes from a MessagePack.
-         *
-         *  Data in this builder are ignored.
-         *
-         *  @param msgpack
-         *      MessagePack returned by [BinarySerializable.serialize] of a
-         *      [Bond] subclass.
-         *
-         *  @param atomDeserializer
-         *      Deserializer for atoms.
-         */
-        @JvmStatic
-        fun <A : Atom> deserialize(
-            msgpack: ByteArray,
-            atomDeserializer: (ByteArray) -> A
-        ): Bond<A> =
-            BondImpl(msgpack, atomDeserializer)
 
         /**
          *  Creates an instance of [BondBuilder].
