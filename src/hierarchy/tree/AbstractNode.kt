@@ -16,8 +16,6 @@
 
 package crul.hierarchy.tree
 
-import java.lang.ref.WeakReference as WeakRef
-
 import crul.hierarchy.tree.traversal.FilterState
 import crul.hierarchy.tree.traversal.NodeIterator
 import crul.hierarchy.tree.traversal.NodeIteratorBuilder
@@ -39,11 +37,6 @@ abstract class AbstractNode : Node {
      *  Backing property for list of children.
      */
     private val _childNodes: MutableList<Node> = mutableListOf()
-
-    /**
-     *  Weak reference to the parent node if any.
-     */
-    private var parentWeakRef: WeakRef<Node>? = null
 
     /**
      *  Constructs a new node with no parent.
@@ -102,13 +95,8 @@ abstract class AbstractNode : Node {
     override val lastChild: Node?
         get() = _childNodes.lastOrNull()
 
-    override val parentNode: Node?
-        get() =
-            if (parentWeakRef == null) {
-                null
-            } else {
-                parentWeakRef!!.get()
-            }
+    override var parentNode: Node? = null
+        protected set
 
     override val nextSibling: Node?
         get() {
@@ -210,7 +198,7 @@ abstract class AbstractNode : Node {
         newChild.parentNode?.removeChild(newChild)
         _childNodes.add(newChild)
 
-        newChild.parentWeakRef = WeakRef(this)
+        newChild.parentNode = this
 
         return newChild
     }
@@ -248,7 +236,7 @@ abstract class AbstractNode : Node {
 
         _childNodes.add(refChildIndex, newChild)
 
-        newChild.parentWeakRef = WeakRef(this)
+        newChild.parentNode = this
 
         return newChild
     }
@@ -271,7 +259,7 @@ abstract class AbstractNode : Node {
         }
 
         _childNodes.removeAt(oldChildIndex)
-        oldChild.parentWeakRef = null
+        oldChild.parentNode = null
 
         // Call the handlers.
         for (key in _userData.keys) {

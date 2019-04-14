@@ -31,10 +31,7 @@ class Graph : CanBeProxied,
 {
     override val id: String
 
-    /**
-     *  Weak reference to the parent graph system.
-     */
-    private val graphSystemRef: java.lang.ref.WeakReference<GraphSystem>
+    override val graphSystem: GraphSystem
 
     /**
      *  @suppress
@@ -59,8 +56,7 @@ class Graph : CanBeProxied,
             )
         }
 
-        graphSystemRef =
-            java.lang.ref.WeakReference(parentGraphSystem)
+        this.graphSystem = parentGraphSystem
 
         this.id = id
 
@@ -102,19 +98,6 @@ class Graph : CanBeProxied,
 
     override val edges: List<Edge>
         get() = edgeIndexer.constructs
-
-    override val graphSystem: GraphSystem
-        get() {
-            val graphSystem = graphSystemRef.get()
-
-            if (graphSystem == null) {
-                throw RuntimeException(
-                    "Graph system no longer exists."
-                )
-            }
-
-            return graphSystem
-        }
 
     override fun getConstructById(constructId: String) =
         if (constructId == id) {
