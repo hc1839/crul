@@ -39,15 +39,18 @@ open class TriangularFuzzyNumber(
         Interval<Double>(
             intervalEndpoints,
             Membership<Double>({ element: Double ->
-                if (element == peak) {
-                    1.0
-                } else if (element < peak) {
-                    (element - intervalEndpoints.lo) /
-                    (peak - intervalEndpoints.lo)
-                } else {
-                    (intervalEndpoints.hi - element) /
-                    (intervalEndpoints.hi - peak)
-                }
+                listOf(
+                    if (element == peak) {
+                        1.0
+                    } else if (element < peak) {
+                        (element - intervalEndpoints.lo) /
+                        (peak - intervalEndpoints.lo)
+                    } else {
+                        (intervalEndpoints.hi - element) /
+                        (intervalEndpoints.hi - peak)
+                    },
+                    0.0
+                ).max()!!
             })
         )
     )
