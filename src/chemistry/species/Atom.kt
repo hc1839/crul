@@ -17,9 +17,30 @@
 package crul.chemistry.species
 
 import java.nio.ByteBuffer
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
 
 import crul.chemistry.species.Element
 import crul.math.coordsys.Vector3D
+import crul.serialize.AvroSimple
+
+private object AtomAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.chemistry.species",
+       |    "name": "Atom",
+       |    "fields": [
+       |        { "type": "bytes", "name": "element" },
+       |        { "type": "bytes", "name": "position" },
+       |        { "type": "double", "name": "formal_charge" },
+       |        { "type": "string", "name": "id" }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
 
 /**
  *  Interface for an atom.
@@ -113,5 +134,66 @@ interface Atom : Species {
             formalCharge,
             crul.uuid.Generator.inNCName()
         )
+
+        /**
+         *  Serializes an [Atom] in Apache Avro.
+         *
+         *  @param obj
+         *      [Atom] to serialize.
+         *
+         *  @return
+         *      Avro serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: Atom): ByteBuffer {
+            val avroRecord = GenericData.Record(
+                AtomAvsc.schema
+            )
+
+            avroRecord.put("element", Element.serialize(obj.element))
+            avroRecord.put("position", Vector3D.serialize(obj.position))
+            avroRecord.put("formal_charge", obj.formalCharge)
+            avroRecord.put("id", obj.id)
+
+            return AvroSimple.serializeData<GenericRecord>(
+                AtomAvsc.schema,
+                listOf(avroRecord)
+            )
+        }
+
+        /**
+         *  Deserializes an [Atom] in Apache Avro.
+         *
+         *  @param avroData
+         *      Serialized [Atom] as returned by [serialize].
+         *
+         *  @return
+         *      Deserialized [Atom].
+         */
+        @JvmStatic
+        fun deserialize(avroData: ByteBuffer): Atom {
+            val avroRecord = AvroSimple.deserializeData<GenericRecord>(
+                AtomAvsc.schema,
+                avroData
+            ).first()
+
+            val element = Element.deserialize(
+                avroRecord.get("element") as ByteBuffer
+            )
+
+            val position = Vector3D.deserialize(
+                avroRecord.get("position") as ByteBuffer
+            )
+
+            val formalCharge = avroRecord.get("formal_charge") as Double
+            val id = avroRecord.get("id").toString()
+
+            return newInstance(
+                element,
+                position,
+                formalCharge,
+                id
+            )
+        }
     }
 }

@@ -17,6 +17,25 @@
 package crul.math.coordsys
 
 import java.nio.ByteBuffer
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
+
+import crul.serialize.AvroSimple
+
+private object Position3DAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.math.coordsys",
+       |    "name": "Position3D",
+       |    "fields": [
+       |        { "type": "bytes", "name": "_super" }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
 
 /**
  *  Position as a coordinate tuple in three dimensions.
@@ -26,9 +45,21 @@ abstract class Position3D : Spatial {
         super(component1, component2, component3)
 
     /**
+     *  Delegated deserialization constructor.
+     */
+    private constructor(avroRecord: GenericRecord): super(
+        avroRecord.get("_super") as ByteBuffer
+    )
+
+    /**
      *  Deserialization constructor.
      */
-    protected constructor(msgpack: ByteArray): super(msgpack)
+    protected constructor(avroData: ByteBuffer): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            Position3DAvsc.schema,
+            avroData
+        ).first()
+    )
 
     operator fun component1() = this.components[0]
     operator fun component2() = this.components[1]
@@ -41,16 +72,26 @@ abstract class Position3D : Spatial {
 
     companion object {
         /**
-         *  Serializes a [Position3D] in MessagePack.
+         *  Serializes a [Position3D] in Apache Avro.
          *
          *  @param obj
          *      [Position3D] to serialize.
          *
          *  @return
-         *      MessagePack serialization of `obj`.
+         *      Avro serialization of `obj`.
          */
         @JvmStatic
-        fun serialize(obj: Position3D): ByteBuffer =
-            Spatial.serialize(obj)
+        fun serialize(obj: Position3D): ByteBuffer {
+            val avroRecord = GenericData.Record(
+                Position3DAvsc.schema
+            )
+
+            avroRecord.put("_super", Spatial.serialize(obj))
+
+            return AvroSimple.serializeData<GenericRecord>(
+                Position3DAvsc.schema,
+                listOf(avroRecord)
+            )
+        }
     }
 }

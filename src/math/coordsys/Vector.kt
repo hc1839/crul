@@ -18,6 +18,25 @@ package crul.math.coordsys
 
 import java.nio.ByteBuffer
 import kotlin.math.pow
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
+
+import crul.serialize.AvroSimple
+
+private object VectorAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.math.coordsys",
+       |    "name": "Vector",
+       |    "fields": [
+       |        { "type": "bytes", "name" : "_super" }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
 
 /**
  *  Vector with an arbitrary number of components.
@@ -28,9 +47,21 @@ open class Vector : Spatial {
     constructor(vararg components: Double): this(components.toList())
 
     /**
+     *  Delegated deserialization constructor.
+     */
+    private constructor(avroRecord: GenericRecord): super(
+        avroRecord.get("_super") as ByteBuffer
+    )
+
+    /**
      *  Deserialization constructor.
      */
-    protected constructor(msgpack: ByteArray): super(msgpack)
+    protected constructor(avroData: ByteBuffer): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            VectorAvsc.schema,
+            avroData
+        ).first()
+    )
 
     /**
      *  Dot product of this and `other`.
@@ -138,36 +169,39 @@ open class Vector : Spatial {
 
     companion object {
         /**
-         *  Serializes a [Vector] in MessagePack.
+         *  Serializes a [Vector] in Apache Avro.
          *
          *  @param obj
          *      [Vector] to serialize.
          *
          *  @return
-         *      MessagePack serialization of `obj`.
+         *      Avro serialization of `obj`.
          */
         @JvmStatic
-        fun serialize(obj: Vector): ByteBuffer =
-            Spatial.serialize(obj)
+        fun serialize(obj: Vector): ByteBuffer {
+            val avroRecord = GenericData.Record(
+                VectorAvsc.schema
+            )
+
+            avroRecord.put("_super", Spatial.serialize(obj))
+
+            return AvroSimple.serializeData<GenericRecord>(
+                VectorAvsc.schema,
+                listOf(avroRecord)
+            )
+        }
 
         /**
-         *  Deserializes a [Vector] in MessagePack.
+         *  Deserializes a [Vector] in Apache Avro.
          *
-         *  @param msgpack
+         *  @param avroData
          *      Serialized [Vector] as returned by [serialize].
          *
          *  @return
          *      Deserialized [Vector].
          */
         @JvmStatic
-        fun deserialize(msgpack: ByteBuffer): Vector {
-            val msgpackByteArray = ByteArray(
-                msgpack.limit() - msgpack.position()
-            ) {
-                msgpack.get()
-            }
-
-            return Vector(msgpackByteArray)
-        }
+        fun deserialize(avroData: ByteBuffer): Vector =
+            Vector(avroData)
     }
 }

@@ -17,10 +17,28 @@
 package crul.math.coordsys
 
 import java.nio.ByteBuffer
-import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
 
-import crul.serialize.MessagePackSimple
+import crul.serialize.AvroSimple
+
+private object SpatialAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.math.coordsys",
+       |    "name": "Spatial",
+       |    "fields": [
+       |        {
+       |            "type": { "type": "array", "items": "double" },
+       |            "name": "components"
+       |        }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
 
 /**
  *  Base class for representing a coordinate tuple or a vector.
@@ -42,34 +60,22 @@ open class Spatial {
     constructor(vararg components: Double): this(components.toList())
 
     /**
-     *  Initializes from a MessagePack map.
-     *
-     *  @param msgpack
-     *      MessagePack map for the entire inheritance tree.
-     *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
+     *  Delegated deserialization constructor.
      */
-    private constructor(
-        @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray,
-        unpackedMap: Map<String, Value>
-    ): this(
-        unpackedMap["components"]!!
-            .asArrayValue()
-            .list()
-            .map { it.asFloatValue().toDouble() }
+    private constructor(avroRecord: GenericRecord): this(
+        @Suppress("UNCHECKED_CAST") (
+            avroRecord.get("components") as List<Double>
+        )
     )
 
     /**
      *  Deserialization constructor.
      */
-    protected constructor(msgpack: ByteArray): this(
-        msgpack,
-        MessagePackSimple.getInnerMap(
-            msgpack,
-            Spatial::class.qualifiedName!!
-        )
+    protected constructor(avroData: ByteBuffer): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            SpatialAvsc.schema,
+            avroData
+        ).first()
     )
 
     /**
@@ -92,57 +98,39 @@ open class Spatial {
 
     companion object {
         /**
-         *  Serializes a [Spatial] in MessagePack.
+         *  Serializes a [Spatial] in Apache Avro.
          *
          *  @param obj
          *      [Spatial] to serialize.
          *
          *  @return
-         *      MessagePack serialization of `obj`.
+         *      Avro serialization of `obj`.
          */
         @JvmStatic
         fun serialize(obj: Spatial): ByteBuffer {
-            val packer = MessagePack.newDefaultBufferPacker()
+            val avroRecord = GenericData.Record(
+                SpatialAvsc.schema
+            )
 
-            packer.packMapHeader(1)
+            avroRecord.put("components", obj.components)
 
-            packer
-                .packString(obj::class.qualifiedName)
-                .packMapHeader(1)
-
-            val componentsBuf = obj.components
-
-            packer
-                .packString("components")
-                .packArrayHeader(componentsBuf.count())
-
-            for (cmpt in componentsBuf) {
-                packer.packDouble(cmpt)
-            }
-
-            packer.close()
-
-            return ByteBuffer.wrap(packer.toByteArray())
+            return AvroSimple.serializeData<GenericRecord>(
+                SpatialAvsc.schema,
+                listOf(avroRecord)
+            )
         }
 
         /**
-         *  Deserializes a [Spatial] in MessagePack.
+         *  Deserializes a [Spatial] in Apache Avro.
          *
-         *  @param msgpack
+         *  @param avroData
          *      Serialized [Spatial] as returned by [serialize].
          *
          *  @return
          *      Deserialized [Spatial].
          */
         @JvmStatic
-        fun deserialize(msgpack: ByteBuffer): Spatial {
-            val msgpackByteArray = ByteArray(
-                msgpack.limit() - msgpack.position()
-            ) {
-                msgpack.get()
-            }
-
-            return Spatial(msgpackByteArray)
-        }
+        fun deserialize(avroData: ByteBuffer): Spatial =
+            Spatial(avroData)
     }
 }

@@ -17,6 +17,25 @@
 package crul.math.coordsys
 
 import java.nio.ByteBuffer
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
+
+import crul.serialize.AvroSimple
+
+private object Vector3DAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.math.coordsys",
+       |    "name": "Vector3D",
+       |    "fields": [
+       |        { "type": "bytes", "name": "_super" }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
 
 /**
  *  Vector in three dimensions.
@@ -49,9 +68,21 @@ open class Vector3D : Vector {
     }
 
     /**
+     *  Delegated deserialization constructor.
+     */
+    private constructor(avroRecord: GenericRecord): super(
+        avroRecord.get("_super") as ByteBuffer
+    )
+
+    /**
      *  Deserialization constructor.
      */
-    protected constructor(msgpack: ByteArray): super(msgpack)
+    protected constructor(avroData: ByteBuffer): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            Vector3DAvsc.schema,
+            avroData
+        ).first()
+    )
 
     operator fun component1() = this.components[0]
     operator fun component2() = this.components[1]
@@ -74,36 +105,39 @@ open class Vector3D : Vector {
 
     companion object {
         /**
-         *  Serializes a [Vector3D] in MessagePack.
+         *  Serializes a [Vector3D] in Apache Avro.
          *
          *  @param obj
          *      [Vector3D] to serialize.
          *
          *  @return
-         *      MessagePack serialization of `obj`.
+         *      Avro serialization of `obj`.
          */
         @JvmStatic
-        fun serialize(obj: Vector3D): ByteBuffer =
-            Vector.serialize(obj)
+        fun serialize(obj: Vector3D): ByteBuffer {
+            val avroRecord = GenericData.Record(
+                Vector3DAvsc.schema
+            )
+
+            avroRecord.put("_super", Vector.serialize(obj))
+
+            return AvroSimple.serializeData<GenericRecord>(
+                Vector3DAvsc.schema,
+                listOf(avroRecord)
+            )
+        }
 
         /**
-         *  Deserializes a [Vector3D] in MessagePack.
+         *  Deserializes a [Vector3D] in Apache Avro.
          *
-         *  @param msgpack
+         *  @param avroData
          *      Serialized [Vector3D] as returned by [serialize].
          *
          *  @return
          *      Deserialized [Vector3D].
          */
         @JvmStatic
-        fun deserialize(msgpack: ByteBuffer): Vector3D {
-            val msgpackByteArray = ByteArray(
-                msgpack.limit() - msgpack.position()
-            ) {
-                msgpack.get()
-            }
-
-            return Vector3D(msgpackByteArray)
-        }
+        fun deserialize(avroData: ByteBuffer): Vector3D =
+            Vector3D(avroData)
     }
 }

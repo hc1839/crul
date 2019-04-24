@@ -19,10 +19,25 @@ package crul.chemistry.species
 import com.google.gson.Gson
 import java.io.File
 import java.nio.ByteBuffer
-import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
 
-import crul.serialize.MessagePackSimple
+import crul.serialize.AvroSimple
+
+private object ElementAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.chemistry.species",
+       |    "name": "Element",
+       |    "fields": [
+       |        { "type": "string", "name": "symbol" }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
 
 /**
  *  Storage information for elements.
@@ -71,36 +86,25 @@ class Element {
      *  @param atomicNumber
      *      Atomic number of the element.
      */
-    constructor(atomicNumber: Int) {
-        this.symbol = getSymbolByNumber(atomicNumber)
-    }
+    constructor(atomicNumber: Int): this(
+        getSymbolByNumber(atomicNumber)
+    )
 
     /**
-     *  Initializes from a MessagePack map.
-     *
-     *  @param msgpack
-     *      MessagePack map for the entire inheritance tree.
-     *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
+     *  Delegated deserialization constructor.
      */
-    private constructor(
-        @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray,
-        unpackedMap: Map<String, Value>
-    ): this(
-        unpackedMap["symbol"]!!.asStringValue().toString()
+    private constructor(avroRecord: GenericRecord): this(
+        avroRecord.get("symbol").toString()
     )
 
     /**
      *  Deserialization constructor.
      */
-    private constructor(msgpack: ByteArray): this(
-        msgpack,
-        MessagePackSimple.getInnerMap(
-            msgpack,
-            Element::class.qualifiedName!!
-        )
+    private constructor(avroData: ByteBuffer): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            ElementAvsc.schema,
+            avroData
+        ).first()
     )
 
     /**
@@ -172,51 +176,39 @@ class Element {
         }
 
         /**
-         *  Serializates an [Element] in MessagePack.
+         *  Serializes an [Element] in Apache Avro.
          *
          *  @param obj
          *      [Element] to serialize.
          *
          *  @return
-         *      MessagePack serialization of `obj`.
+         *      Avro serialization of `obj`.
          */
         @JvmStatic
         fun serialize(obj: Element): ByteBuffer {
-            val packer = MessagePack.newDefaultBufferPacker()
+            val avroRecord = GenericData.Record(
+                ElementAvsc.schema
+            )
 
-            packer.packMapHeader(1)
+            avroRecord.put("symbol", obj.symbol)
 
-            packer
-                .packString(obj::class.qualifiedName)
-                .packMapHeader(1)
-
-            packer
-                .packString("symbol")
-                .packString(obj.symbol)
-
-            packer.close()
-
-            return ByteBuffer.wrap(packer.toByteArray())
+            return AvroSimple.serializeData<GenericRecord>(
+                ElementAvsc.schema,
+                listOf(avroRecord)
+            )
         }
 
         /**
-         *  Deserializes an [Element] in MessagePack.
+         *  Deserializes an [Element] in Apache Avro.
          *
-         *  @param msgpack
+         *  @param avroData
          *      Serialized [Element] as returned by [serialize].
          *
          *  @return
          *      Deserialized [Element].
          */
         @JvmStatic
-        fun deserialize(msgpack: ByteBuffer): Element {
-            val msgpackByteArray = ByteArray(
-                msgpack.limit() - msgpack.position()
-            ) {
-                msgpack.get()
-            }
-
-            return Element(msgpackByteArray)
-        }
+        fun deserialize(avroData: ByteBuffer): Element =
+            Element(avroData)
     }
 }

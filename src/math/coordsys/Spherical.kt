@@ -17,6 +17,25 @@
 package crul.math.coordsys
 
 import java.nio.ByteBuffer
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
+
+import crul.serialize.AvroSimple
+
+private object SphericalAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.math.coordsys",
+       |    "name": "Spherical",
+       |    "fields": [
+       |        { "type": "bytes", "name": "_super" }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
 
 /**
  *  Spherical coordinate tuple in ISO convention.
@@ -37,13 +56,25 @@ open class Spherical : Position3D {
     }
 
     /**
-     *  Deserialization constructor.
+     *  Delegated deserialization constructor.
      */
-    protected constructor(msgpack: ByteArray): super(msgpack) {
+    private constructor(avroRecord: GenericRecord): super (
+        avroRecord.get("_super") as ByteBuffer
+    ) {
         this.radius = component1()
         this.polar = component2()
         this.azimuthal = component3()
     }
+
+    /**
+     *  Deserialization constructor.
+     */
+    protected constructor(avroData: ByteBuffer): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            SphericalAvsc.schema,
+            avroData
+        ).first()
+    )
 
     /**
      *  Converts the spherical coordinates to a position vector in Cartesian
@@ -63,36 +94,39 @@ open class Spherical : Position3D {
 
     companion object {
         /**
-         *  Serializes a [Spherical] in MessagePack.
+         *  Serializes a [Spherical] in Apache Avro.
          *
          *  @param obj
          *      [Spherical] to serialize.
          *
          *  @return
-         *      MessagePack serialization of `obj`.
+         *      Avro serialization of `obj`.
          */
         @JvmStatic
-        fun serialize(obj: Spherical): ByteBuffer =
-            Position3D.serialize(obj)
+        fun serialize(obj: Spherical): ByteBuffer {
+            val avroRecord = GenericData.Record(
+                SphericalAvsc.schema
+            )
+
+            avroRecord.put("_super", Position3D.serialize(obj))
+
+            return AvroSimple.serializeData<GenericRecord>(
+                SphericalAvsc.schema,
+                listOf(avroRecord)
+            )
+        }
 
         /**
-         *  Deserializes a [Spherical] in MessagePack.
+         *  Deserializes a [Spherical] in Apache Avro.
          *
-         *  @param msgpack
+         *  @param avroData
          *      Serialized [Spherical] as returned by [serialize].
          *
          *  @return
          *      Deserialized [Spherical].
          */
         @JvmStatic
-        fun deserialize(msgpack: ByteBuffer): Spherical {
-            val msgpackByteArray = ByteArray(
-                msgpack.limit() - msgpack.position()
-            ) {
-                msgpack.get()
-            }
-
-            return Spherical(msgpackByteArray)
-        }
+        fun deserialize(avroData: ByteBuffer): Spherical =
+            Spherical(avroData)
     }
 }

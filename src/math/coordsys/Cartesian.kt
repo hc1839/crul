@@ -17,6 +17,25 @@
 package crul.math.coordsys
 
 import java.nio.ByteBuffer
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
+
+import crul.serialize.AvroSimple
+
+private object CartesianAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.math.coordsys",
+       |    "name": "Cartesian",
+       |    "fields": [
+       |        { "type": "bytes", "name": "_super" }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
 
 /**
  *  Cartesian coordinate tuple.
@@ -41,49 +60,64 @@ open class Cartesian : Position3D {
     )
 
     /**
-     *  Deserialization constructor.
+     *  Delegated deserialization constructor.
      */
-    protected constructor(msgpack: ByteArray): super(msgpack) {
+    private constructor(avroRecord: GenericRecord): super(
+        avroRecord.get("_super") as ByteBuffer
+    ) {
         this.x = component1()
         this.y = component2()
         this.z = component3()
     }
+
+    /**
+     *  Deserialization constructor.
+     */
+    protected constructor(avroData: ByteBuffer): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            CartesianAvsc.schema,
+            avroData
+        ).first()
+    )
 
     override fun toVector3D() =
         Vector3D(x, y, z)
 
     companion object {
         /**
-         *  Serializes a [Cartesian] in MessagePack.
+         *  Serializes a [Cartesian] in Apache Avro.
          *
          *  @param obj
          *      [Cartesian] to serialize.
          *
          *  @return
-         *      MessagePack serialization of `obj`.
+         *      Avro serialization of `obj`.
          */
         @JvmStatic
-        fun serialize(obj: Cartesian): ByteBuffer =
-            Position3D.serialize(obj)
+        fun serialize(obj: Cartesian): ByteBuffer {
+            val avroRecord = GenericData.Record(
+                CartesianAvsc.schema
+            )
+
+            avroRecord.put("_super", Position3D.serialize(obj))
+
+            return AvroSimple.serializeData<GenericRecord>(
+                CartesianAvsc.schema,
+                listOf(avroRecord)
+            )
+        }
 
         /**
-         *  Deserializes a [Cartesian] in MessagePack.
+         *  Deserializes a [Cartesian] in Apache Avro.
          *
-         *  @param msgpack
+         *  @param avroData
          *      Serialized [Cartesian] as returned by [serialize].
          *
          *  @return
          *      Deserialized [Cartesian].
          */
         @JvmStatic
-        fun deserialize(msgpack: ByteBuffer): Cartesian {
-            val msgpackByteArray = ByteArray(
-                msgpack.limit() - msgpack.position()
-            ) {
-                msgpack.get()
-            }
-
-            return Cartesian(msgpackByteArray)
-        }
+        fun deserialize(avroData: ByteBuffer): Cartesian =
+            Cartesian(avroData)
     }
 }

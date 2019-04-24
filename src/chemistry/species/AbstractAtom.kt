@@ -17,12 +17,30 @@
 package crul.chemistry.species
 
 import java.nio.ByteBuffer
-import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
 
 import crul.chemistry.species.Element
 import crul.math.coordsys.Vector3D
-import crul.serialize.MessagePackSimple
+import crul.serialize.AvroSimple
+
+private object AbstractAtomAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.chemistry.species",
+       |    "name": "AbstractAtom",
+       |    "fields": [
+       |        { "type": "bytes", "name": "element" },
+       |        { "type": "bytes", "name": "position" },
+       |        { "type": "double", "name": "formal_charge" },
+       |        { "type": "string", "name": "id" }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
 
 /**
  *  Skeletal implementation of [Atom].
@@ -80,50 +98,27 @@ abstract class AbstractAtom : Atom {
     }
 
     /**
-     *  Initializes from a MessagePack map.
-     *
-     *  @param msgpack
-     *      MessagePack map for the entire inheritance tree.
-     *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
-     *
-     *  @param vector3DDeserializer
-     *      [Vector3D] deserializer.
+     *  Delegated deserialization constructor.
      */
-    private constructor(
-        @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray,
-        unpackedMap: Map<String, Value>,
-        vector3DDeserializer: (ByteBuffer) -> Vector3D
-    ): this(
+    private constructor(avroRecord: GenericRecord): this(
         Element.deserialize(
-            ByteBuffer.wrap(
-                unpackedMap["element"]!!.asBinaryValue().asByteArray()
-            )
+            avroRecord.get("element") as ByteBuffer
         ),
-        vector3DDeserializer.invoke(
-            ByteBuffer.wrap(
-                unpackedMap["position"]!!.asBinaryValue().asByteArray()
-            )
+        Vector3D.deserialize(
+            avroRecord.get("position") as ByteBuffer
         ),
-        unpackedMap["formal-charge"]!!.asFloatValue().toDouble(),
-        unpackedMap["id"]!!.asStringValue().toString()
+        avroRecord.get("formal-charge") as Double,
+        avroRecord.get("id").toString()
     )
 
     /**
      *  Deserialization constructor.
      */
-    protected constructor(
-        msgpack: ByteArray,
-        vector3DDeserializer: (ByteBuffer) -> Vector3D
-    ): this(
-        msgpack,
-        MessagePackSimple.getInnerMap(
-            msgpack,
-            AbstractAtom::class.qualifiedName!!
-        ),
-        vector3DDeserializer
+    protected constructor(avroData: ByteBuffer): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            AbstractAtomAvsc.schema,
+            avroData
+        ).first()
     )
 
     override fun hashCode(): Int =
@@ -139,86 +134,29 @@ abstract class AbstractAtom : Atom {
 
     companion object {
         /**
-         *  Serializes an [AbstractAtom] in MessagePack.
+         *  Serializes an [AbstractAtom] in Apache Avro.
          *
          *  @param obj
          *      [AbstractAtom] to serialize.
          *
-         *  @param vector3DSerializer
-         *      [Vector3D] serializer.
-         *
          *  @return
-         *      MessagePack serialization of `obj`.
+         *      Avro serialization of `obj`.
          */
         @JvmStatic
-        fun serialize(
-            obj: AbstractAtom,
-            vector3DSerializer: (Vector3D) -> ByteBuffer
-        ): ByteBuffer
-        {
-            val packer = MessagePack.newDefaultBufferPacker()
+        fun serialize(obj: AbstractAtom): ByteBuffer {
+            val avroRecord = GenericData.Record(
+                AbstractAtomAvsc.schema
+            )
 
-            packer.packMapHeader(1)
+            avroRecord.put("element", Element.serialize(obj.element))
+            avroRecord.put("position", Vector3D.serialize(obj.position))
+            avroRecord.put("formal_charge", obj.formalCharge)
+            avroRecord.put("id", obj.id)
 
-            packer
-                .packString(obj::class.qualifiedName)
-                .packMapHeader(4)
-
-            val elementAsByteBuffer = Element.serialize(obj.element)
-            val elementAsBytes = ByteArray(
-                elementAsByteBuffer.limit() -
-                elementAsByteBuffer.position()
-            ) {
-                elementAsByteBuffer.get()
-            }
-
-            packer
-                .packString("element")
-                .packBinaryHeader(elementAsBytes.count())
-
-            packer.writePayload(elementAsBytes)
-
-            val positionAsByteBuffer = vector3DSerializer
-                .invoke(obj.position)
-
-            val positionAsBytes = ByteArray(
-                positionAsByteBuffer.limit() -
-                positionAsByteBuffer.position()
-            ) {
-                positionAsByteBuffer.get()
-            }
-
-            packer
-                .packString("position")
-                .packBinaryHeader(positionAsBytes.count())
-
-            packer.writePayload(positionAsBytes)
-
-            packer
-                .packString("formal-charge")
-                .packDouble(obj.formalCharge)
-
-            packer
-                .packString("id")
-                .packString(obj.id)
-
-            packer.close()
-
-            return ByteBuffer.wrap(packer.toByteArray())
+            return AvroSimple.serializeData<GenericRecord>(
+                AbstractAtomAvsc.schema,
+                listOf(avroRecord)
+            )
         }
-
-        /**
-         *  Serializes an [AbstractAtom] in MessagePack using the default
-         *  [Vector3D] serializer.
-         *
-         *  @param obj
-         *      [AbstractAtom] to serialize.
-         *
-         *  @return
-         *      MessagePack serialization of `obj`.
-         */
-        @JvmStatic
-        fun serialize(obj: AbstractAtom): ByteBuffer =
-            serialize(obj, Vector3D.Companion::serialize)
     }
 }
