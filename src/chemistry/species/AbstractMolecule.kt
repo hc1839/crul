@@ -16,288 +16,150 @@
 
 package crul.chemistry.species
 
-import crul.hypergraph.Edge
-import crul.hypergraph.Graph
-import crul.hypergraph.GraphSystem
-import crul.hypergraph.Vertex
-
 /**
  *  Skeletal implementation of [Molecule].
  *
- *  Only a subclass of [MoleculeComplexBuilder] should be instantiating the
- *  corresponding subclass of this class, since it must be ensured that every
- *  pair of atoms in a molecule are connected by bonds.
- *
  *  @param A
- *      Type of atoms in this molecule.
+ *      Type of atoms.
  */
 abstract class AbstractMolecule<A : Atom> :
     AbstractFragment<A>,
     Molecule<A>
 {
     /**
-     *  Graph system for bond information.
+     *  Lists of bonds associated by the identifier of the participating atom.
      */
-    private val graphSystem: GraphSystem = GraphSystem()
-
-    /**
-     *  Graph that contains bond information.
-     */
-    private val graph: Graph
-        get() = graphSystem.getGraph(graphSystem.graphIds.first())!!
-
-    /**
-     *  Vertex acting as the edge type for a bond in the graph.
-     */
-    private val bondEdgeType: Vertex
-
-    /**
-     *  Vertex acting as the property type for a bond order.
-     */
-    private val bondOrderPropertyType: Vertex
-
-    /**
-     *  Builder for constructing bonds, or `null` if this molecule is a
-     *  singleton.
-     */
-    protected val bondBuilder: BondBuilder<*>?
-
-    /**
-     *  Populates the graph with bond information.
-     *
-     *  Atoms are not cloned.
-     *
-     *  It is an initializer that is to be called from a constructor.
-     */
-    private fun initialize(bonds: Collection<Bond<A>>) {
-        // Add each bond as an edge.
-        for (bond in bonds) {
-            // Add and store each atom as a vertex.
-            val atomVertices = bond
-                .atoms()
-                .map { atom ->
-                    val existingVertex = this
-                        .graph
-                        .getVertexByName(atom.id)
-
-                    // Check for another atom with the same ID.
-                    if (existingVertex == null) {
-                        val atomVertex = this.graph.createVertex()
-
-                        atomVertex.addName(atom.id)
-                        atomVertex.userData = atom
-
-                        atomVertex
-                    } else {
-                        @Suppress("UNCHECKED_CAST")
-                        val existingAtom = existingVertex.userData as A
-
-                        if (existingAtom != atom) {
-                            throw IllegalArgumentException(
-                                "Another atom with the same ID exists: " +
-                                atom.id
-                            )
-                        }
-
-                        existingVertex
-                    }
-                }
-
-            // Create a bond edge, and add atom vertices to it.
-            val bondEdge = this.graph.createEdge(this.bondEdgeType)
-            bondEdge.addVertex(atomVertices[0])
-            bondEdge.addVertex(atomVertices[1])
-
-            // Create a proxy for the bond edge, and create a property to store
-            // the bond order.
-            val bondEdgeProxy = this.graph.createVertex()
-            bondEdgeProxy.createProperty(
-                this.bondOrderPropertyType,
-                bond.order
-            )
-            bondEdge.proxy = bondEdgeProxy
-        }
-    }
-
-    /**
-     *  Populates the graph with one atom acting as a singleton molecule.
-     *
-     *  Atoms are not cloned.
-     *
-     *  It is an initializer that is to be called from a constructor.
-     */
-    private fun initialize(atom: A) {
-        // Add and store the atom as a vertex.
-        val atomVertex = this.graph.createVertex()
-        atomVertex.userData = atom
-    }
+    private val bondListsByAtomId: Map<String, List<Bond<A>>>
 
     /**
      *  @param bonds
-     *      Bonds of the molecule. They are not checked for connectivity, which
-     *      is done by [MoleculeComplexBuilder].
-     *
-     *  @param bondBuilder
-     *      Builder for constructing bonds.
+     *      Non-empty set of bonds of the molecule. Exception is raised if (1)
+     *      two unequal atoms have the same identifier, (2) two bonds have
+     *      equal atoms but unequal orders, or (3) set of bonds represents more
+     *      than one molecule.
      */
-    constructor(
-        bonds: Collection<Bond<A>>,
-        bondBuilder: BondBuilder<*> = BondBuilder.newInstance()
-    ): super(
-        bonds
-            .flatMap { it.atoms().distinct() }
-            .toSet()
+    constructor(bonds: Set<Bond<A>>): super(
+        if (!bonds.isEmpty()) {
+            bonds.flatMap { it.atoms() }.distinct()
+        } else {
+            throw IllegalArgumentException("Set of bonds is empty.")
+        }
     ) {
-        this.graphSystem.createGraph(crul.uuid.Generator.inNCName())
-        this.bondEdgeType = this.graph.createVertex()
-        this.bondOrderPropertyType = this.graph.createVertex()
-        this.bondBuilder = bondBuilder
-
-        initialize(bonds)
-    }
-
-    /**
-     *  Constructs a singleton molecule.
-     *
-     *  @param atom
-     *      Atom acting as a singleton molecule.
-     */
-    constructor(atom: A): super(listOf(atom)) {
-        this.graphSystem.createGraph(crul.uuid.Generator.inNCName())
-        this.bondEdgeType = this.graph.createVertex()
-        this.bondOrderPropertyType = this.graph.createVertex()
-        this.bondBuilder = null
-
-        initialize(atom)
+        this.bondListsByAtomId = bondIndexing(bonds.toSet())
     }
 
     /**
      *  Copy constructor.
+     *
+     *  @param other
+     *      Molecule to copy.
+     *
+     *  @param deep
+     *      Whether atoms and bonds are copied.
      */
-    constructor(other: AbstractMolecule<A>): super(other) {
-        this.graphSystem.createGraph(crul.uuid.Generator.inNCName())
-        this.bondEdgeType = this.graph.createVertex()
-        this.bondOrderPropertyType = this.graph.createVertex()
-        this.bondBuilder = other.bondBuilder
-
-        if (other.bonds().firstOrNull() == null) {
-            initialize(other.atoms().first())
+    @JvmOverloads
+    constructor(
+        other: AbstractMolecule<A>,
+        deep: Boolean = false
+    ): this(
+        if (deep) {
+            other.bonds().map { it.clone() }.toSet()
         } else {
-            initialize(other.bonds())
+            other.bonds().toSet()
         }
-
-        // Replace the other atom with the cloned version stored in the
-        // superclass.
-        for (atom in _subspecies) {
-            val atomVertex = this.graph.getVertexByName(atom.id)!!
-            atomVertex.userData = atom
-        }
-    }
-
-    override fun containsAtom(atom: A): Boolean {
-        val atomVertex = graph.getVertexByName(atom.id)
-
-        return atomVertex?.userData == atom
-    }
+    )
 
     override fun bonds(): Collection<Bond<A>> =
-        graph.getEdgesByType(bondEdgeType).map { bondEdge ->
-            // Atoms of the bond.
-            val atoms = bondEdge
-                .vertices
-                .map {
-                    @Suppress("UNCHECKED_CAST")
-                    it.userData as A
-                }
-
-            val bondOrder = bondEdge
-                .proxy!!
-                .getPropertiesByType(bondOrderPropertyType)
-                .first()
-                .value
-
-            bondBuilder!!
-                .setAtom1(atoms[0])
-                .setAtom2(atoms[1])
-                .setOrder(bondOrder)
-                .build<A>()
-        }
+        bondListsByAtomId.values.flatten().distinct()
 
     override fun getBondsByAtom(atom: A): Set<Bond<A>> {
-        val atomVertex = graph.getVertexByName(atom.id)
+        if (!bondListsByAtomId.contains(atom.id)) {
+            "No such atom: ${atom.id}"
+        }
 
-        if (atomVertex?.userData != atom) {
+        val bondList = bondListsByAtomId[atom.id]!!
+
+        if (!bondList.first().atoms().contains(atom)) {
             throw IllegalArgumentException(
-                "No such atom: ${atom.id}"
+                "Given atom is not equal to the atom " +
+                "of the same identifier: ${atom.id}"
             )
         }
 
-        val involvedBondEdges = atomVertex
-            .edges
-            .filter { it.type == bondEdgeType }
-
-        val bonds = involvedBondEdges.map { bondEdge ->
-            // Other atom in the participating bond.
-            val otherAtom = bondEdge
-                .vertices
-                .map {
-                    @Suppress("UNCHECKED_CAST")
-                    it.userData as A
-                }
-                .filter { it != atom }
-                .single()
-
-            val bondOrder = bondEdge
-                .proxy!!
-                .getPropertiesByType(bondOrderPropertyType)
-                .first()
-                .value
-
-            bondBuilder!!
-                .setAtom1(atom)
-                .setAtom2(otherAtom)
-                .setOrder(bondOrder)
-                .build<A>()
-        }
-
-        return bonds.toSet()
+        return bondList.toSet()
     }
 
     override fun getBond(atom1: A, atom2: A): Bond<A>? {
-        val atomVertices = listOf(atom1, atom2)
-            .map { atom ->
-                val atomVertex = graph.getVertexByName(atom.id)
+        if (
+            !bondListsByAtomId.contains(atom1.id) ||
+            !bondListsByAtomId.contains(atom2.id)
+        ) {
+            return null
+        }
 
-                if (atomVertex != null) {
-                    atomVertex
-                } else {
-                    throw IllegalArgumentException(
-                        "No such atom: ${atom.id}"
-                    )
+        val bond = bondListsByAtomId[atom1.id]!!.intersect(
+            bondListsByAtomId[atom2.id]!!
+        ).singleOrNull()
+
+        return if (bond == null) {
+            null
+        } else {
+            if (bond.atoms().toSet() == setOf(atom1, atom2)) {
+                bond
+            } else {
+                null
+            }
+        }
+    }
+
+    companion object {
+        /**
+         *  Indexing of the bonds from a set of bonds.
+         *
+         *  @param bonds
+         *      Non-empty set of bonds of the molecule. Exception is raised if
+         *      (1) two unequal atoms have the same identifier, (2) two bonds
+         *      have equal atoms but unequal orders, or (3) set of bonds
+         *      represents more than one molecule.
+         *
+         *  @return
+         *      Map of atom identifier to list of bonds that the atom is
+         *      participating.
+         */
+        private fun <A : Atom> bondIndexing(
+            bonds: Set<Bond<A>>
+        ): Map<String, List<Bond<A>>>
+        {
+            if (bonds.isEmpty()) {
+                throw IllegalArgumentException(
+                    "Set of bonds is empty."
+                )
+            }
+
+            val bondAggregates = BondAggregator.aggregate(bonds)
+
+            if (bondAggregates.count() != 1) {
+                throw IllegalArgumentException(
+                    "Set of bonds represents more than one molecule."
+                )
+            }
+
+            val bondAggregate = bondAggregates.single()
+            val bondListsByAtomId = mutableMapOf<String, MutableList<Bond<A>>>()
+
+            for (bond in bondAggregate) {
+                for (atom in bond.atoms()) {
+                    if (!bondListsByAtomId.contains(atom.id)) {
+                        bondListsByAtomId[atom.id] = mutableListOf()
+                    }
+
+                    bondListsByAtomId[atom.id]!!.add(bond)
                 }
             }
 
-        // Singleton or empty list of the bond edge that both atoms are
-        // participating in.
-        val bondEdge = atomVertices
-            .first()
-            .edges
-            .filter { it.vertices.contains(atomVertices[1]) }
-
-        return if (bondEdge.isEmpty()) {
-            null
-        } else {
-            val bondOrder = bondEdge
-                .single()
-                .proxy!!
-                .getPropertiesByType(bondOrderPropertyType)
-                .first().value
-
-            bondBuilder!!
-                .setAtom1(atom1)
-                .setAtom2(atom2)
-                .setOrder(bondOrder)
-                .build<A>()
+            return bondListsByAtomId.mapValues { (_, bondList) ->
+                bondList.toList()
+            }
         }
     }
 }

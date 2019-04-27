@@ -43,7 +43,21 @@ interface Bond<A : Atom> : Fragment<A> {
      */
     fun toAtomPair(): Pair<A, A>
 
-    abstract override fun clone(): Bond<A>
+    abstract override fun hashCode(): Int
+
+    /**
+     *  Bonds are equal if and only if the bond order and corresponding atoms
+     *  are equal.
+     *
+     *  Order of the atoms in each bond is not significant.
+     */
+    abstract override fun equals(other: Any?): Boolean
+
+    override fun clone(): Bond<A> =
+        @Suppress("UNCHECKED_CAST")
+        super.clone() as Bond<A>
+
+    abstract override fun clone(deep: Boolean): Bond<A>
 
     companion object {
         /**

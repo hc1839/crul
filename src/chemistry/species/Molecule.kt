@@ -17,9 +17,9 @@
 package crul.chemistry.species
 
 /**
- *  Interface for a molecule, which is a non-empty [Fragment] with unique atom
- *  names and has every pair of atoms connected by bonds (directly or
- *  indirectly).
+ *  Interface for a molecule, which is a non-empty [Fragment] of bonds with
+ *  unique atom names and has every pair of atoms connected by bonds, directly
+ *  or indirectly.
  *
  *  Equality operator, `==`, is used for comparing atoms. Within the same
  *  molecule, two equal atoms must have the same name and vice versa.
@@ -31,10 +31,10 @@ interface Molecule<A : Atom> : Fragment<A> {
     /**
      *  Bonds in this molecule.
      *
-     *  Collection may be empty. Bonds are unique and are in the same order
-     *  between iterations. Bonds in the collection are not guaranteed to be in
-     *  any particular order. A subinterface or an implementation, however, is
-     *  allowed to make specified guarantees.
+     *  Bonds are unique and are in the same order between iterations. Bonds in
+     *  the collection are not guaranteed to be in any particular order. A
+     *  subinterface or an implementation, however, is allowed to make
+     *  specified guarantees.
      */
     fun bonds(): Collection<Bond<A>>
 
@@ -81,5 +81,21 @@ interface Molecule<A : Atom> : Fragment<A> {
             }
             .singleOrNull()
 
-    abstract override fun clone(): Molecule<A>
+    override fun clone(): Molecule<A> =
+        @Suppress("UNCHECKED_CAST")
+        super.clone() as Molecule<A>
+
+    abstract override fun clone(deep: Boolean): Molecule<A>
+
+    companion object {
+        /**
+         *  Constructs a [Molecule].
+         *
+         *  @param bonds
+         *      Bonds of the molecule.
+         */
+        @JvmStatic
+        fun <A : Atom> newInstance(bonds: Set<Bond<A>>): Molecule<A> =
+            MoleculeImpl(bonds)
+    }
 }

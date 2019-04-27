@@ -16,37 +16,34 @@
 
 package crul.chemistry.species
 
-import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
-
-import crul.math.coordsys.Vector3D
-import crul.serialize.MessagePackSimple
-
 /**
- *  Default implementation of [Atom].
+ *  Default implementation of [Fragment].
+ *
+ *  @param A
+ *      Type of atoms.
  */
-internal class AtomImpl : AbstractAtom {
+internal class FragmentImpl<A : Atom> : AbstractFragment<A> {
     /**
-     *  See [crul.chemistry.species.Atom.newInstance] for the description.
+     *  @param atoms
+     *      Atoms of the fragment.
      */
-    constructor(
-        element: Element,
-        position: Vector3D,
-        formalCharge: Double,
-        id: String = crul.uuid.Generator.inNCName()
-    ): super(
-        element,
-        position,
-        formalCharge,
-        id
-    )
+    constructor(atoms: Collection<A>): super(atoms)
 
     /**
      *  Copy constructor.
+     *
+     *  @param other
+     *      Fragment to copy.
+     *
+     *  @param deep
+     *      Whether atoms are copied.
      */
-    constructor(other: AtomImpl): super(other)
+    @JvmOverloads
+    constructor(
+        other: FragmentImpl<A>,
+        deep: Boolean = false
+    ): super(other, deep)
 
-    @Suppress("UNUSED_PARAMETER")
-    override fun clone(deep: Boolean): Atom =
-        AtomImpl(this)
+    override fun clone(deep: Boolean): FragmentImpl<A> =
+        FragmentImpl(this, deep)
 }

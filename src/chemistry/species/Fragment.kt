@@ -17,7 +17,7 @@
 package crul.chemistry.species
 
 /**
- *  Interface for a fragment, which is a non-emtpy [Complex] of [Atom].
+ *  Interface for a fragment, which is a non-empty [Complex] of [Atom].
  *
  *  @param A
  *      Type of atoms in this fragment.
@@ -54,8 +54,21 @@ interface Fragment<A : Atom> : Complex<A> {
             super.atoms() as Collection<A>
         )
 
-    /**
-     *  Clones this fragment along with its atoms.
-     */
-    abstract override fun clone(): Fragment<A>
+    override fun clone(): Fragment<A> =
+        @Suppress("UNCHECKED_CAST")
+        super.clone() as Fragment<A>
+
+    abstract override fun clone(deep: Boolean): Fragment<A>
+
+    companion object {
+        /**
+         *  Constructs a [Fragment].
+         *
+         *  @param atoms
+         *      Atoms of the fragment.
+         */
+        @JvmStatic
+        fun <A : Atom> newInstance(atoms: Collection<A>): Fragment<A> =
+            FragmentImpl(atoms)
+    }
 }

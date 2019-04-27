@@ -17,19 +17,20 @@
 package crul.chemistry.species
 
 /**
- *  Interface for a complex of molecules.
+ *  Interface for a complex of molecules and atoms.
+ *
+ *  A subspecies is either a [Molecule] or an [Atom]. An atom identifier exists
+ *  in exactly one subspecies.
  *
  *  @param A
- *      Type of atoms in the molecules.
+ *      Type of atoms.
  */
-interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
+interface MoleculeComplex<A : Atom> : Complex<Species> {
     override fun atoms(): Collection<A> =
-        super
-            .atoms()
-            .map {
-                @Suppress("UNCHECKED_CAST")
-                it as A
-            }
+        super.atoms().map {
+            @Suppress("UNCHECKED_CAST")
+            it as A
+        }
 
     /**
      *  Identifier for this complex.
@@ -50,15 +51,22 @@ interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
             .reduce { acc, item -> acc + item }
 
     /**
-     *  Molecules in this complex.
+     *  Molecules in this complex, or an empty collection if there are none.
      *
-     *  Collection may be empty. Molecules are unique and are in the same order
-     *  between iterations. Molecules in the collection are not guaranteed to
-     *  be in any particular order. A subinterface or an implementation,
-     *  however, is allowed to make specified guarantees.
+     *  Molecules are unique and are in the same order between iterations.
+     *  Molecules in the collection are not guaranteed to be in any particular
+     *  order. A subinterface or an implementation, however, is allowed to make
+     *  specified guarantees.
      */
     fun molecules(): Collection<Molecule<A>> =
-        iterator().asSequence().toList()
+        iterator()
+            .asSequence()
+            .filter { it is Molecule<*> }
+            .map {
+                @Suppress("UNCHECKED_CAST")
+                it as Molecule<A>
+            }
+            .toList()
 
     /**
      *  Gets the molecule that contains a given atom, or `null` if there is no
@@ -66,8 +74,10 @@ interface MoleculeComplex<A : Atom> : Complex<Molecule<A>> {
      */
     fun getMoleculeWithAtom(atom: A): Molecule<A>?
 
-    /**
-     *  Clones this complex along with its molecules.
-     */
-    public abstract override fun clone(): MoleculeComplex<A>
+    override fun clone(): MoleculeComplex<A> =
+        @Suppress("UNCHECKED_CAST") (
+            super.clone() as MoleculeComplex<A>
+        )
+
+    abstract override fun clone(deep: Boolean): MoleculeComplex<A>
 }

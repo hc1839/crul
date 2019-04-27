@@ -342,14 +342,19 @@ fun MoleculeComplexBuilder<*>.parseInCml(
 
     setId(moleculeNode.getAttribute("id"))
 
-    // Add the atoms to the builder.
-    for (atom in atomsById.values) {
-        addAtom(atom)
-    }
-
     // Add the bonds to the builder.
     for (bond in bonds) {
         addBond(bond)
+    }
+
+    // Add atoms that are not participating in a bond to the builder.
+    for (
+        atomId in
+        atomsById.keys - bonds.flatMap { bond ->
+            bond.atoms().map { atom -> atom.id }
+        }.distinct()
+    ) {
+        addAtom(atomsById[atomId]!!)
     }
 
     return this

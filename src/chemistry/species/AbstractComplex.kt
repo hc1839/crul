@@ -28,32 +28,38 @@ abstract class AbstractComplex<S : Species> : Complex<S> {
     /**
      *  Backing property for the subspecies in this complex.
      */
-    protected val _subspecies: MutableList<S>
+    protected val subspecies: MutableList<S>
 
     /**
      *  @param subspecies
      *      Subspecies within this complex.
      */
     constructor(subspecies: Collection<S>) {
-        this._subspecies = subspecies.toMutableList()
+        this.subspecies = subspecies.toMutableList()
     }
 
     /**
      *  Copy constructor.
      *
-     *  Subspecies are cloned.
-     *
      *  @param other
      *      Complex to copy.
+     *
+     *  @param deep
+     *      Whether subspecies are copied.
      */
-    constructor(other: AbstractComplex<S>) {
+    @JvmOverloads
+    constructor(other: AbstractComplex<S>, deep: Boolean = false) {
         @Suppress("UNCHECKED_CAST")
-        this._subspecies = other
-            ._subspecies
-            .map { it.clone() as S }
-            .toMutableList()
+        this.subspecies = if (deep) {
+            other
+                .subspecies
+                .map { it.clone() as S }
+                .toMutableList()
+        } else {
+            other.subspecies.toMutableList()
+        }
     }
 
     override fun iterator(): Iterator<S> =
-        _subspecies.iterator()
+        subspecies.iterator()
 }

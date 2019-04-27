@@ -41,12 +41,18 @@ abstract class AbstractFragment<A : Atom> :
     /**
      *  Copy constructor.
      *
-     *  Atoms are cloned.
+     *  @param other
+     *      Fragment to copy.
+     *
+     *  @param deep
+     *      Whether atoms are copied.
      */
-    constructor(other: AbstractFragment<A>): super(
-        @Suppress("UNCHECKED_CAST")
-        other
-            .atoms()
-            .map { it.clone() as A }
-    )
+    @JvmOverloads
+    constructor(
+        other: AbstractFragment<A>,
+        deep: Boolean = false
+    ): super(other, deep)
+
+    override fun containsAtom(atom: A): Boolean =
+        atoms().contains(atom)
 }

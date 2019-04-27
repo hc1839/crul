@@ -16,26 +16,21 @@
 
 package crul.chemistry.species
 
-import crul.hypergraph.Edge
-import crul.hypergraph.Graph
-import crul.hypergraph.GraphSystem
-import crul.hypergraph.Vertex
-
 /**
  *  Skeletal implementation of [MoleculeComplex].
  *
  *  @param A
- *      Type of atoms in this molecule.
+ *      Type of atoms.
  */
 abstract class AbstractMoleculeComplex<A : Atom> :
-    AbstractComplex<Molecule<A>>,
+    AbstractComplex<Species>,
     MoleculeComplex<A>
 {
     override val id: String
 
     /**
-     *  @param molecules
-     *      Molecules of the complex.
+     *  @param subspecies
+     *      Molecules and atoms of the complex.
      *
      *  @param id
      *      Identifier for this complex. It must conform to XML NCName
@@ -43,14 +38,36 @@ abstract class AbstractMoleculeComplex<A : Atom> :
      */
     @JvmOverloads
     constructor(
-        molecules: Collection<Molecule<A>>,
+        subspecies: Collection<Species>,
         id: String = crul.uuid.Generator.inNCName()
-    ): super(molecules)
+    ): super(subspecies)
     {
+        if (!subspecies.all { it is Molecule<*> || it is Atom }) {
+            throw IllegalArgumentException(
+                "Subspecies are not molecules or atoms."
+            )
+        }
+
         if (!crul.xml.Datatype.isNCName(id)) {
             throw IllegalArgumentException(
                 "ID does not conform to XML NCName production: $id"
             )
+        }
+
+        // Atom identifiers from all subspecies without removing redundancies.
+        val atomIds = subspecies.flatMap { species ->
+            species.atoms().map { atom ->
+                atom.id
+            }
+        }
+
+        for (atomId in atomIds.toSet()) {
+            if (atomIds.filter { it == atomId }.count() > 1) {
+                throw IllegalArgumentException(
+                    "Atom identifier exists in more than one subspecies: " +
+                    "$atomId"
+                )
+            }
         }
 
         this.id = id
@@ -59,7 +76,11 @@ abstract class AbstractMoleculeComplex<A : Atom> :
     /**
      *  Copy constructor.
      *
-     *  Molecules are cloned.
+     *  @param other
+     *      Molecule complex to copy.
+     *
+     *  @param deep
+     *      Whether molecules and atoms are copied.
      *
      *  @param id
      *      Identifier to use for the copied complex. It must conform to XML
@@ -68,8 +89,9 @@ abstract class AbstractMoleculeComplex<A : Atom> :
     @JvmOverloads
     constructor(
         other: AbstractMoleculeComplex<A>,
+        deep: Boolean = false,
         id: String = other.id
-    ): super(other)
+    ): super(other, deep)
     {
         if (!crul.xml.Datatype.isNCName(id)) {
             throw IllegalArgumentException(

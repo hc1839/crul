@@ -47,13 +47,16 @@ interface Complex<S : Species> :
     override fun atoms(): Collection<Atom> =
         iterator()
             .asSequence()
-            .flatMap { it.atoms().asSequence() }
             .toList()
+            .flatMap { it.atoms() }
+            .distinct()
 
-    /**
-     *  Clones this complex along with its subspecies.
-     */
-    abstract override fun clone(): Complex<S>
+    override fun clone(): Complex<S> =
+        @Suppress("UNCHECKED_CAST") (
+            super.clone() as Complex<S>
+        )
+
+    abstract override fun clone(deep: Boolean): Complex<S>
 
     /**
      *  Centroid of [atoms].

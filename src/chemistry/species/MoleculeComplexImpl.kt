@@ -19,24 +19,23 @@ package crul.chemistry.species
 /**
  *  Default implementation of [MoleculeComplex].
  *
- *  Only [MoleculeComplexBuilder] should be instantiating this class.
- *
  *  @param A
- *      Type of atoms in the molecules.
+ *      Type of atoms.
  */
 internal class MoleculeComplexImpl<A : Atom> : AbstractMoleculeComplex<A> {
     /**
-     *  @param molecules
-     *      Molecules of the complex.
+     *  @param subspecies
+     *      Molecules and atoms of the complex.
      *
      *  @param id
-     *      Identifier for this complex.
+     *      Identifier for this complex. It must conform to XML NCName
+     *      production.
      */
     @JvmOverloads
     constructor(
-        molecules: Collection<Molecule<A>>,
+        subspecies: Collection<Species>,
         id: String = crul.uuid.Generator.inNCName()
-    ): super(molecules, id)
+    ): super(subspecies, id)
 
     /**
      *  Copy constructor.
@@ -44,9 +43,10 @@ internal class MoleculeComplexImpl<A : Atom> : AbstractMoleculeComplex<A> {
     @JvmOverloads
     constructor(
         other: MoleculeComplexImpl<A>,
+        deep: Boolean = false,
         id: String = other.id
-    ): super(other, id)
+    ): super(other, deep, id)
 
-    override fun clone(): MoleculeComplexImpl<A> =
-        MoleculeComplexImpl(this)
+    override fun clone(deep: Boolean): MoleculeComplexImpl<A> =
+        MoleculeComplexImpl(this, deep)
 }

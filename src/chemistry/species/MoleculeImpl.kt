@@ -16,37 +16,28 @@
 
 package crul.chemistry.species
 
-import crul.hypergraph.Edge
-import crul.hypergraph.Graph
-import crul.hypergraph.GraphSystem
-import crul.hypergraph.Vertex
-
 /**
  *  Default implementation of [Molecule].
  *
  *  @param A
- *      Type of atoms in this molecule.
+ *      Type of atoms.
  */
 internal class MoleculeImpl<A : Atom> : AbstractMolecule<A> {
     /**
      *  @param bonds
      *      Bonds of the molecule.
      */
-    constructor(bonds: Collection<Bond<A>>): super(bonds)
-
-    /**
-     *  Constructs a singleton molecule.
-     *
-     *  @param atom
-     *      Atom acting as a singleton molecule.
-     */
-    constructor(atom: A): super(atom)
+    constructor(bonds: Set<Bond<A>>): super(bonds)
 
     /**
      *  Copy constructor.
      */
-    constructor(other: MoleculeImpl<A>): super(other)
+    @JvmOverloads
+    constructor(
+        other: MoleculeImpl<A>,
+        deep: Boolean = false
+    ): super(other, deep)
 
-    override fun clone(): MoleculeImpl<A> =
-        MoleculeImpl(this)
+    override fun clone(deep: Boolean): MoleculeImpl<A> =
+        MoleculeImpl(this, deep)
 }

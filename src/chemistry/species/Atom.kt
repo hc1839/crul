@@ -78,7 +78,10 @@ interface Atom : Species {
      */
     val id: String
 
-    abstract override fun clone(): Atom
+    override fun clone(): Atom =
+        super.clone() as Atom
+
+    abstract override fun clone(deep: Boolean): Atom
 
     companion object {
         /**

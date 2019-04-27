@@ -21,9 +21,21 @@ package crul.chemistry.species
  */
 interface Species : Cloneable {
     /**
-     *  Clones this species and, if any, subspecies.
+     *  Clones this species and any subspecies.
      */
-    public abstract override fun clone(): Species
+    public override fun clone(): Species =
+        clone(true)
+
+    /**
+     *  Clones this species.
+     *
+     *  @param deep
+     *      Whether subspecies are cloned.
+     *
+     *  @return
+     *      Clone of this species.
+     */
+    fun clone(deep: Boolean): Species
 
     /**
      *  Atoms in this species, or itself if [Atom].
