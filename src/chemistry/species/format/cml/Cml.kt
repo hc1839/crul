@@ -59,13 +59,13 @@ fun <A : Atom> MoleculeComplex<A>.toCml(
     toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao")
 ): String
 {
-    if (!fromLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
+    if (!fromLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."
         )
     }
 
-    if (!toLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
+    if (!toLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."
         )
@@ -199,13 +199,13 @@ fun MoleculeComplexBuilder<*>.parseInCml(
     toLengthUnit: UnitOfMeasure
 ): MoleculeComplexBuilder<*>
 {
-    if (!fromLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
+    if (!fromLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."
         )
     }
 
-    if (!toLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
+    if (!toLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."
         )

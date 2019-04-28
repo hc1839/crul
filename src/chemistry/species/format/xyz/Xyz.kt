@@ -53,13 +53,13 @@ fun <A : Atom> MoleculeComplex<A>.toXyz(
     separator: String = " "
 ): String
 {
-    if (!fromLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
+    if (!fromLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."
         )
     }
 
-    if (!toLengthUnit.isCommensurable(BaseDimension.LENGTH.siUnit)) {
+    if (!toLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."
         )

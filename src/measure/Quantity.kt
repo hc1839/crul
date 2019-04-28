@@ -141,17 +141,17 @@ class Quantity : Comparable<Quantity> {
         value(unitSystem.createUnit(dimension))
 
     /**
-     *  Whether the unit of `other` is commensurable with the unit of this
-     *  quantity.
+     *  Whether the unit of this quantity is commensurable with the unit of
+     *  another quantity.
      */
-    fun isCommensurable(other: Quantity) =
-        unit.isCommensurable(other.unit)
+    fun isCommensurableWith(other: Quantity) =
+        unit.isCommensurableWith(other.unit)
 
     /**
-     *  Whether `unit` is commensurable with the unit of this quantity.
+     *  Whether the unit of this quantity is commensurable with a given unit.
      */
-    fun isCommensurable(unit: UnitOfMeasure) =
-        unit.isCommensurable(this.unit)
+    fun isCommensurableWith(unit: UnitOfMeasure) =
+        unit.isCommensurableWith(this.unit)
 
     /**
      *  `n`-th power.

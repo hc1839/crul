@@ -182,9 +182,9 @@ class UnitOfMeasure {
     )
 
     /**
-     *  Whether `other` is commensurable with this unit.
+     *  Whether this unit is commensurable with another unit.
      */
-    fun isCommensurable(other: UnitOfMeasure): Boolean =
+    fun isCommensurableWith(other: UnitOfMeasure): Boolean =
         dimension == other.dimension
 
     /**
@@ -193,7 +193,7 @@ class UnitOfMeasure {
      *  `other` must be a commensurable unit.
      */
     fun relativeMagnitude(other: UnitOfMeasure): Double {
-        if (!isCommensurable(other)) {
+        if (!isCommensurableWith(other)) {
             throw IllegalArgumentException(
                 "Not a commensurable unit."
             )

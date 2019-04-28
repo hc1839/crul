@@ -58,7 +58,7 @@ class UnitSystemBuilder {
         baseUnit: UnitOfMeasure
     ): UnitSystemBuilder
     {
-        if (!baseUnit.isCommensurable(baseDim.siUnit)) {
+        if (!baseUnit.isCommensurableWith(baseDim.siUnit)) {
             throw IllegalArgumentException(
                 "New base unit is not commensurable with the " +
                 "corresponding SI base unit of '${baseDim.name}'."
