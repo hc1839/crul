@@ -64,7 +64,7 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
     /**
      *  Identifier for this complex.
      *
-     *  It must conform to XML NCName production.
+     *  It conforms to XML NCName production.
      */
     val id: String
 
@@ -109,6 +109,20 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
         )
 
     abstract override fun clone(deep: Boolean): MoleculeComplex<A>
+
+    /**
+     *  Clones this molecule complex using a given identifier.
+     *
+     *  @param deep
+     *      Whether molecules and atoms are cloned.
+     *
+     *  @param id
+     *      Identifier to use for the cloned molecule complex.
+     *
+     *  @return
+     *      Cloned molecule complex.
+     */
+    fun clone(deep: Boolean, id: String): MoleculeComplex<A>
 
     companion object {
         /**

@@ -49,4 +49,7 @@ internal class MoleculeComplexImpl<A : Atom> : AbstractMoleculeComplex<A> {
 
     override fun clone(deep: Boolean): MoleculeComplexImpl<A> =
         MoleculeComplexImpl(this, deep)
+
+    override fun clone(deep: Boolean, id: String): MoleculeComplexImpl<A> =
+        MoleculeComplexImpl(this, deep, id)
 }

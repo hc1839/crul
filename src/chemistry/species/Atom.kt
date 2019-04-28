@@ -83,6 +83,17 @@ interface Atom : Species {
 
     abstract override fun clone(deep: Boolean): Atom
 
+    /**
+     *  Clones this atom using a given identifier.
+     *
+     *  @param id
+     *      Identifier to use for the cloned atom.
+     *
+     *  @return
+     *      Cloned atom.
+     */
+    fun clone(id: String): Atom
+
     companion object {
         /**
          *  Constructs an [Atom].

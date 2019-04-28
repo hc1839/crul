@@ -44,9 +44,16 @@ internal class AtomImpl : AbstractAtom {
     /**
      *  Copy constructor.
      */
-    constructor(other: AtomImpl): super(other)
+    @JvmOverloads
+    constructor(
+        other: AtomImpl,
+        id: String = other.id
+    ): super(other, id)
 
     @Suppress("UNUSED_PARAMETER")
     override fun clone(deep: Boolean): Atom =
         AtomImpl(this)
+
+    override fun clone(id: String): Atom =
+        AtomImpl(this, id)
 }
