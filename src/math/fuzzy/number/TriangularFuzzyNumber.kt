@@ -16,17 +16,41 @@
 
 package crul.math.fuzzy.number
 
+import java.nio.ByteBuffer
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
+
+import crul.float.Comparison.nearlyEquals
 import crul.math.descriptive.EndpointInclusion
 import crul.math.descriptive.IntervalEndpoints
 import crul.math.descriptive.IntervalEndpointsSpec
 import crul.math.fuzzy.Interval
 import crul.math.fuzzy.Membership
+import crul.serialize.AvroSimple
+
+private object TriangularFuzzyNumberAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.math.fuzzy.number",
+       |    "name": "TriangularFuzzyNumber",
+       |    "fields": [
+       |        { "type": "double", "name": "peak" },
+       |        { "type": "double", "name": "lo" },
+       |        { "type": "double", "name": "hi" },
+       |        { "type": "string", "name": "endpoint_inclusion" }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
 
 /**
  *  Triangular fuzzy number (TFN).
  *
  *  @param peak
- *      Height of the triangle.
+ *      Peak (not height) of the TFN.
  *
  *  @param intervalEndpoints
  *      Endpoints of the TFN.
@@ -40,7 +64,7 @@ open class TriangularFuzzyNumber(
             intervalEndpoints,
             Membership<Double>({ element: Double ->
                 listOf(
-                    if (element == peak) {
+                    if (nearlyEquals(element, peak)) {
                         1.0
                     } else if (element < peak) {
                         (element - intervalEndpoints.lo) /
@@ -56,13 +80,13 @@ open class TriangularFuzzyNumber(
     )
 {
     /**
-     *  Uses an isosceles triangle for the TFN.
+     *  Constructs a TFN using an isosceles triangle.
      *
      *  @param peak
-     *      Height of the isosceles triangle.
+     *      Peak (not height) of the TFN.
      *
      *  @param base
-     *      Length of the base of the isosceles triangle.
+     *      Base length of the isosceles triangle.
      */
     constructor(peak: Double, base: Double): this(
         peak,
@@ -72,4 +96,73 @@ open class TriangularFuzzyNumber(
             EndpointInclusion.CLOSED
         )
     )
+
+    /**
+     *  Delegated deserialization constructor.
+     */
+    private constructor(avroRecord: GenericRecord): this(
+        avroRecord.get("peak") as Double,
+        IntervalEndpoints<Double>(
+            avroRecord.get("lo") as Double,
+            avroRecord.get("hi") as Double,
+            enumValueOf<EndpointInclusion>(
+                avroRecord.get("endpoint_inclusion").toString()
+            )
+        )
+    )
+
+    /**
+     *  Deserialization constructor.
+     */
+    protected constructor(avroData: ByteBuffer): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            TriangularFuzzyNumberAvsc.schema,
+            avroData
+        ).first()
+    )
+
+    companion object {
+        /**
+         *  Serializes a [TriangularFuzzyNumber] in Apache Avro.
+         *
+         *  @param obj
+         *      [TriangularFuzzyNumber] to serialize.
+         *
+         *  @return
+         *      Avro serialization of `obj`.
+         */
+        @JvmStatic
+        fun serialize(obj: TriangularFuzzyNumber): ByteBuffer {
+            val avroRecord = GenericData.Record(
+                TriangularFuzzyNumberAvsc.schema
+            )
+
+            avroRecord.put("peak", obj.peak)
+            avroRecord.put("lo", obj.intervalEndpoints.lo)
+            avroRecord.put("hi", obj.intervalEndpoints.hi)
+
+            avroRecord.put(
+                "endpoint_inclusion",
+                obj.intervalEndpoints.type.name
+            )
+
+            return AvroSimple.serializeData<GenericRecord>(
+                TriangularFuzzyNumberAvsc.schema,
+                listOf(avroRecord)
+            )
+        }
+
+        /**
+         *  Deserializes a [TriangularFuzzyNumber] in Apache Avro.
+         *
+         *  @param avroData
+         *      Serialized [TriangularFuzzyNumber] as returned by [serialize].
+         *
+         *  @return
+         *      Deserialized [TriangularFuzzyNumber].
+         */
+        @JvmStatic
+        fun deserialize(avroData: ByteBuffer): TriangularFuzzyNumber =
+            TriangularFuzzyNumber(avroData)
+    }
 }
