@@ -16,6 +16,35 @@
 
 package crul.chemistry.species
 
+import java.nio.ByteBuffer
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
+
+import crul.serialize.AvroSimple
+
+private object MoleculeComplexAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.chemistry.species",
+       |    "name": "MoleculeComplex",
+       |    "fields": [
+       |        {
+       |            "type": { "type": "array", "items": "bytes" },
+       |            "name": "molecule_subspecies"
+       |        },
+       |        {
+       |            "type": { "type": "array", "items": "bytes" },
+       |            "name": "atom_subspecies"
+       |        },
+       |        { "type": "string", "name": "id" }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
+
 /**
  *  Interface for a complex of molecules and atoms.
  *
@@ -80,4 +109,126 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
         )
 
     abstract override fun clone(deep: Boolean): MoleculeComplex<A>
+
+    companion object {
+        /**
+         *  Constructs a [MoleculeComplex].
+         *
+         *  @param subspecies
+         *      Molecules and atoms of the complex.
+         *
+         *  @param id
+         *      Identifier for this complex. It must conform to XML NCName
+         *      production.
+         */
+        @JvmStatic
+        fun <A : Atom> newInstance(
+            subspecies: Collection<Species>,
+            id: String
+        ): MoleculeComplex<A> =
+            MoleculeComplexImpl(subspecies, id)
+
+        /**
+         *  Constructs a [MoleculeComplex] using a UUID Version 4 as its
+         *  identifier.
+         *
+         *  @param subspecies
+         *      Molecules and atoms of the complex.
+         */
+        @JvmStatic
+        fun <A : Atom> newInstance(
+            subspecies: Collection<Species>
+        ): MoleculeComplex<A> =
+            MoleculeComplexImpl(
+                subspecies,
+                crul.uuid.Generator.inNCName()
+            )
+
+        /**
+         *  Serializes a [MoleculeComplex] in Apache Avro.
+         *
+         *  @param obj
+         *      [MoleculeComplex] to serialize.
+         *
+         *  @param atomSerializer
+         *      [Atom] serializer.
+         *
+         *  @return
+         *      Avro serialization of `obj`.
+         */
+        @JvmStatic
+        fun <A : Atom> serialize(
+            obj: MoleculeComplex<A>,
+            atomSerializer: (A) -> ByteBuffer
+        ): ByteBuffer
+        {
+            val avroRecord = GenericData.Record(
+                MoleculeComplexAvsc.schema
+            )
+
+            avroRecord.put(
+                "molecule_subspecies",
+                obj.molecules().map {
+                    Molecule.serialize(it, atomSerializer)
+                }
+            )
+
+            avroRecord.put(
+                "atom_subspecies",
+                obj
+                    .filter { it is Atom }
+                    .map {
+                        @Suppress("UNCHECKED_CAST")
+                        atomSerializer.invoke(it as A)
+                    }
+            )
+
+            avroRecord.put("id", obj.id)
+
+            return AvroSimple.serializeData<GenericRecord>(
+                MoleculeComplexAvsc.schema,
+                listOf(avroRecord)
+            )
+        }
+
+        /**
+         *  Deserializes a [MoleculeComplex] in Apache Avro.
+         *
+         *  @param avroData
+         *      Serialized [MoleculeComplex] as returned by [serialize].
+         *
+         *  @param atomDeserializer
+         *      [Atom] deserializer.
+         *
+         *  @return
+         *      Deserialized [MoleculeComplex].
+         */
+        @JvmStatic
+        fun <A : Atom> deserialize(
+            avroData: ByteBuffer,
+            atomDeserializer: (ByteBuffer) -> A
+        ): MoleculeComplex<A>
+        {
+            val avroRecord = AvroSimple.deserializeData<GenericRecord>(
+                MoleculeComplexAvsc.schema,
+                avroData
+            ).first()
+
+            val moleculeSubspecies = @Suppress("UNCHECKED_CAST") (
+                avroRecord.get("molecule_subspecies") as List<ByteBuffer>
+            ).map {
+                Molecule.deserialize(it, atomDeserializer)
+            }
+
+            val atomSubspecies = @Suppress("UNCHECKED_CAST") (
+                avroRecord.get("atom_subspecies") as List<ByteBuffer>
+            ).map {
+                atomDeserializer.invoke(it)
+            }
+
+            val id = avroRecord.get("id").toString()
+
+            return newInstance(moleculeSubspecies + atomSubspecies, id)
+        }
+    }
 }

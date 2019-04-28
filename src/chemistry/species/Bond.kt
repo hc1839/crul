@@ -16,13 +16,33 @@
 
 package crul.chemistry.species
 
+import java.nio.ByteBuffer
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
+
+import crul.serialize.AvroSimple
+
+private object BondAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.chemistry.species",
+       |    "name": "Bond",
+       |    "fields": [
+       |        { "type": "bytes", "name": "atom1" },
+       |        { "type": "bytes", "name": "atom2" },
+       |        { "type": "string", "name": "order" }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
+
 /**
  *  Interface for a bond in a molecule.
  *
- *  Atoms in a bond must not be equal to each other and must not have the same
- *  name. Semantically, the order of the atoms is not important. Technically,
- *  the order of the given atoms is preserved, and the atoms are returned as
- *  such.
+ *  Atoms in a bond are not equal to each other and have different identifiers.
  *
  *  To construct an instance of this class, use [newInstance].
  *
@@ -32,9 +52,6 @@ package crul.chemistry.species
 interface Bond<A : Atom> : Fragment<A> {
     /**
      *  Bond order as an aribtrary string.
-     *
-     *  Whether it is updated when the bond order is changed in the parent
-     *  complex is implementation-dependent.
      */
     val order: String
 
@@ -46,16 +63,15 @@ interface Bond<A : Atom> : Fragment<A> {
     abstract override fun hashCode(): Int
 
     /**
-     *  Bonds are equal if and only if the bond order and corresponding atoms
-     *  are equal.
-     *
-     *  Order of the atoms in each bond is not significant.
+     *  Bonds are equal if and only if the atoms (without regards to their
+     *  order) and bond order are equal.
      */
     abstract override fun equals(other: Any?): Boolean
 
     override fun clone(): Bond<A> =
-        @Suppress("UNCHECKED_CAST")
-        super.clone() as Bond<A>
+        @Suppress("UNCHECKED_CAST") (
+            super.clone() as Bond<A>
+        )
 
     abstract override fun clone(deep: Boolean): Bond<A>
 
@@ -63,8 +79,8 @@ interface Bond<A : Atom> : Fragment<A> {
         /**
          *  Constructs a [Bond].
          *
-         *  If the given atoms are equal or have the same name, an exception is
-         *  raised.
+         *  If the given atoms are equal or have the same identifier, an
+         *  exception is raised.
          *
          *  @param atom1
          *      First atom.
@@ -80,10 +96,77 @@ interface Bond<A : Atom> : Fragment<A> {
             atom1: A,
             atom2: A,
             order: String
-        ): Bond<A> = BondImpl(
-            atom1,
-            atom2,
-            order
-        )
+        ): Bond<A> =
+            BondImpl(atom1, atom2, order)
+
+        /**
+         *  Serializes a [Bond] in Apache Avro.
+         *
+         *  @param obj
+         *      [Bond] to serialize.
+         *
+         *  @param atomSerializer
+         *      [Atom] serializer.
+         *
+         *  @return
+         *      Avro serialization of `obj`.
+         */
+        @JvmStatic
+        fun <A : Atom> serialize(
+            obj: Bond<A>,
+            atomSerializer: (A) -> ByteBuffer
+        ): ByteBuffer
+        {
+            val avroRecord = GenericData.Record(
+                BondAvsc.schema
+            )
+
+            val (atom1, atom2) = obj.toAtomPair()
+
+            avroRecord.put("atom1", atomSerializer.invoke(atom1))
+            avroRecord.put("atom2", atomSerializer.invoke(atom2))
+            avroRecord.put("order", obj.order)
+
+            return AvroSimple.serializeData<GenericRecord>(
+                BondAvsc.schema,
+                listOf(avroRecord)
+            )
+        }
+
+        /**
+         *  Deserializes a [Bond] in Apache Avro.
+         *
+         *  @param avroData
+         *      Serialized [Bond] as returned by [serialize].
+         *
+         *  @param atomDeserializer
+         *      [Atom] deserializer.
+         *
+         *  @return
+         *      Deserialized [Bond].
+         */
+        @JvmStatic
+        fun <A : Atom> deserialize(
+            avroData: ByteBuffer,
+            atomDeserializer: (ByteBuffer) -> A
+        ): Bond<A>
+        {
+            val avroRecord = AvroSimple.deserializeData<GenericRecord>(
+                BondAvsc.schema,
+                avroData
+            ).first()
+
+            val atom1 = atomDeserializer.invoke(
+                avroRecord.get("atom1") as ByteBuffer
+            )
+
+            val atom2 = atomDeserializer.invoke(
+                avroRecord.get("atom2") as ByteBuffer
+            )
+
+            val order = avroRecord.get("order").toString()
+
+            return newInstance(atom1, atom2, order)
+        }
     }
 }

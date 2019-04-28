@@ -16,6 +16,30 @@
 
 package crul.chemistry.species
 
+import java.nio.ByteBuffer
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
+
+import crul.serialize.AvroSimple
+
+private object MoleculeAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.chemistry.species",
+       |    "name": "Molecule",
+       |    "fields": [
+       |        {
+       |            "type": { "type": "array", "items": "bytes" },
+       |            "name": "bonds"
+       |        }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
+
 /**
  *  Interface for a molecule, which is a non-empty [Fragment] of bonds with
  *  unique atom names and has every pair of atoms connected by bonds, directly
@@ -97,5 +121,72 @@ interface Molecule<A : Atom> : Fragment<A> {
         @JvmStatic
         fun <A : Atom> newInstance(bonds: Set<Bond<A>>): Molecule<A> =
             MoleculeImpl(bonds)
+
+        /**
+         *  Serializes a [Molecule] in Apache Avro.
+         *
+         *  @param obj
+         *      [Molecule] to serialize.
+         *
+         *  @param atomSerializer
+         *      [Atom] serializer.
+         *
+         *  @return
+         *      Avro serialization of `obj`.
+         */
+        @JvmStatic
+        fun <A : Atom> serialize(
+            obj: Molecule<A>,
+            atomSerializer: (A) -> ByteBuffer
+        ): ByteBuffer
+        {
+            val avroRecord = GenericData.Record(
+                MoleculeAvsc.schema
+            )
+
+            avroRecord.put(
+                "bonds",
+                obj.bonds().map {
+                    Bond.serialize(it, atomSerializer)
+                }
+            )
+
+            return AvroSimple.serializeData<GenericRecord>(
+                MoleculeAvsc.schema,
+                listOf(avroRecord)
+            )
+        }
+
+        /**
+         *  Deserializes a [Molecule] in Apache Avro.
+         *
+         *  @param avroData
+         *      Serialized [Molecule] as returned by [serialize].
+         *
+         *  @param atomDeserializer
+         *      [Atom] deserializer.
+         *
+         *  @return
+         *      Deserialized [Molecule].
+         */
+        @JvmStatic
+        fun <A : Atom> deserialize(
+            avroData: ByteBuffer,
+            atomDeserializer: (ByteBuffer) -> A
+        ): Molecule<A>
+        {
+            val avroRecord = AvroSimple.deserializeData<GenericRecord>(
+                MoleculeAvsc.schema,
+                avroData
+            ).first()
+
+            val bonds = @Suppress("UNCHECKED_CAST") (
+                avroRecord.get("bonds") as List<ByteBuffer>
+            ).map {
+                Bond.deserialize(it, atomDeserializer)
+            }
+
+            return newInstance(bonds.toSet())
+        }
     }
 }

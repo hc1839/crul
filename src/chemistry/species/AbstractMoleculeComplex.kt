@@ -16,6 +16,35 @@
 
 package crul.chemistry.species
 
+import java.nio.ByteBuffer
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
+
+import crul.serialize.AvroSimple
+
+private object AbstractMoleculeComplexAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.chemistry.species",
+       |    "name": "AbstractMoleculeComplex",
+       |    "fields": [
+       |        {
+       |            "type": { "type": "array", "items": "bytes" },
+       |            "name": "molecule_subspecies"
+       |        },
+       |        {
+       |            "type": { "type": "array", "items": "bytes" },
+       |            "name": "atom_subspecies"
+       |        },
+       |        { "type": "string", "name": "id" }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
+
 /**
  *  Skeletal implementation of [MoleculeComplex].
  *
@@ -102,8 +131,88 @@ abstract class AbstractMoleculeComplex<A : Atom> :
         this.id = id
     }
 
+    /**
+     *  Delegated deserialization constructor.
+     */
+    @Suppress("UNCHECKED_CAST")
+    private constructor(
+        avroRecord: GenericRecord,
+        atomDeserializer: (ByteBuffer) -> A
+    ): this(
+        (avroRecord.get("molecules_subspecies") as List<ByteBuffer>).map {
+            Molecule.deserialize(it, atomDeserializer)
+        } +
+        (avroRecord.get("atom_subspecies") as List<ByteBuffer>).map {
+            atomDeserializer.invoke(it)
+        },
+        avroRecord.get("id").toString()
+    )
+
+    /**
+     *  Deserialization constructor.
+     */
+    protected constructor(
+        avroData: ByteBuffer,
+        atomDeserializer: (ByteBuffer) -> A
+    ): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            AbstractMoleculeComplexAvsc.schema,
+            avroData
+        ).first(),
+        atomDeserializer
+    )
+
     override fun getMoleculeWithAtom(atom: A): Molecule<A>? =
         molecules()
             .filter { it.containsAtom(atom) }
             .singleOrNull()
+
+    companion object {
+        /**
+         *  Serializes a [AbstractMoleculeComplex] in Apache Avro.
+         *
+         *  @param obj
+         *      [AbstractMoleculeComplex] to serialize.
+         *
+         *  @param atomSerializer
+         *      [Atom] serializer.
+         *
+         *  @return
+         *      Avro serialization of `obj`.
+         */
+        @JvmStatic
+        fun <A : Atom> serialize(
+            obj: AbstractMoleculeComplex<A>,
+            atomSerializer: (A) -> ByteBuffer
+        ): ByteBuffer
+        {
+            val avroRecord = GenericData.Record(
+                AbstractMoleculeComplexAvsc.schema
+            )
+
+            avroRecord.put(
+                "molecule_subspecies",
+                obj.molecules().map {
+                    Molecule.serialize(it, atomSerializer)
+                }
+            )
+
+            avroRecord.put(
+                "atom_subspecies",
+                obj
+                    .filter { it is Atom }
+                    .map {
+                        @Suppress("UNCHECKED_CAST")
+                        atomSerializer.invoke(it as A)
+                    }
+            )
+
+            avroRecord.put("id", obj.id)
+
+            return AvroSimple.serializeData<GenericRecord>(
+                AbstractMoleculeComplexAvsc.schema,
+                listOf(avroRecord)
+            )
+        }
+    }
 }

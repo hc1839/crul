@@ -16,8 +16,29 @@
 
 package crul.chemistry.species
 
-import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
+import java.nio.ByteBuffer
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
+
+import crul.serialize.AvroSimple
+
+private object AbstractFragmentAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.chemistry.species",
+       |    "name": "AbstractFragment",
+       |    "fields": [
+       |        {
+       |            "type": { "type": "array", "items": "bytes" },
+       |            "name": "atoms"
+       |        }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
 
 /**
  *  Skeletal implementation of [Fragment].
@@ -53,6 +74,71 @@ abstract class AbstractFragment<A : Atom> :
         deep: Boolean = false
     ): super(other, deep)
 
+    /**
+     *  Delegated deserialization constructor.
+     */
+    private constructor(
+        avroRecord: GenericRecord,
+        atomDeserializer: (ByteBuffer) -> A
+    ): this(
+        @Suppress("UNCHECKED_CAST") (
+            avroRecord.get("atoms") as List<ByteBuffer>
+        ).map {
+            atomDeserializer.invoke(it)
+        }
+    )
+
+    /**
+     *  Deserialization constructor.
+     */
+    protected constructor(
+        avroData: ByteBuffer,
+        atomDeserializer: (ByteBuffer) -> A
+    ): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            AbstractFragmentAvsc.schema,
+            avroData
+        ).first(),
+        atomDeserializer
+    )
+
     override fun containsAtom(atom: A): Boolean =
         atoms().contains(atom)
+
+    companion object {
+        /**
+         *  Serializes an [AbstractFragment] in Apache Avro.
+         *
+         *  @param obj
+         *      [AbstractFragment] to serialize.
+         *
+         *  @param atomSerializer
+         *      [Atom] serializer.
+         *
+         *  @return
+         *      Avro serialization of `obj`.
+         */
+        @JvmStatic
+        fun <A : Atom> serialize(
+            obj: AbstractFragment<A>,
+            atomSerializer: (A) -> ByteBuffer
+        ): ByteBuffer
+        {
+            val avroRecord = GenericData.Record(
+                AbstractFragmentAvsc.schema
+            )
+
+            avroRecord.put(
+                "atoms",
+                obj.atoms().map {
+                    atomSerializer.invoke(it)
+                }
+            )
+
+            return AvroSimple.serializeData<GenericRecord>(
+                AbstractFragmentAvsc.schema,
+                listOf(avroRecord)
+            )
+        }
+    }
 }
