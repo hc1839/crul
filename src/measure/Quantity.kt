@@ -18,14 +18,30 @@ package crul.measure
 
 import java.nio.ByteBuffer
 import kotlin.math.pow
-import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
 
 import crul.measure.dimension.BaseDimension
 import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
 import crul.measure.unit.UnitSystem
-import crul.serialize.MessagePackSimple
+import crul.serialize.AvroSimple
+
+private object QuantityAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.measure",
+       |    "name": "Quantity",
+       |    "fields": [
+       |        { "type": "double", "name": "value" },
+       |        { "type": "bytes", "name": "unit" }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
 
 /**
  *  Quantity containing a numerical value and a unit.
@@ -67,34 +83,23 @@ class Quantity : Comparable<Quantity> {
     constructor(value: Double): this(value, UnitOfMeasure())
 
     /**
-     *  Initializes from a MessagePack map.
-     *
-     *  @param msgpack
-     *      MessagePack map for the entire inheritance tree.
-     *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
+     *  Delegated deserialization constructor.
      */
-    private constructor(
-        @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray,
-        unpackedMap: Map<String, Value>
-    ): this(
-        unpackedMap["value"]!!.asFloatValue().toDouble(),
-        UnitOfMeasure(
-            unpackedMap["unit"]!!.asBinaryValue().asByteArray()
+    private constructor(avroRecord: GenericRecord): this(
+        avroRecord.get("value") as Double,
+        UnitOfMeasure.deserialize(
+            avroRecord.get("unit") as ByteBuffer
         )
     )
 
     /**
      *  Deserialization constructor.
      */
-    protected constructor(msgpack: ByteArray): this(
-        msgpack,
-        MessagePackSimple.getInnerMap(
-            msgpack,
-            Quantity::class.qualifiedName!!
-        )
+    protected constructor(avroData: ByteBuffer): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            QuantityAvsc.schema,
+            avroData
+        ).first()
     )
 
     /**
@@ -253,65 +258,44 @@ class Quantity : Comparable<Quantity> {
         }
 
         /**
-         *  Serializes a [Quantity] in MessagePack.
+         *  Serializes a [Quantity] in Apache Avro.
          *
          *  @param obj
          *      [Quantity] to serialize.
          *
          *  @return
-         *      MessagePack serialization of `obj`.
+         *      Avro serialization of `obj`.
          */
         @JvmStatic
         fun serialize(obj: Quantity): ByteBuffer {
-            val packer = MessagePack.newDefaultBufferPacker()
+            val avroRecord = GenericData.Record(
+                QuantityAvsc.schema
+            )
 
-            packer.packMapHeader(1)
+            avroRecord.put("value", obj.value)
 
-            packer
-                .packString(obj::class.qualifiedName)
-                .packMapHeader(2)
+            avroRecord.put(
+                "unit",
+                UnitOfMeasure.serialize(obj.unit)
+            )
 
-            packer
-                .packString("value")
-                .packDouble(obj.value)
-
-            val unitAsByteBuffer = UnitOfMeasure.serialize(obj.unit)
-            val unitAsBytes = ByteArray(
-                unitAsByteBuffer.limit() -
-                unitAsByteBuffer.position()
-            ) {
-                unitAsByteBuffer.get()
-            }
-
-            packer
-                .packString("unit")
-                .packBinaryHeader(unitAsBytes.count())
-
-            packer.writePayload(unitAsBytes)
-
-            packer.close()
-
-            return ByteBuffer.wrap(packer.toByteArray())
+            return AvroSimple.serializeData<GenericRecord>(
+                QuantityAvsc.schema,
+                listOf(avroRecord)
+            )
         }
 
         /**
-         *  Deserializes a [Quantity] in MessagePack.
+         *  Deserializes a [Quantity] in Apache Avro.
          *
-         *  @param msgpack
+         *  @param avroData
          *      Serialized [Quantity] as returned by [serialize].
          *
          *  @return
          *      Deserialized [Quantity].
          */
         @JvmStatic
-        fun deserialize(msgpack: ByteBuffer): Quantity {
-            val msgpackByteArray = ByteArray(
-                msgpack.limit() - msgpack.position()
-            ) {
-                msgpack.get()
-            }
-
-            return Quantity(msgpackByteArray)
-        }
+        fun deserialize(avroData: ByteBuffer): Quantity =
+            Quantity(avroData)
     }
 }

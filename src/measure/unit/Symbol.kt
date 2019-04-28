@@ -20,8 +20,8 @@ import com.google.gson.Gson
 import java.io.File
 import java.nio.ByteBuffer
 import kotlin.math.pow
-import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
 
 import crul.hierarchy.tree.Node
 import crul.measure.dimension.BaseDimension
@@ -29,7 +29,7 @@ import crul.measure.dimension.Dimension
 import crul.measure.unit.parse.Production
 import crul.measure.unit.parse.TokenIterator
 import crul.parse.shiftreduce.Actuator
-import crul.serialize.MessagePackSimple
+import crul.serialize.AvroSimple
 
 /**
  *  Storage information for UCUM symbols.
@@ -97,6 +97,25 @@ object UnitPrefix {
     }
 }
 
+private object UnitOfMeasureAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.measure.unit",
+       |    "name": "UnitOfMeasure",
+       |    "fields": [
+       |        { "type": "double", "name": "magnitude" },
+       |        {
+       |            "type": { "type": "map", "values": "int" },
+       |            "name": "dimension"
+       |        }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
+
 /**
  *  Unit of measure according to the Unified Code for Units of Measure (UCUM).
  *
@@ -118,16 +137,42 @@ class UnitOfMeasure {
      *  Base unit raised to the power of 1.
      */
     constructor(baseUnit: BaseUnit) {
-        magnitude = 1.0
-        _dimension[baseUnit] = 1
+        this.magnitude = 1.0
+        this._dimension[baseUnit] = 1
     }
 
     /**
      *  Dimensionless unit.
      */
     constructor() {
-        magnitude = 1.0
+        this.magnitude = 1.0
     }
+
+    /**
+     *  Delegated deserialization constructor.
+     */
+    private constructor(avroRecord: GenericRecord) {
+        this.magnitude = avroRecord.get("magnitude") as Double
+
+        this._dimension.putAll(
+            @Suppress("UNCHECKED_CAST") (
+                avroRecord.get("dimension") as Map<*, Int>
+            )
+            .mapKeys { (baseUnitCs, _) ->
+                BaseUnit.getByCs(baseUnitCs.toString())!!
+            }
+        )
+    }
+
+    /**
+     *  Deserialization constructor.
+     */
+    constructor(avroData: ByteBuffer): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            UnitOfMeasureAvsc.schema,
+            avroData
+        ).first()
+    )
 
     /**
      *  Base units associated with their exponents.
@@ -136,50 +181,6 @@ class UnitOfMeasure {
      */
     val dimension: Map<BaseUnit, Int>
         get() = _dimension.filter { (_, exp) -> exp != 0 }
-
-    /**
-     *  Initializes from a MessagePack map.
-     *
-     *  @param msgpack
-     *      MessagePack map for the entire inheritance tree.
-     *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
-     */
-    private constructor(
-        @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray,
-        unpackedMap: Map<String, Value>
-    ) {
-        this.magnitude =
-            unpackedMap["magnitude"]!!.asFloatValue().toDouble()
-
-        this._dimension.putAll(
-            unpackedMap["dimension"]!!
-                .asMapValue()
-                .map()
-                .map { (key, value) ->
-                    val baseUnit = BaseUnit
-                        .getByCs(key.asStringValue().toString())!!
-
-                    val exp = value.asIntegerValue().toInt()
-
-                    Pair(baseUnit, exp)
-                }
-                .toMap()
-        )
-    }
-
-    /**
-     *  Deserialization constructor.
-     */
-    constructor(msgpack: ByteArray): this(
-        msgpack,
-        MessagePackSimple.getInnerMap(
-            msgpack,
-            UnitOfMeasure::class.qualifiedName!!
-        )
-    )
 
     /**
      *  Whether this unit is commensurable with another unit.
@@ -416,62 +417,46 @@ class UnitOfMeasure {
             }
 
         /**
-         *  Serializes a [UnitOfMeasure] in MessagePack.
+         *  Serializes a [UnitOfMeasure] in Apache Avro.
          *
          *  @param obj
          *      [UnitOfMeasure] to serialize.
          *
          *  @return
-         *      MessagePack serialization of `obj`.
+         *      Avro serialization of `obj`.
          */
         @JvmStatic
         fun serialize(obj: UnitOfMeasure): ByteBuffer {
-            val packer = MessagePack.newDefaultBufferPacker()
+            val avroRecord = GenericData.Record(
+                UnitOfMeasureAvsc.schema
+            )
 
-            packer.packMapHeader(1)
+            avroRecord.put("magnitude", obj.magnitude)
 
-            packer
-                .packString(obj::class.qualifiedName)
-                .packMapHeader(2)
+            avroRecord.put(
+                "dimension",
+                obj.dimension.mapKeys { (baseUnit, _) ->
+                    baseUnit.cs
+                }
+            )
 
-            packer
-                .packString("magnitude")
-                .packDouble(obj.magnitude)
-
-            val dimensionBuf = obj.dimension
-
-            packer
-                .packString("dimension")
-                .packMapHeader(dimensionBuf.count())
-
-            for ((baseUnit, exp) in dimensionBuf) {
-                packer.packString(baseUnit.cs)
-                packer.packInt(exp)
-            }
-
-            packer.close()
-
-            return ByteBuffer.wrap(packer.toByteArray())
+            return AvroSimple.serializeData<GenericRecord>(
+                UnitOfMeasureAvsc.schema,
+                listOf(avroRecord)
+            )
         }
 
         /**
-         *  Deserializes a [UnitOfMeasure] in MessagePack.
+         *  Deserializes a [UnitOfMeasure] in Apache Avro.
          *
-         *  @param msgpack
+         *  @param avroData
          *      Serialized [UnitOfMeasure] as returned by [serialize].
          *
          *  @return
          *      Deserialized [UnitOfMeasure].
          */
         @JvmStatic
-        fun deserialize(msgpack: ByteBuffer): UnitOfMeasure {
-            val msgpackByteArray = ByteArray(
-                msgpack.limit() - msgpack.position()
-            ) {
-                msgpack.get()
-            }
-
-            return UnitOfMeasure(msgpackByteArray)
-        }
+        fun deserialize(avroData: ByteBuffer): UnitOfMeasure =
+            UnitOfMeasure(avroData)
     }
 }

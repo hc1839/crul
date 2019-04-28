@@ -17,13 +17,31 @@
 package crul.measure.unit
 
 import java.nio.ByteBuffer
-import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
+import org.apache.avro.Schema
+import org.apache.avro.generic.*
 
 import crul.measure.dimension.BaseDimension
 import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
-import crul.serialize.MessagePackSimple
+import crul.serialize.AvroSimple
+
+private object UnitSystemAvsc {
+    val schema: Schema = Schema.Parser().parse(
+        """
+       |{
+       |    "type": "record",
+       |    "namespace": "crul.measure.unit",
+       |    "name": "UnitSystem",
+       |    "fields": [
+       |        {
+       |            "type": { "type": "map", "values": "bytes" },
+       |            "name": "base_units"
+       |        }
+       |    ]
+       |}
+        """.trimMargin()
+    )
+}
 
 /**
  *  Immutable system of units.
@@ -62,44 +80,29 @@ class UnitSystem {
     }
 
     /**
-     *  Initializes from a MessagePack map.
-     *
-     *  @param msgpack
-     *      MessagePack map for the entire inheritance tree.
-     *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
+     *  Delegated deserialization constructor.
      */
-    private constructor(
-        @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray,
-        unpackedMap: Map<String, Value>
-    ): this(
-        unpackedMap["base-units"]!!
-            .asMapValue()
-            .map()
-            .map { (key, value) ->
-                val baseDim = BaseDimension
-                    .getBySymbol(key.asStringValue().toString())!!
-
-                val baseUnit = UnitOfMeasure(
-                    value.asBinaryValue().asByteArray()
-                )
-
-                Pair(baseDim, baseUnit)
-            }
-            .toMap()
+    private constructor(avroRecord: GenericRecord): this(
+        @Suppress("UNCHECKED_CAST") (
+            avroRecord.get("base_units") as Map<*, ByteBuffer>
+        )
+        .map { (baseDimSymbol, baseUnitBuf) ->
+            Pair(
+                BaseDimension.getBySymbol(baseDimSymbol.toString())!!,
+                UnitOfMeasure.deserialize(baseUnitBuf)
+            )
+        }
+        .toMap()
     )
 
     /**
      *  Deserialization constructor.
      */
-    constructor(msgpack: ByteArray): this(
-        msgpack,
-        MessagePackSimple.getInnerMap(
-            msgpack,
-            UnitSystem::class.qualifiedName!!
-        )
+    constructor(avroData: ByteBuffer): this(
+        AvroSimple.deserializeData<GenericRecord>(
+            UnitSystemAvsc.schema,
+            avroData
+        ).first()
     )
 
     override fun hashCode(): Int =
@@ -141,68 +144,47 @@ class UnitSystem {
 
     companion object {
         /**
-         *  Serializes a [UnitSystem] in MessagePack.
+         *  Serializes a [UnitSystem] in Apache Avro.
          *
          *  @param obj
          *      [UnitSystem] to serialize.
          *
          *  @return
-         *      MessagePack serialization of `obj`.
+         *      Avro serialization of `obj`.
          */
         @JvmStatic
         fun serialize(obj: UnitSystem): ByteBuffer {
-            val packer = MessagePack.newDefaultBufferPacker()
+            val avroRecord = GenericData.Record(
+                UnitSystemAvsc.schema
+            )
 
-            packer.packMapHeader(1)
+            avroRecord.put(
+                "base_units",
+                obj.baseUnits.map { (baseDim, baseUnit) ->
+                    Pair(
+                        baseDim.symbol,
+                        UnitOfMeasure.serialize(baseUnit)
+                    )
+                }.toMap()
+            )
 
-            packer
-                .packString(obj::class.qualifiedName)
-                .packMapHeader(1)
-
-            packer
-                .packString("base-units")
-                .packMapHeader(obj.baseUnits.count())
-
-            for ((baseDim, baseUnit) in obj.baseUnits) {
-                val baseUnitAsByteBuffer = UnitOfMeasure.serialize(baseUnit)
-
-                val baseUnitAsBytes = ByteArray(
-                    baseUnitAsByteBuffer.limit() -
-                    baseUnitAsByteBuffer.position()
-                ) {
-                    baseUnitAsByteBuffer.get()
-                }
-
-                packer
-                    .packString(baseDim.symbol)
-                    .packBinaryHeader(baseUnitAsBytes.count())
-
-                packer.writePayload(baseUnitAsBytes)
-            }
-
-            packer.close()
-
-            return ByteBuffer.wrap(packer.toByteArray())
+            return AvroSimple.serializeData<GenericRecord>(
+                UnitSystemAvsc.schema,
+                listOf(avroRecord)
+            )
         }
 
         /**
-         *  Deserializes a [UnitSystem] in MessagePack.
+         *  Deserializes a [UnitSystem] in Apache Avro.
          *
-         *  @param msgpack
+         *  @param avroData
          *      Serialized [UnitSystem] as returned by [serialize].
          *
          *  @return
          *      Deserialized [UnitSystem].
          */
         @JvmStatic
-        fun deserialize(msgpack: ByteBuffer): UnitSystem {
-            val msgpackByteArray = ByteArray(
-                msgpack.limit() - msgpack.position()
-            ) {
-                msgpack.get()
-            }
-
-            return UnitSystem(msgpackByteArray)
-        }
+        fun deserialize(avroData: ByteBuffer): UnitSystem =
+            UnitSystem(avroData)
     }
 }
