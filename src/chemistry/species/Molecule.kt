@@ -55,8 +55,8 @@ interface Molecule<A : Atom> : Fragment<A> {
     /**
      *  Bonds in this molecule.
      *
-     *  Bonds are unique and are in the same order between iterations. Bonds in
-     *  the collection are not guaranteed to be in any particular order. A
+     *  Bonds are unique. Bonds are not necessarily in the same order between
+     *  calls and are not guaranteed to be in any particular order. A
      *  subinterface or an implementation, however, is allowed to make
      *  specified guarantees.
      */
@@ -72,7 +72,7 @@ interface Molecule<A : Atom> : Fragment<A> {
      *  raised.
      *
      *  @return
-     *      The given atom is the first atom in the returned set of [Bond].
+     *      Bonds that the given atom is participating in.
      */
     fun getBondsByAtom(atom: A): Set<Bond<A>> =
         bonds()
@@ -80,7 +80,7 @@ interface Molecule<A : Atom> : Fragment<A> {
             .toSet()
 
     /**
-     *  Gets the bond between two atoms, or `null` if there is no such bond.
+     *  Gets the bond between two atoms.
      *
      *  By default, [bonds] is used. An implementation may override this for a
      *  more efficient method.
@@ -95,7 +95,8 @@ interface Molecule<A : Atom> : Fragment<A> {
      *      Second atom.
      *
      *  @return
-     *      The atoms in the returned bond are in the same order as given.
+     *      Bond that the given atoms are participating in, or `null` if there
+     *      is no bond between the two atoms.
      */
     fun getBond(atom1: A, atom2: A): Bond<A>? =
         bonds()

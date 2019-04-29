@@ -162,9 +162,24 @@ abstract class AbstractMoleculeComplex<A : Atom> :
         atomDeserializer
     )
 
-    override fun getMoleculeWithAtom(atom: A): Molecule<A>? =
-        molecules()
-            .filter { it.containsAtom(atom) }
+    override fun getSubspeciesWithAtom(atom: A): Species? =
+        toList()
+            .filter {
+                when (it) {
+                    is Molecule<*> -> {
+                        @Suppress("UNCHECKED_CAST") (
+                            (it as Molecule<A>).containsAtom(atom)
+                        )
+                    }
+
+                    is Atom -> it == atom
+
+                    else -> throw RuntimeException(
+                        "[Internal Error] Unexpected type: " +
+                        "${it::class.qualifiedName}"
+                    )
+                }
+            }
             .singleOrNull()
 
     companion object {

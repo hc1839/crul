@@ -98,10 +98,10 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
             .toList()
 
     /**
-     *  Gets the molecule that contains a given atom, or `null` if there is no
-     *  such molecule.
+     *  Gets the subspecies that contains a given atom, or `null` if there is
+     *  no such subspecies.
      */
-    fun getMoleculeWithAtom(atom: A): Molecule<A>?
+    fun getSubspeciesWithAtom(atom: A): Species?
 
     override fun clone(): MoleculeComplex<A> =
         @Suppress("UNCHECKED_CAST") (

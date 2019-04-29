@@ -47,7 +47,7 @@ private object BondAvsc {
  *  To construct an instance of this class, use [newInstance].
  *
  *  @param A
- *      Type of atoms in this bond.
+ *      Type of atoms.
  */
 interface Bond<A : Atom> : Fragment<A> {
     /**
