@@ -116,13 +116,13 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
      *  @param deep
      *      Whether molecules and atoms are cloned.
      *
-     *  @param id
-     *      Identifier to use for the cloned molecule complex.
+     *  @param newId
+     *      New identifier to use for the cloned molecule complex.
      *
      *  @return
      *      Cloned molecule complex.
      */
-    fun clone(deep: Boolean, id: String): MoleculeComplex<A>
+    fun clone(deep: Boolean, newId: String): MoleculeComplex<A>
 
     companion object {
         /**

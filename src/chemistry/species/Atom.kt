@@ -86,13 +86,13 @@ interface Atom : Species {
     /**
      *  Clones this atom using a given identifier.
      *
-     *  @param id
-     *      Identifier to use for the cloned atom.
+     *  @param newId
+     *      New identifier to use for the cloned atom.
      *
      *  @return
      *      Cloned atom.
      */
-    fun clone(id: String): Atom
+    fun clone(newId: String): Atom
 
     companion object {
         /**

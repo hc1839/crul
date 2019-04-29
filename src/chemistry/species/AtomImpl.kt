@@ -50,10 +50,14 @@ internal class AtomImpl : AbstractAtom {
         id: String = other.id
     ): super(other, id)
 
+    /**
+     *  @param deep
+     *      Ignored.
+     */
     @Suppress("UNUSED_PARAMETER")
     override fun clone(deep: Boolean): Atom =
-        AtomImpl(this)
-
-    override fun clone(id: String): Atom =
         AtomImpl(this, id)
+
+    override fun clone(newId: String): Atom =
+        AtomImpl(this, newId)
 }

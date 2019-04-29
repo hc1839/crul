@@ -87,7 +87,28 @@ abstract class AbstractMolecule<A : Atom> :
         deep: Boolean = false
     ): this(
         if (deep) {
-            other.bonds().map { it.clone() }.toSet()
+            val clonedAtomsById = other
+                .atoms()
+                .map {
+                    @Suppress("UNCHECKED_CAST")
+                    it.clone() as A
+                }
+                .associateBy { it.id }
+
+            // Bonds cannot be directly cloned, since the same atom
+            // participating in more than one bond would be cloned.
+            other
+                .bonds()
+                .map { otherBond ->
+                    val (otherAtom1, otherAtom2) = otherBond.toAtomPair()
+
+                    Bond.newInstance(
+                        clonedAtomsById[otherAtom1.id]!!,
+                        clonedAtomsById[otherAtom2.id]!!,
+                        otherBond.order
+                    )
+                }
+                .toSet()
         } else {
             other.bonds().toSet()
         }
