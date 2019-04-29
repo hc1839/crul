@@ -50,10 +50,10 @@ open class Vector3D : Vector {
     )
 
     /**
-     *  Convenience constructor for operator overloading that needs to return
-     *  an instance of a subclass.
+     *  @param components
+     *      List of exactly three components.
      */
-    protected constructor(
+    constructor(
         components: List<Double>
     ): this(
         components[0],
