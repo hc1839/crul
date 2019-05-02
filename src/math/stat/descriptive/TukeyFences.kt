@@ -22,44 +22,37 @@ import org.apache.commons.math3.stat.descriptive.rank.Percentile
  *  Tukey Fences for determining outliers.
  */
 class TukeyFences {
-    /**
-     *  The `k` constant.
-     */
-    var k: Double
-        set(value) {
-            if (value < 0.0) {
-                throw IllegalArgumentException(
-                    "'k' cannot be negative."
-                )
-            }
-
-            field = value
-        }
+    constructor()
 
     /**
-     *  @param k
-     *      Non-negative value for the `k` constant. `k = 1.5` (default) is
-     *      considered to be an "outlier", whereas `k = 3.0` is considered to
-     *      be "far out".
+     *  Evaluates whether each data point in a list is considered to be an
+     *  outlier according to Tukey Fences with respect to a given H-spread
+     *  factor.
+     *
+     *  @param dataList
+     *      List of data points.
+     *
+     *  @param hspreadFactor
+     *      Non-negative value for the H-spread factor. `1.5` is considered to
+     *      be an "outlier", whereas `3.0` is considered to be "far out".
+     *
+     *  @return
+     *      Truth values indicating whether a corresponding data point in
+     *      `dataList` is an outlier.
      */
     @JvmOverloads
-    constructor(k: Double = 1.5) {
-        if (k < 0.0) {
+    fun evaluate(
+        dataList: List<Double>,
+        hspreadFactor: Double = 1.5
+    ): List<Boolean>
+    {
+        if (hspreadFactor < 0.0) {
             throw IllegalArgumentException(
-                "'k' is negative."
+                "H-spread factor is negative."
             )
         }
 
-        this.k = k
-    }
-
-    /**
-     *  Truth values that indicate whether the corresponding element of a given
-     *  list is considered to be an outlier according to Tukey Fences with
-     *  respect to [k].
-     */
-    fun isOutlier(dataList: List<Double>): List<Boolean> =
-        if (dataList.isEmpty()) {
+        return if (dataList.isEmpty()) {
             listOf()
         } else {
             val percentile = Percentile()
@@ -69,12 +62,13 @@ class TukeyFences {
             }
 
             val tukeyFences = listOf(
-                quartiles[0] - k * (quartiles[1] - quartiles[0]),
-                quartiles[1] + k * (quartiles[1] - quartiles[0])
+                quartiles[0] - hspreadFactor * (quartiles[1] - quartiles[0]),
+                quartiles[1] + hspreadFactor * (quartiles[1] - quartiles[0])
             )
 
             dataList.map {
                 it < tukeyFences[0] || it > tukeyFences[1]
             }
         }
+    }
 }
