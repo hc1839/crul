@@ -22,24 +22,38 @@ import crul.math.descriptive.IntervalEndpointsSpec
 
 /**
  *  Fuzzy interval.
- *
- *  @property intervalEndpoints
- *      Endpoints of the fuzzy interval.
- *
- *  @constructor
- *
- *  @param realLineMembership
- *      Membership function over the entire real line.
  */
-open class Interval<E : Comparable<E>> @JvmOverloads constructor(
-    protected val intervalEndpoints: IntervalEndpointsSpec<E>,
-    realLineMembership: Membership<E> = Indicator<E>({ true })
-) : Membership<E>(
-        createIndicatorForInterval(intervalEndpoints)
-            .intersect(realLineMembership)
-    ),
+open class Interval<E : Comparable<E>> :
+    Membership<E>,
     IntervalEndpointsSpec<E>
 {
+    /**
+     *  Endpoints of the fuzzy interval.
+     */
+    protected val intervalEndpoints: IntervalEndpointsSpec<E>
+
+    /**
+     *  @param intervalEndpoints
+     *      Endpoints of the fuzzy interval.
+     *
+     *  @param realLineMembership
+     *      Membership function over the entire real line. Return value is
+     *      ignored for elements outside the interval, since the membership
+     *      degree of such element is always `0.0`. Default value (the
+     *      indicator function) results in a crisp interval.
+     */
+    @JvmOverloads
+    constructor(
+        intervalEndpoints: IntervalEndpointsSpec<E>,
+        realLineMembership: Membership<E> = Indicator<E>({ true })
+    ): super(
+        createIndicatorForCrispInterval(intervalEndpoints).intersect(
+            realLineMembership
+        )
+    ) {
+        this.intervalEndpoints = intervalEndpoints
+    }
+
     /**
      *  Copy constructor.
      */
@@ -57,17 +71,11 @@ open class Interval<E : Comparable<E>> @JvmOverloads constructor(
     override val type: EndpointInclusion
         get() = intervalEndpoints.type
 
-    /**
-     *  Membership degree of `element`.
-     */
-    fun contains(element: E): Double =
-        this(element)
-
     companion object {
         /**
          *  Creates the indicator function for a crisp interval.
          */
-        private fun <E : Comparable<E>> createIndicatorForInterval(
+        private fun <E : Comparable<E>> createIndicatorForCrispInterval(
             intervalEndpoints: IntervalEndpointsSpec<E>
         ) =
             Indicator<E>({ element: E ->

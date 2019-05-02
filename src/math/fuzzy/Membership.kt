@@ -30,9 +30,9 @@ open class Membership<E>(
 ) : (E) -> Double
 {
     /**
-     *  Value of the membership function for `element`.
+     *  Membership degree of `element`.
      */
-    override fun invoke(element: E): Double {
+    fun contains(element: E): Double {
         val memDegree = mem(element)
 
         if (memDegree < 0.0 || memDegree > 1.0) {
@@ -43,6 +43,12 @@ open class Membership<E>(
 
         return memDegree
     }
+
+    /**
+     *  Membership degree of `element`.
+     */
+    override fun invoke(element: E): Double =
+        contains(element)
 
     /**
      *  Intersection of this fuzzy set with `other`.
