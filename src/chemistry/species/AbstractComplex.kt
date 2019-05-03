@@ -26,13 +26,13 @@ package crul.chemistry.species
  */
 abstract class AbstractComplex<S : Species> : Complex<S> {
     /**
-     *  Backing property for the subspecies in this complex.
+     *  Subspecies in this complex.
      */
     protected val subspecies: MutableList<S>
 
     /**
      *  @param subspecies
-     *      Subspecies within this complex.
+     *      Subspecies in this complex.
      */
     constructor(subspecies: Collection<S>) {
         this.subspecies = subspecies.toMutableList()

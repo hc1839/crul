@@ -31,8 +31,13 @@ private object MoleculeAvsc {
        |    "name": "Molecule",
        |    "fields": [
        |        {
+       |            "type": { "type": "map", "values": "bytes" },
+       |            "name": "atoms_by_id"
+       |        },
+       |        {
        |            "type": { "type": "array", "items": "bytes" },
-       |            "name": "bonds"
+       |            "name": "bonds",
+       |            "doc": "crul.chemistry.species.Bond"
        |        }
        |    ]
        |}
@@ -42,11 +47,11 @@ private object MoleculeAvsc {
 
 /**
  *  Interface for a molecule, which is a non-empty [Fragment] of bonds with
- *  unique atom names and has every pair of atoms connected by bonds, directly
- *  or indirectly.
+ *  unique atom identifiers and has every pair of atoms connected by bonds,
+ *  directly or indirectly.
  *
  *  Equality operator, `==`, is used for comparing atoms. Within the same
- *  molecule, two equal atoms must have the same name and vice versa.
+ *  molecule, two equal atoms must have the same identifier and vice versa.
  *
  *  @param A
  *      Type of atoms in this molecule.
@@ -146,9 +151,19 @@ interface Molecule<A : Atom> : Fragment<A> {
             )
 
             avroRecord.put(
+                "atoms_by_id",
+                obj
+                    .atoms()
+                    .associateBy { it.id }
+                    .mapValues { (_, atom) ->
+                        atomSerializer.invoke(atom)
+                    }
+            )
+
+            avroRecord.put(
                 "bonds",
                 obj.bonds().map {
-                    Bond.serialize(it, atomSerializer)
+                    Bond.serialize(it)
                 }
             )
 
@@ -181,11 +196,29 @@ interface Molecule<A : Atom> : Fragment<A> {
                 avroData
             ).first()
 
-            val bonds = @Suppress("UNCHECKED_CAST") (
-                avroRecord.get("bonds") as List<ByteBuffer>
-            ).map {
-                Bond.deserialize(it, atomDeserializer)
-            }
+            val atomsById =
+                @Suppress("UNCHECKED_CAST") (
+                    avroRecord.get("atoms_by_id")
+                    as Map<*, ByteBuffer>
+                )
+                .map { (atomId, atomBuf) ->
+                    Pair(
+                        atomId.toString(),
+                        atomDeserializer.invoke(atomBuf)
+                    )
+                }
+                .toMap()
+
+            val bonds =
+                @Suppress("UNCHECKED_CAST") (
+                    avroRecord.get("bonds")
+                    as List<ByteBuffer>
+                )
+                .map { bondBuf ->
+                    Bond.deserialize(bondBuf) { atomId ->
+                        atomsById[atomId]!!
+                    }
+                }
 
             return newInstance(bonds.toSet())
         }

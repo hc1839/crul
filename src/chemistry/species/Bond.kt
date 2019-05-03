@@ -30,8 +30,8 @@ private object BondAvsc {
        |    "namespace": "crul.chemistry.species",
        |    "name": "Bond",
        |    "fields": [
-       |        { "type": "bytes", "name": "atom1" },
-       |        { "type": "bytes", "name": "atom2" },
+       |        { "type": "string", "name": "atom1_id" },
+       |        { "type": "string", "name": "atom2_id" },
        |        { "type": "string", "name": "order" }
        |    ]
        |}
@@ -105,26 +105,19 @@ interface Bond<A : Atom> : Fragment<A> {
          *  @param obj
          *      [Bond] to serialize.
          *
-         *  @param atomSerializer
-         *      [Atom] serializer.
-         *
          *  @return
          *      Avro serialization of `obj`.
          */
         @JvmStatic
-        fun <A : Atom> serialize(
-            obj: Bond<A>,
-            atomSerializer: (A) -> ByteBuffer
-        ): ByteBuffer
-        {
+        fun <A : Atom> serialize(obj: Bond<A>): ByteBuffer {
             val avroRecord = GenericData.Record(
                 BondAvsc.schema
             )
 
             val (atom1, atom2) = obj.toAtomPair()
 
-            avroRecord.put("atom1", atomSerializer.invoke(atom1))
-            avroRecord.put("atom2", atomSerializer.invoke(atom2))
+            avroRecord.put("atom1_id", atom1.id)
+            avroRecord.put("atom2_id", atom2.id)
             avroRecord.put("order", obj.order)
 
             return AvroSimple.serializeData<GenericRecord>(
@@ -139,8 +132,8 @@ interface Bond<A : Atom> : Fragment<A> {
          *  @param avroData
          *      Serialized [Bond] as returned by [serialize].
          *
-         *  @param atomDeserializer
-         *      [Atom] deserializer.
+         *  @param atomMapper
+         *      Function that maps an atom identifier to an [Atom].
          *
          *  @return
          *      Deserialized [Bond].
@@ -148,7 +141,7 @@ interface Bond<A : Atom> : Fragment<A> {
         @JvmStatic
         fun <A : Atom> deserialize(
             avroData: ByteBuffer,
-            atomDeserializer: (ByteBuffer) -> A
+            atomMapper: (String) -> A
         ): Bond<A>
         {
             val avroRecord = AvroSimple.deserializeData<GenericRecord>(
@@ -156,12 +149,12 @@ interface Bond<A : Atom> : Fragment<A> {
                 avroData
             ).first()
 
-            val atom1 = atomDeserializer.invoke(
-                avroRecord.get("atom1") as ByteBuffer
+            val atom1 = atomMapper.invoke(
+                avroRecord.get("atom1_id").toString()
             )
 
-            val atom2 = atomDeserializer.invoke(
-                avroRecord.get("atom2") as ByteBuffer
+            val atom2 = atomMapper.invoke(
+                avroRecord.get("atom2_id").toString()
             )
 
             val order = avroRecord.get("order").toString()

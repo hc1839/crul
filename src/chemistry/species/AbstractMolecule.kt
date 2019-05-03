@@ -31,8 +31,13 @@ private object AbstractMoleculeAvsc {
        |    "name": "AbstractMolecule",
        |    "fields": [
        |        {
+       |            "type": { "type": "map", "values": "bytes" },
+       |            "name": "atoms_by_id"
+       |        },
+       |        {
        |            "type": { "type": "array", "items": "bytes" },
-       |            "name": "bonds"
+       |            "name": "bonds",
+       |            "doc": "crul.chemistry.species.Bond"
        |        }
        |    ]
        |}
@@ -140,13 +145,30 @@ abstract class AbstractMolecule<A : Atom> :
     private constructor(
         avroRecord: GenericRecord,
         atomDeserializer: (ByteBuffer) -> A
-    ): this(
+    ): super(
         @Suppress("UNCHECKED_CAST") (
-            avroRecord.get("bonds") as List<ByteBuffer>
-        ).map {
-            Bond.deserialize(it, atomDeserializer)
-        }.toSet()
-    )
+            avroRecord.get("atoms_by_id") as Map<*, ByteBuffer>
+        )
+        .values
+        .map { atomDeserializer.invoke(it) }
+    ) {
+        val atomsById = subspecies.associateBy {
+            it.id
+        }
+
+        val bonds =
+            @Suppress("UNCHECKED_CAST") (
+                avroRecord.get("bonds")
+                as List<ByteBuffer>
+            )
+            .map { bondBuf ->
+                Bond.deserialize(bondBuf) { atomId ->
+                    atomsById[atomId]!!
+                }
+            }
+
+        this.bondListsByAtomId = bondIndexing(bonds.toSet())
+    }
 
     /**
      *  Deserialization constructor.
@@ -258,9 +280,19 @@ abstract class AbstractMolecule<A : Atom> :
             )
 
             avroRecord.put(
+                "atoms_by_id",
+                obj
+                    .atoms()
+                    .associateBy { it.id }
+                    .mapValues { (_, atom) ->
+                        atomSerializer.invoke(atom)
+                    }
+            )
+
+            avroRecord.put(
                 "bonds",
                 obj.bonds().map {
-                    Bond.serialize(it, atomSerializer)
+                    Bond.serialize(it)
                 }
             )
 

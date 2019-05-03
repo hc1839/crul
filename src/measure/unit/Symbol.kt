@@ -39,7 +39,7 @@ private object UcumSymbolStore {
      *  Path to the JSON file containing UCUM symbols with respect to the JAR
      *  resource.
      */
-    val path: String = "/measure/unit/ucum-symbols.json"
+    val path: String = "/crul/measure/unit/ucum-symbols.json"
 
     /**
      *  JSON of UCUM symbols parsed by Gson.

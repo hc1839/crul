@@ -61,14 +61,14 @@
 
     <!-- Properties related to project information. -->
 
-    <!-- Name of the project. -->
-    <property name="project.name" value="crul"/>
+    <!-- Namespace of the project. -->
+    <property name="project.namespace" value="crul"/>
 
     <!-- Version of the project. -->
     <property name="project.version" value="master"/>
 
     <!-- Name of the project JAR file. -->
-    <property name="proj.jar.name" value="${project.name}-${project.version}.jar"/>
+    <property name="project.jar.name" value="${project.namespace}-${project.version}.jar"/>
 
 
     <!-- Properties related to documentation. -->
@@ -104,7 +104,7 @@
     <path id="classpath.all">
         <fileset dir="${config.lib.dir}">
             <include name="**/*.jar"/>
-            <exclude name="**/${proj.jar.name}"/>
+            <exclude name="**/${project.jar.name}"/>
         </fileset>
         <pathelement location="${config.target.dir}/compile"/>
     </path>
@@ -128,7 +128,7 @@
         name="copy.info.stores"
         depends="create.compile.dir">
 
-        <copy todir="${compile.dir}" preservelastmodified="true">
+        <copy todir="${compile.dir}/${project.namespace}" preservelastmodified="true">
             <fileset dir="${src.dir}" includes="**/*.xml"/>
             <fileset dir="${src.dir}" includes="**/*.json"/>
             <fileset dir="${src.dir}" includes="**/*.avsc"/>
@@ -158,14 +158,14 @@
         description="Builds the project by compiling and packaging it as a JAR.">
 
         <delete quiet="true">
-            <fileset dir="${build.dir}" includes="${proj.jar.name}"/>
+            <fileset dir="${build.dir}" includes="${project.jar.name}"/>
         </delete>
 
         <mkdir dir="${build.dir}"/>
 
         <jar
             basedir="${compile.dir}"
-            destfile="${build.dir}/${proj.jar.name}"/>
+            destfile="${build.dir}/${project.jar.name}"/>
     </target>
 
     <target
@@ -178,7 +178,7 @@
             classpathref="classpath.all"
             src="${src.dir}"
             outputDir="${doc.dir}"
-            moduleName="${project.name}"
+            moduleName="${project.namespace}"
             outputFormat="${config.dokka.output.format}"/>
     </target>
 

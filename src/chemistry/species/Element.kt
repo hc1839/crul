@@ -47,7 +47,7 @@ private object ElementStore {
      *  Path to the JSON file containing elements with respect to the JAR
      *  resource.
      */
-    val path: String = "/chemistry/species/elements.json"
+    val path: String = "/crul/chemistry/species/elements.json"
 
     /**
      *  JSON of elements parsed by Gson.
