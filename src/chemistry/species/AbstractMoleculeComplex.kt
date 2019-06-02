@@ -62,8 +62,7 @@ abstract class AbstractMoleculeComplex<A : Atom> :
      *      Molecules and atoms of the complex.
      *
      *  @param id
-     *      Identifier for this complex. It must conform to XML NCName
-     *      production.
+     *      Identifier for this complex.
      */
     @JvmOverloads
     constructor(
@@ -77,9 +76,9 @@ abstract class AbstractMoleculeComplex<A : Atom> :
             )
         }
 
-        if (!crul.xml.Datatype.isNCName(id)) {
+        if (id.isEmpty()) {
             throw IllegalArgumentException(
-                "ID does not conform to XML NCName production: $id"
+                "Complex identifier is an empty string."
             )
         }
 
@@ -112,8 +111,7 @@ abstract class AbstractMoleculeComplex<A : Atom> :
      *      Whether molecules and atoms are copied.
      *
      *  @param id
-     *      Identifier to use for the copied complex. It must conform to XML
-     *      NCName production.
+     *      Identifier to use for the copied complex.
      */
     @JvmOverloads
     constructor(
@@ -122,9 +120,9 @@ abstract class AbstractMoleculeComplex<A : Atom> :
         id: String = other.id
     ): super(other, deep)
     {
-        if (!crul.xml.Datatype.isNCName(id)) {
+        if (id.isEmpty()) {
             throw IllegalArgumentException(
-                "ID does not conform to XML NCName production: $id"
+                "Identifier for the copied complex is an empty string."
             )
         }
 

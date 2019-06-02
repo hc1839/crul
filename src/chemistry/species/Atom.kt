@@ -66,9 +66,7 @@ interface Atom : Species {
     override var formalCharge: Double
 
     /**
-     *  Identifier for this atom.
-     *
-     *  It must conform to XML NCName production.
+     *  Non-empty string as the identifier for this atom.
      */
     val id: String
 

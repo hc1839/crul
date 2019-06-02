@@ -65,7 +65,7 @@ abstract class AbstractAtom : Atom {
      *      Formal charge of the atom.
      *
      *  @param id
-     *      Identifier for this atom. It must conform to XML NCName production.
+     *      Identifier for this atom.
      */
     @JvmOverloads
     constructor(
@@ -74,9 +74,9 @@ abstract class AbstractAtom : Atom {
         formalCharge: Double,
         id: String = crul.uuid.Generator.inNCName()
     ) {
-        if (!crul.xml.Datatype.isNCName(id)) {
+        if (id.isEmpty()) {
             throw IllegalArgumentException(
-                "ID does not conform to XML NCName production: $id"
+                "Atom identifier is an empty string."
             )
         }
 
