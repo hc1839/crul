@@ -46,9 +46,9 @@ private object MoleculeAvsc {
 }
 
 /**
- *  Interface for a molecule, which is a non-empty [Fragment] of bonds with
- *  unique atom identifiers and has every pair of atoms connected by bonds,
- *  directly or indirectly.
+ *  Interface for a molecule, which is a [Fragment] of at least two atoms with
+ *  unique identifiers and has every pair of atoms connected by bonds, directly
+ *  or indirectly.
  *
  *  Equality operator, `==`, is used for comparing atoms. Within the same
  *  molecule, two equal atoms must have the same identifier and vice versa.

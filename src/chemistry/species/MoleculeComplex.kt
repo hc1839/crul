@@ -69,35 +69,6 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
     val id: String
 
     /**
-     *  Formal charge of this complex, which is the sum of the formal charges
-     *  of the molecules.
-     *
-     *  If there are no molecules in this complex, an exception is raised.
-     */
-    val formalCharge: Double
-        get() = molecules()
-            .map { it.formalCharge }
-            .reduce { acc, item -> acc + item }
-
-    /**
-     *  Molecules in this complex, or an empty collection if there are none.
-     *
-     *  Molecules are unique and are in the same order between iterations.
-     *  Molecules in the collection are not guaranteed to be in any particular
-     *  order. A subinterface or an implementation, however, is allowed to make
-     *  specified guarantees.
-     */
-    fun molecules(): Collection<Molecule<A>> =
-        iterator()
-            .asSequence()
-            .filter { it is Molecule<*> }
-            .map {
-                @Suppress("UNCHECKED_CAST")
-                it as Molecule<A>
-            }
-            .toList()
-
-    /**
      *  Gets the subspecies that contains a given atom, or `null` if there is
      *  no such subspecies.
      */
@@ -182,19 +153,26 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
 
             avroRecord.put(
                 "molecule_subspecies",
-                obj.molecules().map {
-                    Molecule.serialize(it, atomSerializer)
+                obj.mapNotNull {
+                    @Suppress("UNCHECKED_CAST")
+                    if (it as? Molecule<A> != null) {
+                        Molecule.serialize(it, atomSerializer)
+                    } else {
+                        null
+                    }
                 }
             )
 
             avroRecord.put(
                 "atom_subspecies",
-                obj
-                    .filter { it is Atom }
-                    .map {
-                        @Suppress("UNCHECKED_CAST")
-                        atomSerializer.invoke(it as A)
+                obj.mapNotNull {
+                    @Suppress("UNCHECKED_CAST")
+                    if (it as? A != null) {
+                        atomSerializer.invoke(it)
+                    } else {
+                        null
                     }
+                }
             )
 
             avroRecord.put("id", obj.id)

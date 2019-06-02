@@ -35,6 +35,7 @@ import org.xml.sax.InputSource
 import crul.chemistry.species.Atom
 import crul.chemistry.species.Bond
 import crul.chemistry.species.Element
+import crul.chemistry.species.Molecule
 import crul.chemistry.species.MoleculeComplex
 import crul.chemistry.species.MoleculeComplexBuilder
 import crul.float.Comparison.nearlyEquals
@@ -114,10 +115,10 @@ fun <A : Atom> MoleculeComplex<A>.toCml(
         atomNode.setAttribute("elementType", atom.element.symbol)
 
         val cmptsByName = listOf("x3", "y3", "z3")
-            .zip(atom.position.components)
+            .zip(atom.centroid.components)
             .toMap()
 
-        // Set the position of the atom.
+        // Set the centroid of the atom.
         for ((cmptName, cmpt) in cmptsByName) {
             atomNode.setAttribute(
                 cmptName,
@@ -150,7 +151,12 @@ fun <A : Atom> MoleculeComplex<A>.toCml(
     moleculeNode.appendChild(bondArrayNode)
 
     // Create and append a node for each bond.
-    for (bond in molecules().flatMap { it.bonds() }) {
+    for (
+        bond in mapNotNull {
+            @Suppress("UNCHECKED_CAST")
+            (it as? Molecule<A>)?.bonds()
+        }.flatten()
+    ) {
         val bondNode = cmlDoc.createElement("bond")
         bondArrayNode.appendChild(bondNode)
 
@@ -250,7 +256,7 @@ fun MoleculeComplexBuilder<*>.parseInCml(
                 )
             }
 
-        val position = Vector3D(
+        val centroid = Vector3D(
             positionCmpts[0],
             positionCmpts[1],
             positionCmpts[2]
@@ -274,7 +280,7 @@ fun MoleculeComplexBuilder<*>.parseInCml(
         // Construct the atom.
         val atom: Atom = Atom.newInstance(
             element,
-            position,
+            centroid,
             formalCharge,
             atomId
         )

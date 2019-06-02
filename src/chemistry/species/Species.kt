@@ -16,6 +16,8 @@
 
 package crul.chemistry.species
 
+import crul.math.coordsys.Vector3D
+
 /**
  *  Interface for species.
  */
@@ -38,7 +40,7 @@ interface Species : Cloneable {
     fun clone(deep: Boolean): Species
 
     /**
-     *  Atoms in this species, or itself if [Atom].
+     *  All atoms in this species, or itself if [Atom].
      *
      *  Collection may be empty. Atoms are unique and are in the same order
      *  between iterations. Atoms in the collection are not guaranteed to be in
@@ -46,4 +48,56 @@ interface Species : Cloneable {
      *  allowed to make specified guarantees.
      */
     fun atoms(): Collection<Atom>
+
+    /**
+     *  Formal charge, which is the sum of the formal charges of the atoms.
+     */
+    val formalCharge: Double
+        get() = atoms()
+            .map { it.formalCharge }
+            .reduce { acc, item -> acc + item }
+
+    /**
+     *  Centroid of [atoms].
+     *
+     *  If this species is an [Atom], this property must be overridden to
+     *  provide and to set the position of the atom itself, or an exception is
+     *  raised.
+     */
+    var centroid: Vector3D
+        get() {
+            // Check that this species is not an atom.
+            if (atoms().singleOrNull() == this) {
+                throw RuntimeException(
+                    "This species is an atom, and the property " +
+                    "for obtaining the centroid is not properly overridden."
+                )
+            }
+
+            val atomIter = atoms().iterator()
+            var positionSum = Vector3D(0.0, 0.0, 0.0)
+            var atomCount = 0
+
+            while (atomIter.hasNext()) {
+                val atom = atomIter.next()
+
+                positionSum += atom.centroid
+                ++atomCount
+            }
+
+            if (atomCount == 0) {
+                throw RuntimeException(
+                    "No atoms in this complex."
+                )
+            }
+
+            return positionSum / atomCount.toDouble()
+        }
+        set(value) {
+            val atomIter = atoms().iterator()
+
+            while (atomIter.hasNext()) {
+                atomIter.next().centroid += value
+            }
+        }
 }

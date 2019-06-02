@@ -57,44 +57,4 @@ interface Complex<S : Species> :
         )
 
     abstract override fun clone(deep: Boolean): Complex<S>
-
-    /**
-     *  Centroid of [atoms].
-     *
-     *  Setting the centroid is equivalent to translating the atoms such that
-     *  the new centroid is the given centroid.
-     *
-     *  For the getter, an exception is raised if [atoms] is empty.
-     */
-    var centroid: Vector3D
-        get() {
-            val atomIter = atoms().iterator()
-            var positionSum = Vector3D(0.0, 0.0, 0.0)
-            var atomCount = 0
-
-            while (atomIter.hasNext()) {
-                val atom = atomIter.next()
-
-                positionSum += atom.position
-                ++atomCount
-            }
-
-            if (atomCount == 0) {
-                throw RuntimeException(
-                    "No atoms in this complex."
-                )
-            }
-
-            return positionSum / atomCount.toDouble()
-        }
-        set(value) {
-            val atomIter = atoms().iterator()
-            val centroidDisplacement = value - centroid
-
-            while (atomIter.hasNext()) {
-                val atom = atomIter.next()
-
-                atom.position += centroidDisplacement
-            }
-        }
 }

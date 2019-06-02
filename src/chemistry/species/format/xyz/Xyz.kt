@@ -70,11 +70,16 @@ fun <A : Atom> MoleculeComplex<A>.toXyz(
     xyzBuilder += atoms().count().toString() + "\n"
     xyzBuilder += label + "\n"
 
-    for (molecule in molecules()) {
+    for (
+        molecule in mapNotNull {
+            @Suppress("UNCHECKED_CAST")
+            it as? Molecule<A>
+        }
+    ) {
         for (atom in molecule.atoms()) {
             xyzBuilder += atom.element.symbol + separator
             xyzBuilder += atom
-                .position
+                .centroid
                 .components
                 .map {
                     Quantity

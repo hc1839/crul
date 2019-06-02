@@ -99,7 +99,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
     /**
      *  Removes all bonds and atoms from this builder.
      *
-     *  Identifier remains intact.
+     *  Complex identifier is not modified.
      */
     protected fun clear(): B {
         bonds.clear()

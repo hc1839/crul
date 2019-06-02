@@ -48,17 +48,6 @@ private object FragmentAvsc {
  */
 interface Fragment<A : Atom> : Complex<A> {
     /**
-     *  Formal charge of this fragment, which is the sum of the formal charges
-     *  of the atoms.
-     *
-     *  If [atoms] is empty, an exception is raised.
-     */
-    val formalCharge: Double
-        get() = atoms()
-            .map { it.formalCharge }
-            .reduce { acc, item -> acc + item }
-
-    /**
      *  Whether an atom exists in this fragment.
      */
     fun containsAtom(atom: A): Boolean

@@ -207,19 +207,26 @@ abstract class AbstractMoleculeComplex<A : Atom> :
 
             avroRecord.put(
                 "molecule_subspecies",
-                obj.molecules().map {
-                    Molecule.serialize(it, atomSerializer)
+                obj.mapNotNull {
+                    @Suppress("UNCHECKED_CAST")
+                    if (it as? Molecule<A> != null) {
+                        Molecule.serialize(it, atomSerializer)
+                    } else {
+                        null
+                    }
                 }
             )
 
             avroRecord.put(
                 "atom_subspecies",
-                obj
-                    .filter { it is Atom }
-                    .map {
-                        @Suppress("UNCHECKED_CAST")
-                        atomSerializer.invoke(it as A)
+                obj.mapNotNull {
+                    @Suppress("UNCHECKED_CAST")
+                    if (it as? A != null) {
+                        atomSerializer.invoke(it)
+                    } else {
+                        null
                     }
+                }
             )
 
             avroRecord.put("id", obj.id)

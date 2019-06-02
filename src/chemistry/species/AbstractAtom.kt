@@ -48,7 +48,7 @@ private object AbstractAtomAvsc {
 abstract class AbstractAtom : Atom {
     override val element: Element
 
-    override var position: Vector3D
+    override var centroid: Vector3D
 
     override var formalCharge: Double
 
@@ -58,8 +58,8 @@ abstract class AbstractAtom : Atom {
      *  @param element
      *      Element of the atom.
      *
-     *  @param position
-     *      Position of the center of the atom.
+     *  @param centroid
+     *      Centroid of the atom.
      *
      *  @param formalCharge
      *      Formal charge of the atom.
@@ -70,7 +70,7 @@ abstract class AbstractAtom : Atom {
     @JvmOverloads
     constructor(
         element: Element,
-        position: Vector3D,
+        centroid: Vector3D,
         formalCharge: Double,
         id: String = crul.uuid.Generator.inNCName()
     ) {
@@ -81,7 +81,7 @@ abstract class AbstractAtom : Atom {
         }
 
         this.element = element
-        this.position = position
+        this.centroid = centroid
         this.formalCharge = formalCharge
         this.id = id
     }
@@ -92,7 +92,7 @@ abstract class AbstractAtom : Atom {
     @JvmOverloads
     constructor(other: AbstractAtom, id: String = other.id) {
         this.element = other.element
-        this.position = other.position
+        this.centroid = other.centroid
         this.formalCharge = other.formalCharge
         this.id = id
     }
@@ -149,7 +149,7 @@ abstract class AbstractAtom : Atom {
             )
 
             avroRecord.put("element", Element.serialize(obj.element))
-            avroRecord.put("position", Vector3D.serialize(obj.position))
+            avroRecord.put("position", Vector3D.serialize(obj.centroid))
             avroRecord.put("formal_charge", obj.formalCharge)
             avroRecord.put("id", obj.id)
 

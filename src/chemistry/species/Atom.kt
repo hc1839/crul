@@ -61,15 +61,9 @@ interface Atom : Species {
      */
     val element: Element
 
-    /**
-     *  Position of the center.
-     */
-    var position: Vector3D
+    override var centroid: Vector3D
 
-    /**
-     *  Formal charge.
-     */
-    var formalCharge: Double
+    override var formalCharge: Double
 
     /**
      *  Identifier for this atom.
@@ -101,8 +95,8 @@ interface Atom : Species {
          *  @param element
          *      Element of the atom.
          *
-         *  @param position
-         *      Position of the center of the atom.
+         *  @param centroid
+         *      Centroid of the atom.
          *
          *  @param formalCharge
          *      Formal charge of the atom.
@@ -114,12 +108,12 @@ interface Atom : Species {
         @JvmStatic
         fun newInstance(
             element: Element,
-            position: Vector3D,
+            centroid: Vector3D,
             formalCharge: Double,
             id: String
         ): Atom = AtomImpl(
             element,
-            position,
+            centroid,
             formalCharge,
             id
         )
@@ -131,8 +125,8 @@ interface Atom : Species {
          *  @param element
          *      Element of the atom.
          *
-         *  @param position
-         *      Position of the center of the atom.
+         *  @param centroid
+         *      Centroid of the atom.
          *
          *  @param formalCharge
          *      Formal charge of the atom.
@@ -140,11 +134,11 @@ interface Atom : Species {
         @JvmStatic
         fun newInstance(
             element: Element,
-            position: Vector3D,
+            centroid: Vector3D,
             formalCharge: Double
         ): Atom = newInstance(
             element,
-            position,
+            centroid,
             formalCharge,
             crul.uuid.Generator.inNCName()
         )
@@ -165,7 +159,7 @@ interface Atom : Species {
             )
 
             avroRecord.put("element", Element.serialize(obj.element))
-            avroRecord.put("position", Vector3D.serialize(obj.position))
+            avroRecord.put("position", Vector3D.serialize(obj.centroid))
             avroRecord.put("formal_charge", obj.formalCharge)
             avroRecord.put("id", obj.id)
 
@@ -195,7 +189,7 @@ interface Atom : Species {
                 avroRecord.get("element") as ByteBuffer
             )
 
-            val position = Vector3D.deserialize(
+            val centroid = Vector3D.deserialize(
                 avroRecord.get("position") as ByteBuffer
             )
 
@@ -204,7 +198,7 @@ interface Atom : Species {
 
             return newInstance(
                 element,
-                position,
+                centroid,
                 formalCharge,
                 id
             )
