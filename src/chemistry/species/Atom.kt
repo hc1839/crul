@@ -25,20 +25,17 @@ import crul.math.coordsys.Vector3D
 import crul.serialize.AvroSimple
 
 private object AtomAvsc {
+    /**
+     *  Absolute path to the Avro schema file with respect to the JAR.
+     */
+    val path: String =
+        "/crul/chemistry/species/Atom.avsc"
+
+    /**
+     *  Avro schema for the serialization of [Atom].
+     */
     val schema: Schema = Schema.Parser().parse(
-        """
-       |{
-       |    "type": "record",
-       |    "namespace": "crul.chemistry.species",
-       |    "name": "Atom",
-       |    "fields": [
-       |        { "type": "bytes", "name": "element" },
-       |        { "type": "bytes", "name": "position" },
-       |        { "type": "double", "name": "formal_charge" },
-       |        { "type": "string", "name": "id" }
-       |    ]
-       |}
-        """.trimMargin()
+        this::class.java.getResourceAsStream(path)
     )
 }
 
@@ -66,9 +63,9 @@ interface Atom : Species {
     override var formalCharge: Double
 
     /**
-     *  Non-empty string as the identifier for this atom.
+     *  Arbitrary integer tag.
      */
-    val id: String
+    var tag: Int
 
     override fun clone(): Atom =
         super.clone() as Atom
@@ -76,15 +73,9 @@ interface Atom : Species {
     abstract override fun clone(deep: Boolean): Atom
 
     /**
-     *  Clones this atom using a given identifier.
-     *
-     *  @param newId
-     *      New identifier to use for the cloned atom.
-     *
-     *  @return
-     *      Cloned atom.
+     *  Clones this atom with a new tag.
      */
-    fun clone(newId: String): Atom
+    fun clone(newTag: Int): Atom
 
     companion object {
         /**
@@ -99,26 +90,24 @@ interface Atom : Species {
          *  @param formalCharge
          *      Formal charge of the atom.
          *
-         *  @param id
-         *      Identifier for this atom. It must conform to XML NCName
-         *      production.
+         *  @param tag
+         *      Arbitrary integer tag.
          */
         @JvmStatic
         fun newInstance(
             element: Element,
             centroid: Vector3D,
             formalCharge: Double,
-            id: String
+            tag: Int
         ): Atom = AtomImpl(
             element,
             centroid,
             formalCharge,
-            id
+            tag
         )
 
         /**
-         *  Constructs an [Atom] using an automatically generated UUID as the
-         *  identifer.
+         *  Constructs an [Atom] with a tag value of `0`.
          *
          *  @param element
          *      Element of the atom.
@@ -138,7 +127,7 @@ interface Atom : Species {
             element,
             centroid,
             formalCharge,
-            crul.uuid.Generator.inNCName()
+            0
         )
 
         /**
@@ -157,9 +146,9 @@ interface Atom : Species {
             )
 
             avroRecord.put("element", Element.serialize(obj.element))
-            avroRecord.put("position", Vector3D.serialize(obj.centroid))
+            avroRecord.put("centroid", Vector3D.serialize(obj.centroid))
             avroRecord.put("formal_charge", obj.formalCharge)
-            avroRecord.put("id", obj.id)
+            avroRecord.put("tag", obj.tag)
 
             return AvroSimple.serializeData<GenericRecord>(
                 AtomAvsc.schema,
@@ -188,17 +177,17 @@ interface Atom : Species {
             )
 
             val centroid = Vector3D.deserialize(
-                avroRecord.get("position") as ByteBuffer
+                avroRecord.get("centroid") as ByteBuffer
             )
 
             val formalCharge = avroRecord.get("formal_charge") as Double
-            val id = avroRecord.get("id").toString()
+            val tag = avroRecord.get("tag") as Int
 
             return newInstance(
                 element,
                 centroid,
                 formalCharge,
-                id
+                tag
             )
         }
     }

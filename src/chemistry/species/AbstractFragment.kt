@@ -23,20 +23,17 @@ import org.apache.avro.generic.*
 import crul.serialize.AvroSimple
 
 private object AbstractFragmentAvsc {
+    /**
+     *  Absolute path to the Avro schema file with respect to the JAR.
+     */
+    val path: String =
+        "/crul/chemistry/species/AbstractFragment.avsc"
+
+    /**
+     *  Avro schema for the serialization of [AbstractFragment].
+     */
     val schema: Schema = Schema.Parser().parse(
-        """
-       |{
-       |    "type": "record",
-       |    "namespace": "crul.chemistry.species",
-       |    "name": "AbstractFragment",
-       |    "fields": [
-       |        {
-       |            "type": { "type": "array", "items": "bytes" },
-       |            "name": "atoms"
-       |        }
-       |    ]
-       |}
-        """.trimMargin()
+        this::class.java.getResourceAsStream(path)
     )
 }
 

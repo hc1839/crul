@@ -23,25 +23,17 @@ import org.apache.avro.generic.*
 import crul.serialize.AvroSimple
 
 private object MoleculeComplexAvsc {
+    /**
+     *  Absolute path to the Avro schema file with respect to the JAR.
+     */
+    val path: String =
+        "/crul/chemistry/species/MoleculeComplex.avsc"
+
+    /**
+     *  Avro schema for the serialization of [MoleculeComplex].
+     */
     val schema: Schema = Schema.Parser().parse(
-        """
-       |{
-       |    "type": "record",
-       |    "namespace": "crul.chemistry.species",
-       |    "name": "MoleculeComplex",
-       |    "fields": [
-       |        {
-       |            "type": { "type": "array", "items": "bytes" },
-       |            "name": "molecule_subspecies"
-       |        },
-       |        {
-       |            "type": { "type": "array", "items": "bytes" },
-       |            "name": "atom_subspecies"
-       |        },
-       |        { "type": "string", "name": "id" }
-       |    ]
-       |}
-        """.trimMargin()
+        this::class.java.getResourceAsStream(path)
     )
 }
 
@@ -62,15 +54,8 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
         }
 
     /**
-     *  Identifier for this complex.
-     *
-     *  It conforms to XML NCName production.
-     */
-    val id: String
-
-    /**
-     *  Gets the subspecies that contains a given atom, or `null` if there is
-     *  no such subspecies.
+     *  Gets the subspecies that contains a given atom by referential equality,
+     *  or `null` if there is no such subspecies.
      */
     fun getSubspeciesWithAtom(atom: A): Species?
 
@@ -81,41 +66,9 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
 
     abstract override fun clone(deep: Boolean): MoleculeComplex<A>
 
-    /**
-     *  Clones this molecule complex using a given identifier.
-     *
-     *  @param deep
-     *      Whether molecules and atoms are cloned.
-     *
-     *  @param newId
-     *      New identifier to use for the cloned molecule complex.
-     *
-     *  @return
-     *      Cloned molecule complex.
-     */
-    fun clone(deep: Boolean, newId: String): MoleculeComplex<A>
-
     companion object {
         /**
          *  Constructs a [MoleculeComplex].
-         *
-         *  @param subspecies
-         *      Molecules and atoms of the complex.
-         *
-         *  @param id
-         *      Identifier for this complex. It must conform to XML NCName
-         *      production.
-         */
-        @JvmStatic
-        fun <A : Atom> newInstance(
-            subspecies: Collection<Species>,
-            id: String
-        ): MoleculeComplex<A> =
-            MoleculeComplexImpl(subspecies, id)
-
-        /**
-         *  Constructs a [MoleculeComplex] using a UUID Version 4 as its
-         *  identifier.
          *
          *  @param subspecies
          *      Molecules and atoms of the complex.
@@ -124,10 +77,7 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
         fun <A : Atom> newInstance(
             subspecies: Collection<Species>
         ): MoleculeComplex<A> =
-            MoleculeComplexImpl(
-                subspecies,
-                crul.uuid.Generator.inNCName()
-            )
+            MoleculeComplexImpl(subspecies)
 
         /**
          *  Serializes a [MoleculeComplex] in Apache Avro.
@@ -175,8 +125,6 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
                 }
             )
 
-            avroRecord.put("id", obj.id)
-
             return AvroSimple.serializeData<GenericRecord>(
                 MoleculeComplexAvsc.schema,
                 listOf(avroRecord)
@@ -218,9 +166,7 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
                 atomDeserializer.invoke(it)
             }
 
-            val id = avroRecord.get("id").toString()
-
-            return newInstance(moleculeSubspecies + atomSubspecies, id)
+            return newInstance(moleculeSubspecies + atomSubspecies)
         }
     }
 }

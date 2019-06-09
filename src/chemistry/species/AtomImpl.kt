@@ -16,11 +16,7 @@
 
 package crul.chemistry.species
 
-import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
-
 import crul.math.coordsys.Vector3D
-import crul.serialize.MessagePackSimple
 
 /**
  *  Default implementation of [Atom].
@@ -31,14 +27,14 @@ internal class AtomImpl : AbstractAtom {
      */
     constructor(
         element: Element,
-        position: Vector3D,
+        centroid: Vector3D,
         formalCharge: Double,
-        id: String = crul.uuid.Generator.inNCName()
+        tag: Int = 0
     ): super(
         element,
-        position,
+        centroid,
         formalCharge,
-        id
+        tag
     )
 
     /**
@@ -47,8 +43,8 @@ internal class AtomImpl : AbstractAtom {
     @JvmOverloads
     constructor(
         other: AtomImpl,
-        id: String = other.id
-    ): super(other, id)
+        tag: Int = other.tag
+    ): super(other, tag)
 
     /**
      *  @param deep
@@ -56,8 +52,8 @@ internal class AtomImpl : AbstractAtom {
      */
     @Suppress("UNUSED_PARAMETER")
     override fun clone(deep: Boolean): Atom =
-        AtomImpl(this, id)
+        AtomImpl(this, tag)
 
-    override fun clone(newId: String): Atom =
-        AtomImpl(this, newId)
+    override fun clone(newTag: Int): Atom =
+        AtomImpl(this, newTag)
 }

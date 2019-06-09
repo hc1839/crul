@@ -25,20 +25,17 @@ import crul.math.coordsys.Vector3D
 import crul.serialize.AvroSimple
 
 private object AbstractAtomAvsc {
+    /**
+     *  Absolute path to the Avro schema file with respect to the JAR.
+     */
+    val path: String =
+        "/crul/chemistry/species/AbstractAtom.avsc"
+
+    /**
+     *  Avro schema for the serialization of [AbstractAtom].
+     */
     val schema: Schema = Schema.Parser().parse(
-        """
-       |{
-       |    "type": "record",
-       |    "namespace": "crul.chemistry.species",
-       |    "name": "AbstractAtom",
-       |    "fields": [
-       |        { "type": "bytes", "name": "element" },
-       |        { "type": "bytes", "name": "position" },
-       |        { "type": "double", "name": "formal_charge" },
-       |        { "type": "string", "name": "id" }
-       |    ]
-       |}
-        """.trimMargin()
+        this::class.java.getResourceAsStream(path)
     )
 }
 
@@ -52,7 +49,7 @@ abstract class AbstractAtom : Atom {
 
     override var formalCharge: Double
 
-    override val id: String
+    override var tag: Int
 
     /**
      *  @param element
@@ -64,37 +61,31 @@ abstract class AbstractAtom : Atom {
      *  @param formalCharge
      *      Formal charge of the atom.
      *
-     *  @param id
-     *      Identifier for this atom.
+     *  @param tag
+     *      Arbitrary integer tag.
      */
     @JvmOverloads
     constructor(
         element: Element,
         centroid: Vector3D,
         formalCharge: Double,
-        id: String = crul.uuid.Generator.inNCName()
+        tag: Int = 0
     ) {
-        if (id.isEmpty()) {
-            throw IllegalArgumentException(
-                "Atom identifier is an empty string."
-            )
-        }
-
         this.element = element
         this.centroid = centroid
         this.formalCharge = formalCharge
-        this.id = id
+        this.tag = tag
     }
 
     /**
      *  Copy constructor.
      */
     @JvmOverloads
-    constructor(other: AbstractAtom, id: String = other.id) {
+    constructor(other: AbstractAtom, tag: Int = other.tag) {
         this.element = other.element
         this.centroid = other.centroid
         this.formalCharge = other.formalCharge
-        this.id = id
+        this.tag = tag
     }
 
     /**
@@ -108,7 +99,7 @@ abstract class AbstractAtom : Atom {
             avroRecord.get("position") as ByteBuffer
         ),
         avroRecord.get("formal-charge") as Double,
-        avroRecord.get("id").toString()
+        avroRecord.get("tag") as Int
     )
 
     /**
@@ -120,17 +111,6 @@ abstract class AbstractAtom : Atom {
             avroData
         ).first()
     )
-
-    override fun hashCode(): Int =
-        listOf(element.hashCode(), id.hashCode()).hashCode()
-
-    override fun equals(other: Any?): Boolean =
-        other is AbstractAtom &&
-        this::class == other::class &&
-        (
-            element == other.element &&
-            id == other.id
-        )
 
     companion object {
         /**
@@ -149,9 +129,9 @@ abstract class AbstractAtom : Atom {
             )
 
             avroRecord.put("element", Element.serialize(obj.element))
-            avroRecord.put("position", Vector3D.serialize(obj.centroid))
+            avroRecord.put("centroid", Vector3D.serialize(obj.centroid))
             avroRecord.put("formal_charge", obj.formalCharge)
-            avroRecord.put("id", obj.id)
+            avroRecord.put("tag", obj.tag)
 
             return AvroSimple.serializeData<GenericRecord>(
                 AbstractAtomAvsc.schema,

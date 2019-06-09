@@ -44,9 +44,9 @@ internal class BondImpl<A : Atom> : Bond<A> {
         atom2: A,
         order: String
     ) {
-        if (atom1 == atom2 || atom1.id == atom2.id) {
+        if (atom1 === atom2) {
             throw IllegalArgumentException(
-                "Atoms are equal or have the same ID."
+                "Atoms are referentially equal."
             )
         }
 
@@ -74,13 +74,20 @@ internal class BondImpl<A : Atom> : Bond<A> {
     )
 
     override fun hashCode(): Int =
-        atomPair.toList().toSet().hashCode()
+        atomPair.toList().map { it.hashCode() }.toSet().hashCode()
 
     override fun equals(other: Any?): Boolean =
         other is BondImpl<*> &&
         this::class == other::class &&
         (
-            atomPair.toList().toSet() == other.atomPair.toList().toSet() &&
+            atomPair
+                .toList()
+                .map { SpeciesSetElement(it) }
+                .toSet() == other
+                    .atomPair
+                    .toList()
+                    .map { SpeciesSetElement(it) }
+                    .toSet() &&
             order == other.order
         )
 
@@ -88,7 +95,7 @@ internal class BondImpl<A : Atom> : Bond<A> {
         atomPair.toList().iterator()
 
     override fun containsAtom(atom: A): Boolean =
-        atomPair.toList().contains(atom)
+        atomPair.toList().any { it === atom }
 
     override fun toAtomPair(): Pair<A, A> =
         atomPair

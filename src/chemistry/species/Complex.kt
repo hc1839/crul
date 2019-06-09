@@ -19,7 +19,8 @@ package crul.chemistry.species
 import crul.math.coordsys.Vector3D
 
 /**
- *  Interface for a complex, which is a species that is also set of subspecies.
+ *  Interface for a complex, which is a species that is also a collection of
+ *  subspecies.
  *
  *  Subspecies are unique and are in the same order between iterations.
  *
@@ -35,7 +36,7 @@ interface Complex<S : Species> :
 
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
     override fun contains(species: S): Boolean =
-        iterator().asSequence().contains(species)
+        iterator().asSequence().any { it === species }
 
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
     override fun containsAll(speciesCollection: Collection<S>): Boolean =
@@ -49,7 +50,7 @@ interface Complex<S : Species> :
             .asSequence()
             .toList()
             .flatMap { it.atoms() }
-            .distinct()
+            .distinctBy { SpeciesSetElement(it) }
 
     override fun clone(): Complex<S> =
         @Suppress("UNCHECKED_CAST") (

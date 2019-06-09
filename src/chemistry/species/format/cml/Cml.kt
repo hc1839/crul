@@ -38,6 +38,7 @@ import crul.chemistry.species.Element
 import crul.chemistry.species.Molecule
 import crul.chemistry.species.MoleculeComplex
 import crul.chemistry.species.MoleculeComplexBuilder
+import crul.chemistry.species.SpeciesSetElement
 import crul.float.Comparison.nearlyEquals
 import crul.math.coordsys.Vector3D
 import crul.measure.Quantity
@@ -45,7 +46,10 @@ import crul.measure.dimension.BaseDimension
 import crul.measure.unit.UnitOfMeasure
 
 /**
- *  Serializes this complex to CML.
+ *  Exports this molecule complex in CML format.
+ *
+ *  @param complexId
+ *      Non-empty string to use as the complex identifier in the CML output.
  *
  *  @param fromLengthUnit
  *      The unit of length that the coordinates are in.
@@ -53,13 +57,28 @@ import crul.measure.unit.UnitOfMeasure
  *  @param toLengthUnit
  *      The unit of length that the coordinates in the CML output are in. Unit
  *      information is not stored in the CML output.
+ *
+ *  @param atomIdMapper
+ *      Identifier to use for an atom in the CML output given the atom and this
+ *      complex.
+ *
+ *  @return
+ *      CML serialization of this complex.
  */
 @JvmOverloads
-fun <A : Atom> MoleculeComplex<A>.toCml(
+fun <A : Atom> MoleculeComplex<A>.exportCml(
+    complexId: String,
     fromLengthUnit: UnitOfMeasure,
-    toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao")
+    toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
+    atomIdMapper: (A, MoleculeComplex<A>) -> String
 ): String
 {
+    if (complexId.isEmpty()) {
+        throw IllegalArgumentException(
+            "Complex identifier is empty."
+        )
+    }
+
     if (!fromLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."
@@ -100,18 +119,26 @@ fun <A : Atom> MoleculeComplex<A>.toCml(
         }
     )
 
-    moleculeNode.setAttribute("id", id)
+    moleculeNode.setAttribute("id", complexId)
 
     // Create and append the node for an array of atoms.
     val atomArrayNode = cmlDoc.createElement("atomArray")
     moleculeNode.appendChild(atomArrayNode)
+
+    // For serializing the bonds.
+    val atomIdsByAtom = mutableMapOf<SpeciesSetElement<A>, String>()
 
     // Create and append a node for each atom.
     for (atom in atoms()) {
         val atomNode = cmlDoc.createElement("atom")
         atomArrayNode.appendChild(atomNode)
 
-        atomNode.setAttribute("id", atom.id)
+        val atomId = atomIdMapper.invoke(atom, this)
+
+        // Store the atom ID for bond serialization.
+        atomIdsByAtom[SpeciesSetElement(atom)] = atomId
+
+        atomNode.setAttribute("id", atomId)
         atomNode.setAttribute("elementType", atom.element.symbol)
 
         val cmptsByName = listOf("x3", "y3", "z3")
@@ -164,7 +191,9 @@ fun <A : Atom> MoleculeComplex<A>.toCml(
             "atomRefs2",
             bond
                 .atoms()
-                .map { it.id }
+                .map { atom ->
+                    atomIdsByAtom[SpeciesSetElement(atom)]!!
+                }
                 .joinToString(" ")
         )
 
@@ -183,27 +212,33 @@ fun <A : Atom> MoleculeComplex<A>.toCml(
 }
 
 /**
- *  Parses CML, and imports the constructs.
+ *  Parses CML format.
  *
- *  The `id` attribute of the root element, `molecule`, is used to set the
- *  complex identifier in this builder.
- *
- *  Constructs in the CML are merged in to the data in this builder.
+ *  The `id` attribute of the root element, `molecule`, is ignored.
  *
  *  @param cml
- *      CML to parse and import.
+ *      CML to parse.
  *
  *  @param fromLengthUnit
  *      Unit of length that the coordinates in the CML are in.
  *
  *  @param toLengthUnit
  *      Unit of length that the coordinates in the deserialized complex are in.
+ *
+ *  @param atomTagMapper
+ *      Atom tag given an atom identifier from the CML input. If `null`, atom
+ *      tags are not set.
+ *
+ *  @return
+ *      Molecule complex deserialized from CML.
  */
-fun MoleculeComplexBuilder<*>.parseInCml(
+@JvmOverloads
+fun MoleculeComplex.Companion.parseCml(
     cml: String,
     fromLengthUnit: UnitOfMeasure,
-    toLengthUnit: UnitOfMeasure
-): MoleculeComplexBuilder<*>
+    toLengthUnit: UnitOfMeasure,
+    atomTagMapper: ((String) -> Int)? = null
+): MoleculeComplex<Atom>
 {
     if (!fromLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
         throw IllegalArgumentException(
@@ -277,13 +312,23 @@ fun MoleculeComplexBuilder<*>.parseInCml(
             )
         }
 
+        val atomTag = atomTagMapper?.invoke(atomId)
+
         // Construct the atom.
-        val atom: Atom = Atom.newInstance(
-            element,
-            centroid,
-            formalCharge,
-            atomId
-        )
+        val atom: Atom = if (atomTag != null) {
+            Atom.newInstance(
+                element,
+                centroid,
+                formalCharge,
+                atomTag
+            )
+        } else {
+            Atom.newInstance(
+                element,
+                centroid,
+                formalCharge
+            )
+        }
 
         atomsById[atomId] = atom
     }
@@ -346,22 +391,28 @@ fun MoleculeComplexBuilder<*>.parseInCml(
         )
     }
 
-    setId(moleculeNode.getAttribute("id"))
+    val complexBuilder = MoleculeComplexBuilder.newInstance()
 
     // Add the bonds to the builder.
     for (bond in bonds) {
-        addBond(bond)
+        complexBuilder.addBond(bond)
     }
+
+    // Set of wrapped atoms that are participating in a bond.
+    val wrappedBondedAtoms = bonds
+        .flatMap { bond -> bond.atoms() }
+        .map { atom -> SpeciesSetElement(atom) }
+        .toSet()
 
     // Add atoms that are not participating in a bond to the builder.
     for (
-        atomId in
-        atomsById.keys - bonds.flatMap { bond ->
-            bond.atoms().map { atom -> atom.id }
-        }.distinct()
+        atom in
+        atomsById.values.filter { atom ->
+            SpeciesSetElement(atom) !in wrappedBondedAtoms
+        }
     ) {
-        addAtom(atomsById[atomId]!!)
+        complexBuilder.addAtom(atom)
     }
 
-    return this
+    return complexBuilder.build<Atom>()
 }

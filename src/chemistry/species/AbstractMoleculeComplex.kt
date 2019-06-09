@@ -23,25 +23,17 @@ import org.apache.avro.generic.*
 import crul.serialize.AvroSimple
 
 private object AbstractMoleculeComplexAvsc {
+    /**
+     *  Absolute path to the Avro schema file with respect to the JAR.
+     */
+    val path: String =
+        "/crul/chemistry/species/AbstractMoleculeComplex.avsc"
+
+    /**
+     *  Avro schema for the serialization of [AbstractMoleculeComplex].
+     */
     val schema: Schema = Schema.Parser().parse(
-        """
-       |{
-       |    "type": "record",
-       |    "namespace": "crul.chemistry.species",
-       |    "name": "AbstractMoleculeComplex",
-       |    "fields": [
-       |        {
-       |            "type": { "type": "array", "items": "bytes" },
-       |            "name": "molecule_subspecies"
-       |        },
-       |        {
-       |            "type": { "type": "array", "items": "bytes" },
-       |            "name": "atom_subspecies"
-       |        },
-       |        { "type": "string", "name": "id" }
-       |    ]
-       |}
-        """.trimMargin()
+        this::class.java.getResourceAsStream(path)
     )
 }
 
@@ -55,50 +47,40 @@ abstract class AbstractMoleculeComplex<A : Atom> :
     AbstractComplex<Species>,
     MoleculeComplex<A>
 {
-    override val id: String
-
     /**
      *  @param subspecies
      *      Molecules and atoms of the complex.
-     *
-     *  @param id
-     *      Identifier for this complex.
      */
-    @JvmOverloads
-    constructor(
-        subspecies: Collection<Species>,
-        id: String = crul.uuid.Generator.inNCName()
-    ): super(subspecies)
-    {
+    constructor(subspecies: Collection<Species>): super(subspecies) {
         if (!subspecies.all { it is Molecule<*> || it is Atom }) {
             throw IllegalArgumentException(
                 "Subspecies are not molecules or atoms."
             )
         }
 
-        if (id.isEmpty()) {
+        // Distinct atoms from each subspecies.
+        val wrappedAtomSets = subspecies.map { species ->
+            species.atoms().map { atom ->
+                SpeciesSetElement(atom)
+            }.toSet()
+        }
+
+        // Number of distinct atoms across all subspecies.
+        val numDistinctAtoms = wrappedAtomSets
+            .flatten()
+            .distinct()
+            .count()
+
+        if (
+            numDistinctAtoms !=
+                wrappedAtomSets.fold(0) { acc, item ->
+                    acc + item.count()
+                }
+        ) {
             throw IllegalArgumentException(
-                "Complex identifier is an empty string."
+                "At least one atom exists in more than one subspecies."
             )
         }
-
-        // Atom identifiers from all subspecies without removing redundancies.
-        val atomIds = subspecies.flatMap { species ->
-            species.atoms().map { atom ->
-                atom.id
-            }
-        }
-
-        for (atomId in atomIds.toSet()) {
-            if (atomIds.filter { it == atomId }.count() > 1) {
-                throw IllegalArgumentException(
-                    "Atom identifier exists in more than one subspecies: " +
-                    "$atomId"
-                )
-            }
-        }
-
-        this.id = id
     }
 
     /**
@@ -109,25 +91,11 @@ abstract class AbstractMoleculeComplex<A : Atom> :
      *
      *  @param deep
      *      Whether molecules and atoms are copied.
-     *
-     *  @param id
-     *      Identifier to use for the copied complex.
      */
-    @JvmOverloads
     constructor(
         other: AbstractMoleculeComplex<A>,
-        deep: Boolean = false,
-        id: String = other.id
+        deep: Boolean = false
     ): super(other, deep)
-    {
-        if (id.isEmpty()) {
-            throw IllegalArgumentException(
-                "Identifier for the copied complex is an empty string."
-            )
-        }
-
-        this.id = id
-    }
 
     /**
      *  Delegated deserialization constructor.
@@ -142,8 +110,7 @@ abstract class AbstractMoleculeComplex<A : Atom> :
         } +
         (avroRecord.get("atom_subspecies") as List<ByteBuffer>).map {
             atomDeserializer.invoke(it)
-        },
-        avroRecord.get("id").toString()
+        }
     )
 
     /**
@@ -162,19 +129,19 @@ abstract class AbstractMoleculeComplex<A : Atom> :
 
     override fun getSubspeciesWithAtom(atom: A): Species? =
         toList()
-            .filter {
-                when (it) {
+            .filter { subspecies ->
+                when (subspecies) {
                     is Molecule<*> -> {
                         @Suppress("UNCHECKED_CAST") (
-                            (it as Molecule<A>).containsAtom(atom)
+                            (subspecies as Molecule<A>).containsAtom(atom)
                         )
                     }
 
-                    is Atom -> it == atom
+                    is Atom -> subspecies === atom
 
                     else -> throw RuntimeException(
                         "[Internal Error] Unexpected type: " +
-                        "${it::class.qualifiedName}"
+                        "${subspecies::class.qualifiedName}"
                     )
                 }
             }
@@ -226,8 +193,6 @@ abstract class AbstractMoleculeComplex<A : Atom> :
                     }
                 }
             )
-
-            avroRecord.put("id", obj.id)
 
             return AvroSimple.serializeData<GenericRecord>(
                 AbstractMoleculeComplexAvsc.schema,

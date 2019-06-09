@@ -23,25 +23,17 @@ import org.apache.avro.generic.*
 import crul.serialize.AvroSimple
 
 private object AbstractMoleculeAvsc {
+    /**
+     *  Absolute path to the Avro schema file with respect to the JAR.
+     */
+    val path: String =
+        "/crul/chemistry/species/AbstractMolecule.avsc"
+
+    /**
+     *  Avro schema for the serialization of [AbstractMolecule].
+     */
     val schema: Schema = Schema.Parser().parse(
-        """
-       |{
-       |    "type": "record",
-       |    "namespace": "crul.chemistry.species",
-       |    "name": "AbstractMolecule",
-       |    "fields": [
-       |        {
-       |            "type": { "type": "map", "values": "bytes" },
-       |            "name": "atoms_by_id"
-       |        },
-       |        {
-       |            "type": { "type": "array", "items": "bytes" },
-       |            "name": "bonds",
-       |            "doc": "crul.chemistry.species.Bond"
-       |        }
-       |    ]
-       |}
-        """.trimMargin()
+        this::class.java.getResourceAsStream(path)
     )
 }
 
@@ -56,25 +48,28 @@ abstract class AbstractMolecule<A : Atom> :
     Molecule<A>
 {
     /**
-     *  Lists of bonds associated by the identifier of the participating atom.
+     *  Lists of bonds associated by the participating atom.
      */
-    private val bondListsByAtomId: Map<String, List<Bond<A>>>
+    private val bondListsByAtom: Map<SpeciesSetElement<A>, List<Bond<A>>>
 
     /**
      *  @param bonds
-     *      Non-empty set of bonds of the molecule. Exception is raised if (1)
-     *      two unequal atoms have the same identifier, (2) two bonds have
-     *      equal atoms but unequal orders, or (3) set of bonds represents more
-     *      than one molecule.
+     *      Non-empty collection of bonds of the molecule. Order is not
+     *      important, and referentially equivalent bonds are removed.
+     *      Exception is raised if (1) two bonds have referentially equal atoms
+     *      but unequal orders or (2) collection of bonds represents more than
+     *      one molecule.
      */
-    constructor(bonds: Set<Bond<A>>): super(
+    constructor(bonds: Collection<Bond<A>>): super(
         if (!bonds.isEmpty()) {
-            bonds.flatMap { it.atoms() }.distinct()
+            bonds
+                .flatMap { it.atoms() }
+                .distinctBy { SpeciesSetElement(it) }
         } else {
-            throw IllegalArgumentException("Set of bonds is empty.")
+            throw IllegalArgumentException("Collection of bonds is empty.")
         }
     ) {
-        this.bondListsByAtomId = bondIndexing(bonds.toSet())
+        this.bondListsByAtom = bondIndexing(bonds)
     }
 
     /**
@@ -92,13 +87,13 @@ abstract class AbstractMolecule<A : Atom> :
         deep: Boolean = false
     ): this(
         if (deep) {
-            val clonedAtomsById = other
+            val clonedAtomsByOtherAtom = other
                 .atoms()
-                .map {
+                .map { SpeciesSetElement(it) }
+                .associateWith {
                     @Suppress("UNCHECKED_CAST")
-                    it.clone() as A
+                    it.species.clone() as A
                 }
-                .associateBy { it.id }
 
             // Bonds cannot be directly cloned, since the same atom
             // participating in more than one bond would be cloned.
@@ -108,35 +103,37 @@ abstract class AbstractMolecule<A : Atom> :
                     val (otherAtom1, otherAtom2) = otherBond.toAtomPair()
 
                     Bond.newInstance(
-                        clonedAtomsById[otherAtom1.id]!!,
-                        clonedAtomsById[otherAtom2.id]!!,
+                        clonedAtomsByOtherAtom[
+                            SpeciesSetElement(otherAtom1)
+                        ]!!,
+                        clonedAtomsByOtherAtom[
+                            SpeciesSetElement(otherAtom2)
+                        ]!!,
                         otherBond.order
                     )
                 }
-                .toSet()
         } else {
-            other.bonds().toSet()
+            other.bonds()
         }
     )
 
     override fun bonds(): Collection<Bond<A>> =
-        bondListsByAtomId.values.flatten().distinct()
-
-    override fun getBondsByAtom(atom: A): Set<Bond<A>> {
-        if (!bondListsByAtomId.contains(atom.id)) {
-            "No such atom: ${atom.id}"
+        bondListsByAtom.values.flatten().distinctBy {
+            SpeciesSetElement(it)
         }
 
-        val bondList = bondListsByAtomId[atom.id]!!
+    override fun getBondsByAtom(atom: A): List<Bond<A>> {
+        val wrappedAtom = SpeciesSetElement(atom)
 
-        if (!bondList.first().atoms().contains(atom)) {
+        if (!bondListsByAtom.containsKey(wrappedAtom)) {
             throw IllegalArgumentException(
-                "Given atom is not equal to the atom " +
-                "of the same identifier: ${atom.id}"
+                "No such atom."
             )
         }
 
-        return bondList.toSet()
+        val bondList = bondListsByAtom[wrappedAtom]!!
+
+        return bondList.toList()
     }
 
     /**
@@ -147,27 +144,28 @@ abstract class AbstractMolecule<A : Atom> :
         atomDeserializer: (ByteBuffer) -> A
     ): super(
         @Suppress("UNCHECKED_CAST") (
-            avroRecord.get("atoms_by_id") as Map<*, ByteBuffer>
+            avroRecord.get("atoms") as List<ByteBuffer>
         )
-        .values
         .map { atomDeserializer.invoke(it) }
     ) {
-        val atomsById = subspecies.associateBy {
-            it.id
-        }
-
+        // Deserialize the bonds from Avro records.
         val bonds =
             @Suppress("UNCHECKED_CAST") (
-                avroRecord.get("bonds")
-                as List<ByteBuffer>
+                avroRecord.get("bonds") as List<GenericRecord>
             )
-            .map { bondBuf ->
-                Bond.deserialize(bondBuf) { atomId ->
-                    atomsById[atomId]!!
-                }
+            .map { bondRecord ->
+                val atom1Index = bondRecord.get("atom1_index") as Int
+                val atom2Index = bondRecord.get("atom2_index") as Int
+                val bondOrder = bondRecord.get("bond_order").toString()
+
+                Bond.newInstance(
+                    subspecies[atom1Index],
+                    subspecies[atom2Index],
+                    bondOrder
+                )
             }
 
-        this.bondListsByAtomId = bondIndexing(bonds.toSet())
+        this.bondListsByAtom = bondIndexing(bonds)
     }
 
     /**
@@ -185,21 +183,29 @@ abstract class AbstractMolecule<A : Atom> :
     )
 
     override fun getBond(atom1: A, atom2: A): Bond<A>? {
+        val wrappedAtom1 = SpeciesSetElement(atom1)
+        val wrappedAtom2 = SpeciesSetElement(atom2)
+
         if (
-            !bondListsByAtomId.contains(atom1.id) ||
-            !bondListsByAtomId.contains(atom2.id)
+            !bondListsByAtom.contains(wrappedAtom1) ||
+            !bondListsByAtom.contains(wrappedAtom2)
         ) {
             return null
         }
 
-        val bond = bondListsByAtomId[atom1.id]!!.intersect(
-            bondListsByAtomId[atom2.id]!!
+        val bond = bondListsByAtom[wrappedAtom1]!!.intersect(
+            bondListsByAtom[wrappedAtom2]!!
         ).singleOrNull()
 
         return if (bond == null) {
             null
         } else {
-            if (bond.atoms().toSet() == setOf(atom1, atom2)) {
+            val wrappedBondAtoms = bond
+                .atoms()
+                .map { SpeciesSetElement(it) }
+                .toSet()
+
+            if (wrappedBondAtoms == setOf(wrappedAtom1, wrappedAtom2)) {
                 bond
             } else {
                 null
@@ -209,25 +215,43 @@ abstract class AbstractMolecule<A : Atom> :
 
     companion object {
         /**
-         *  Indexing of the bonds from a set of bonds.
+         *  Avro schema of a record that is the serialization of a bond.
+         */
+        private val bondRecordSchema: Schema = Schema.Parser().parse(
+            """
+           |{
+           |    "type": "record",
+           |    "name": "bond",
+           |    "fields": [
+           |        { "type": "int", "name": "atom1_index" },
+           |        { "type": "int", "name": "atom2_index" },
+           |        { "type": "string", "name": "bond_order" }
+           |    ]
+           |}
+            """.trimMargin()
+        )
+
+        /**
+         *  Indexing of the bonds from a collection of bonds.
          *
          *  @param bonds
-         *      Non-empty set of bonds of the molecule. Exception is raised if
-         *      (1) two unequal atoms have the same identifier, (2) two bonds
-         *      have equal atoms but unequal orders, or (3) set of bonds
-         *      represents more than one molecule.
+         *      Non-empty collection of bonds of the molecule. Order is not
+         *      important, and referentially equivalent bonds are removed.
+         *      Exception is raised if (1) two bonds have referentially equal
+         *      atoms but unequal orders or (2) collection of bonds represents
+         *      more than one molecule.
          *
          *  @return
-         *      Map of atom identifier to list of bonds that the atom is
+         *      Map of wrapped atom to list of bonds that the atom is
          *      participating.
          */
         private fun <A : Atom> bondIndexing(
-            bonds: Set<Bond<A>>
-        ): Map<String, List<Bond<A>>>
+            bonds: Collection<Bond<A>>
+        ): Map<SpeciesSetElement<A>, List<Bond<A>>>
         {
             if (bonds.isEmpty()) {
                 throw IllegalArgumentException(
-                    "Set of bonds is empty."
+                    "Collection of bonds is empty."
                 )
             }
 
@@ -235,24 +259,28 @@ abstract class AbstractMolecule<A : Atom> :
 
             if (bondAggregates.count() != 1) {
                 throw IllegalArgumentException(
-                    "Set of bonds represents more than one molecule."
+                    "Collection of bonds represents more than one molecule."
                 )
             }
 
             val bondAggregate = bondAggregates.single()
-            val bondListsByAtomId = mutableMapOf<String, MutableList<Bond<A>>>()
+
+            val bondListsByAtom =
+                mutableMapOf<SpeciesSetElement<A>, MutableList<Bond<A>>>()
 
             for (bond in bondAggregate) {
                 for (atom in bond.atoms()) {
-                    if (!bondListsByAtomId.contains(atom.id)) {
-                        bondListsByAtomId[atom.id] = mutableListOf()
+                    val wrappedAtom = SpeciesSetElement(atom)
+
+                    if (!bondListsByAtom.containsKey(wrappedAtom)) {
+                        bondListsByAtom[wrappedAtom] = mutableListOf()
                     }
 
-                    bondListsByAtomId[atom.id]!!.add(bond)
+                    bondListsByAtom[wrappedAtom]!!.add(bond)
                 }
             }
 
-            return bondListsByAtomId.mapValues { (_, bondList) ->
+            return bondListsByAtom.mapValues { (_, bondList) ->
                 bondList.toList()
             }
         }
@@ -279,22 +307,35 @@ abstract class AbstractMolecule<A : Atom> :
                 AbstractMoleculeAvsc.schema
             )
 
-            avroRecord.put(
-                "atoms_by_id",
-                obj
-                    .atoms()
-                    .associateBy { it.id }
-                    .mapValues { (_, atom) ->
-                        atomSerializer.invoke(atom)
-                    }
-            )
+            val atoms = obj.atoms()
 
             avroRecord.put(
-                "bonds",
-                obj.bonds().map {
-                    Bond.serialize(it)
+                "atoms",
+                atoms.map {
+                    atomSerializer.invoke(it)
                 }
             )
+
+            // Serialize the bonds to Avro records.
+            val bondsArray = obj.bonds().map { bond ->
+                val bondRecord = GenericData.Record(
+                    bondRecordSchema
+                )
+
+                val atomIndices = bond.toAtomPair().toList().map { bondAtom ->
+                    atoms.indexOfFirst { objAtom ->
+                        objAtom === bondAtom
+                    }
+                }
+
+                bondRecord.put("atom1_index", atomIndices[0])
+                bondRecord.put("atom2_index", atomIndices[1])
+                bondRecord.put("bond_order", bond.order)
+
+                bondRecord
+            }
+
+            avroRecord.put("bonds", bondsArray)
 
             return AvroSimple.serializeData<GenericRecord>(
                 AbstractMoleculeAvsc.schema,

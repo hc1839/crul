@@ -40,19 +40,25 @@ import crul.measure.unit.UnitOfMeasure
  *      The unit of length that the coordinates in the XYZ output are in.
  *
  *  @param label
- *      Label to use for the complex in the XYZ output.
+ *      Non-empty string to use as the complex label in the XYZ output.
  *
  *  @param separator
  *      Separator to use between columns in the output.
  */
 @JvmOverloads
 fun <A : Atom> MoleculeComplex<A>.toXyz(
+    label: String,
     fromLengthUnit: UnitOfMeasure,
     toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
-    label: String = id,
     separator: String = " "
 ): String
 {
+    if (label.isEmpty()) {
+        throw IllegalArgumentException(
+            "Complex label is empty."
+        )
+    }
+
     if (!fromLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."

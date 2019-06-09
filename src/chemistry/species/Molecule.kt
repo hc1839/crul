@@ -23,35 +23,25 @@ import org.apache.avro.generic.*
 import crul.serialize.AvroSimple
 
 private object MoleculeAvsc {
+    /**
+     *  Absolute path to the Avro schema file with respect to the JAR.
+     */
+    val path: String =
+        "/crul/chemistry/species/Molecule.avsc"
+
+    /**
+     *  Avro schema for the serialization of [Molecule].
+     */
     val schema: Schema = Schema.Parser().parse(
-        """
-       |{
-       |    "type": "record",
-       |    "namespace": "crul.chemistry.species",
-       |    "name": "Molecule",
-       |    "fields": [
-       |        {
-       |            "type": { "type": "map", "values": "bytes" },
-       |            "name": "atoms_by_id"
-       |        },
-       |        {
-       |            "type": { "type": "array", "items": "bytes" },
-       |            "name": "bonds",
-       |            "doc": "crul.chemistry.species.Bond"
-       |        }
-       |    ]
-       |}
-        """.trimMargin()
+        this::class.java.getResourceAsStream(path)
     )
 }
 
 /**
- *  Interface for a molecule, which is a [Fragment] of at least two atoms with
- *  unique identifiers and has every pair of atoms connected by bonds, directly
- *  or indirectly.
+ *  Interface for a molecule, which is a [Fragment] of at least two atoms and
+ *  has every pair of atoms connected by bonds, directly or indirectly.
  *
- *  Equality operator, `==`, is used for comparing atoms. Within the same
- *  molecule, two equal atoms must have the same identifier and vice versa.
+ *  Atoms are referentially distinct.
  *
  *  @param A
  *      Type of atoms in this molecule.
@@ -79,10 +69,8 @@ interface Molecule<A : Atom> : Fragment<A> {
      *  @return
      *      Bonds that the given atom is participating in.
      */
-    fun getBondsByAtom(atom: A): Set<Bond<A>> =
-        bonds()
-            .filter { it.containsAtom(atom) }
-            .toSet()
+    fun getBondsByAtom(atom: A): List<Bond<A>> =
+        bonds().filter { it.containsAtom(atom) }
 
     /**
      *  Gets the bond between two atoms.
@@ -119,13 +107,30 @@ interface Molecule<A : Atom> : Fragment<A> {
 
     companion object {
         /**
+         *  Avro schema of a record that is the serialization of a bond.
+         */
+        private val bondRecordSchema: Schema = Schema.Parser().parse(
+            """
+           |{
+           |    "type": "record",
+           |    "name": "bond",
+           |    "fields": [
+           |        { "type": "int", "name": "atom1_index" },
+           |        { "type": "int", "name": "atom2_index" },
+           |        { "type": "string", "name": "bond_order" }
+           |    ]
+           |}
+            """.trimMargin()
+        )
+
+        /**
          *  Constructs a [Molecule].
          *
          *  @param bonds
          *      Bonds of the molecule.
          */
         @JvmStatic
-        fun <A : Atom> newInstance(bonds: Set<Bond<A>>): Molecule<A> =
+        fun <A : Atom> newInstance(bonds: Collection<Bond<A>>): Molecule<A> =
             MoleculeImpl(bonds)
 
         /**
@@ -150,22 +155,35 @@ interface Molecule<A : Atom> : Fragment<A> {
                 MoleculeAvsc.schema
             )
 
-            avroRecord.put(
-                "atoms_by_id",
-                obj
-                    .atoms()
-                    .associateBy { it.id }
-                    .mapValues { (_, atom) ->
-                        atomSerializer.invoke(atom)
-                    }
-            )
+            val atoms = obj.atoms()
 
             avroRecord.put(
-                "bonds",
-                obj.bonds().map {
-                    Bond.serialize(it)
+                "atoms",
+                atoms.map {
+                    atomSerializer.invoke(it)
                 }
             )
+
+            // Serialize the bonds to Avro records.
+            val bondsArray = obj.bonds().map { bond ->
+                val bondRecord = GenericData.Record(
+                    bondRecordSchema
+                )
+
+                val atomIndices = bond.toAtomPair().toList().map { bondAtom ->
+                    atoms.indexOfFirst { objAtom ->
+                        objAtom === bondAtom
+                    }
+                }
+
+                bondRecord.put("atom1_index", atomIndices[0])
+                bondRecord.put("atom2_index", atomIndices[1])
+                bondRecord.put("bond_order", bond.order)
+
+                bondRecord
+            }
+
+            avroRecord.put("bonds", bondsArray)
 
             return AvroSimple.serializeData<GenericRecord>(
                 MoleculeAvsc.schema,
@@ -196,31 +214,32 @@ interface Molecule<A : Atom> : Fragment<A> {
                 avroData
             ).first()
 
-            val atomsById =
+            val atoms =
                 @Suppress("UNCHECKED_CAST") (
-                    avroRecord.get("atoms_by_id")
-                    as Map<*, ByteBuffer>
+                    avroRecord.get("atoms") as List<ByteBuffer>
                 )
-                .map { (atomId, atomBuf) ->
-                    Pair(
-                        atomId.toString(),
-                        atomDeserializer.invoke(atomBuf)
-                    )
+                .map {
+                    atomDeserializer.invoke(it)
                 }
-                .toMap()
 
+            // Deserialize the bonds from Avro records.
             val bonds =
                 @Suppress("UNCHECKED_CAST") (
-                    avroRecord.get("bonds")
-                    as List<ByteBuffer>
+                    avroRecord.get("bonds") as List<GenericRecord>
                 )
-                .map { bondBuf ->
-                    Bond.deserialize(bondBuf) { atomId ->
-                        atomsById[atomId]!!
-                    }
+                .map { bondRecord ->
+                    val atom1Index = bondRecord.get("atom1_index") as Int
+                    val atom2Index = bondRecord.get("atom2_index") as Int
+                    val bondOrder = bondRecord.get("bond_order").toString()
+
+                    Bond.newInstance(
+                        atoms[atom1Index],
+                        atoms[atom2Index],
+                        bondOrder
+                    )
                 }
 
-            return newInstance(bonds.toSet())
+            return newInstance(bonds)
         }
     }
 }

@@ -19,56 +19,36 @@ package crul.chemistry.species
 /**
  *  Mutable builder for [MoleculeComplex].
  *
- *  This builder can be cloned, which is useful in building complexes that
- *  differ from each other only in some regions.
- *
  *  To construct an instance of this class, use [newInstance].
  */
-open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
+open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> {
+    /*
+     *  TODO: Make this builder cloneable, so that it can be used in building
+     *  complexes that differ from each other only in some regions.
+     */
+
     @Suppress("UNCHECKED_CAST")
     protected val _this: B = this as B
 
     /**
      *  Backing property for the bonds in the complex.
      */
-    private val bonds: MutableSet<Bond<*>> = mutableSetOf()
+    private val wrappedBonds: MutableSet<SpeciesSetElement<Bond<*>>> =
+        mutableSetOf()
 
     /**
      *  Backing property for the atoms.
      */
-    private val atoms: MutableSet<Atom> = mutableSetOf()
+    private val wrappedAtoms: MutableSet<SpeciesSetElement<Atom>> =
+        mutableSetOf()
 
     protected constructor()
-
-    /**
-     *  Copy constructor.
-     *
-     *  Atoms and bonds are cloned.
-     */
-    constructor(other: MoleculeComplexBuilder<B>) {
-        this.bonds.addAll(other.bonds.map { it.clone() })
-        this.atoms.addAll(other.atoms.map { it.clone() })
-        this.id = other.id
-    }
-
-    protected var id: String? = null
-        private set
-
-    /**
-     *  Configures the identifier.
-     *
-     *  If it is not set, UUID Version 4 is used.
-     */
-    fun setId(value: String?): B {
-        id = value
-        return _this
-    }
 
     /**
      *  Adds a bond.
      */
     open fun addBond(newBond: Bond<*>): B {
-        bonds.add(newBond)
+        wrappedBonds.add(SpeciesSetElement(newBond))
         return _this
     }
 
@@ -76,7 +56,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      *  Removes a bond.
      */
     open fun removeBond(oldBond: Bond<*>): B {
-        bonds.remove(oldBond)
+        wrappedBonds.remove(SpeciesSetElement(oldBond))
         return _this
     }
 
@@ -84,7 +64,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      *  Adds an atom.
      */
     open fun addAtom(newAtom: Atom): B {
-        atoms.add(newAtom)
+        wrappedAtoms.add(SpeciesSetElement(newAtom))
         return _this
     }
 
@@ -92,7 +72,7 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      *  Removes an atom.
      */
     open fun removeAtom(oldAtom: Atom): B {
-        atoms.remove(oldAtom)
+        wrappedAtoms.remove(SpeciesSetElement(oldAtom))
         return _this
     }
 
@@ -102,8 +82,8 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
      *  Complex identifier is not modified.
      */
     protected fun clear(): B {
-        bonds.clear()
-        atoms.clear()
+        wrappedBonds.clear()
+        wrappedAtoms.clear()
 
         return _this
     }
@@ -114,27 +94,24 @@ open class MoleculeComplexBuilder<B : MoleculeComplexBuilder<B>> : Cloneable {
     open fun <A : Atom> build(): MoleculeComplex<A> {
         val molecules = BondAggregator
             .aggregate(
-                @Suppress("UNCHECKED_CAST") (
-                    bonds as Set<Bond<A>>
-                )
+                wrappedBonds.map {
+                    @Suppress("UNCHECKED_CAST") (
+                        it.species as Bond<A>
+                    )
+                }
             )
             .map { bondList ->
-                Molecule.newInstance(bondList.toSet())
+                Molecule.newInstance(bondList)
             }
 
         return MoleculeComplexImpl(
-            molecules + atoms.toList(),
-            id ?: crul.uuid.Generator.inNCName()
+            molecules + wrappedAtoms.map {
+                @Suppress("UNCHECKED_CAST") (
+                    it.species as A
+                )
+            }
         )
     }
-
-    /**
-     *  Clones this builder.
-     *
-     *  Atoms and bonds are cloned.
-     */
-    public override fun clone(): MoleculeComplexBuilder<B> =
-        MoleculeComplexBuilder(this)
 
     companion object {
         private class MoleculeComplexBuilderImpl() :

@@ -43,29 +43,16 @@ open class AtomBuilder<B : AtomBuilder<B>> {
         return _this
     }
 
-    protected var id: String? = null
+    protected var centroid: Vector3D? = null
         private set
 
     /**
-     *  Configures the identifier.
-     *
-     *  If it is not set, UUID Version 4 is used.
-     */
-    fun setId(value: String?): B {
-        id = value
-        return _this
-    }
-
-    protected var position: Vector3D? = null
-        private set
-
-    /**
-     *  Configures the position.
+     *  Configures the centroid.
      *
      *  It must be set before [build] is called.
      */
-    fun setPosition(value: Vector3D): B {
-        position = value
+    fun setCentroid(value: Vector3D): B {
+        centroid = value
         return _this
     }
 
@@ -82,15 +69,28 @@ open class AtomBuilder<B : AtomBuilder<B>> {
         return _this
     }
 
+    protected var tag: Int? = null
+        private set
+
+    /**
+     *  Configures the tag.
+     *
+     *  If not set, `0` is used.
+     */
+    fun setTag(value: Int?): B {
+        tag = value
+        return _this
+    }
+
     /**
      *  Constructs an [Atom] from the data in this builder.
      */
     open fun build(): Atom =
         Atom.newInstance(
             element!!,
-            position!!,
+            centroid!!,
             formalCharge!!,
-            id ?: crul.uuid.Generator.inNCName()
+            tag ?: 0
         )
 
     companion object {

@@ -25,71 +25,73 @@ object BondAggregator {
      *  molecule.
      *
      *  @param bonds
-     *      Set of bonds that represents a complex. If two unequal atoms have
-     *      the same identifier, an exception is raised. If two bonds have
-     *      equal atoms but unequal orders, an exception is raised.
+     *      Collection of bonds. Order is not important, and referentially
+     *      equivalent bonds are removed.  Exception is raised if two bonds
+     *      have referentially equal atoms but unequal orders.
      *
      *  @return
-     *      List of bond lists such that different bond lists do not share
-     *      equal atoms.
+     *      List of bond lists such that different bond lists correspond to
+     *      different molecules.
      */
     @JvmStatic
-    fun <A : Atom> aggregate(bonds: Set<Bond<A>>): List<List<Bond<A>>> {
+    fun <A : Atom> aggregate(bonds: Collection<Bond<A>>): List<List<Bond<A>>> {
         if (bonds.isEmpty()) {
             return listOf()
         }
 
+        // Bonds that are referentially distinct.
+        val distinctBonds = bonds.distinctBy {
+            SpeciesSetElement(it)
+        }
+
         if (
-            bonds.count() !=
-            bonds
-                .distinctBy { bond -> bond.atoms().toSet() }
+            distinctBonds.count() !=
+            distinctBonds
+                .distinctBy { bond ->
+                    // Make the distinction of a bond depend only on the atoms
+                    // and not on the bond order.
+                    bond.atoms().map { atom ->
+                        SpeciesSetElement(atom)
+                    }.toSet()
+                }
                 .count()
         ) {
             throw IllegalArgumentException(
-                "Two bonds have equal atoms but unequal orders."
+                "Two bonds have equal atoms but unequal bond orders."
             )
         }
 
-        val atomsById: MutableMap<String, A> = mutableMapOf()
-
-        // Index the atoms.
-        for (bond in bonds) {
-            for (atom in bond.atoms()) {
-                if (!atomsById.contains(atom.id)) {
-                    atomsById[atom.id] = atom
-                } else if (atomsById[atom.id]!! != atom) {
-                    throw IllegalArgumentException(
-                        "Two unequal atoms have the same identifier: " +
-                        "${atom.id}"
-                    )
-                }
-            }
-        }
-
-        // Sets of identifiers of atoms that are bonded to the key of the map.
-        val bondPartnerSetsByAtomId: MutableMap<String, Set<String>> =
-            atomsById.keys.associateWith { setOf<String>() }.toMutableMap()
+        // Sets of wrapped atoms that are bonded to the key of the map.
+        val bondPartnerSetsByAtom: Map<
+            SpeciesSetElement<A>,
+            MutableSet<SpeciesSetElement<A>>> = bonds
+                .flatMap { bond -> bond.atoms() }
+                .map { atom -> SpeciesSetElement(atom) }
+                .associateWith { mutableSetOf<SpeciesSetElement<A>>() }
+                .toMutableMap()
 
         // Index the bonds.
         for (bond in bonds) {
             val (atom1, atom2) = bond.toAtomPair()
 
-            bondPartnerSetsByAtomId[atom1.id] =
-                bondPartnerSetsByAtomId[atom1.id]!!.plusElement(atom2.id)
+            bondPartnerSetsByAtom[SpeciesSetElement(atom1)]!!.add(
+                SpeciesSetElement(atom2)
+            )
 
-            bondPartnerSetsByAtomId[atom2.id] =
-                bondPartnerSetsByAtomId[atom2.id]!!.plusElement(atom1.id)
+            bondPartnerSetsByAtom[SpeciesSetElement(atom2)]!!.add(
+                SpeciesSetElement(atom1)
+            )
         }
 
-        var remainingBondGroups = bondPartnerSetsByAtomId.map {
-            (srcAtomId, dstAtomIds) ->
+        var remainingBondGroups = bondPartnerSetsByAtom.map {
+            (srcAtom, dstAtoms) ->
 
-            dstAtomIds.plusElement(srcAtomId)
+            dstAtoms.plusElement(srcAtom)
         }
 
         // Builder for the groups of atom identifiers, each of which represents
         // a molecule.
-        val aggregatesBuilder = mutableListOf<Set<String>>(
+        val aggregatesBuilder = mutableListOf<Set<SpeciesSetElement<A>>>(
             remainingBondGroups.first()
         )
 
@@ -116,14 +118,18 @@ object BondAggregator {
             }
         }
 
-        // Convert each set of atom identifiers, which represents a molecule,
-        // to a list of bonds.
-        return aggregatesBuilder.map { atomIds ->
+        // Convert each set of wrapped atoms, which represents a molecule, to a
+        // list of bonds.
+        return aggregatesBuilder.map { wrappedAtoms ->
+            val atoms = wrappedAtoms.map { it.species }
+
             // Filter bonds such that at least one of its atoms is in the
             // group.
-            bonds.filter { bond ->
+            distinctBonds.filter { bond ->
                 bond.atoms().any { bondAtom ->
-                    atomIds.contains(bondAtom.id)
+                    atoms.any { atom ->
+                        atom === bondAtom
+                    }
                 }
             }
         }

@@ -1,0 +1,26 @@
+{
+    "type": "record",
+    "namespace": "crul.chemistry.species",
+    "name": "Molecule",
+    "fields": [
+        {
+            "type": { "type": "array", "items": "bytes" },
+            "name": "atoms"
+        },
+        {
+            "type": {
+                "type": "array",
+                "items": {
+                    "type": "record",
+                    "name": "bond",
+                    "fields": [
+                        { "type": "int", "name": "atom1_index" },
+                        { "type": "int", "name": "atom2_index" },
+                        { "type": "string", "name": "bond_order" }
+                    ]
+                }
+            },
+            "name": "bonds"
+        }
+    ]
+}

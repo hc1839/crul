@@ -1,0 +1,11 @@
+{
+    "type": "record",
+    "namespace": "crul.chemistry.species",
+    "name": "AbstractFragment",
+    "fields": [
+        {
+            "type": { "type": "array", "items": "bytes" },
+            "name": "atoms"
+        }
+    ]
+}

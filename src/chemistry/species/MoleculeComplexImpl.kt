@@ -26,16 +26,8 @@ internal class MoleculeComplexImpl<A : Atom> : AbstractMoleculeComplex<A> {
     /**
      *  @param subspecies
      *      Molecules and atoms of the complex.
-     *
-     *  @param id
-     *      Identifier for this complex. It must conform to XML NCName
-     *      production.
      */
-    @JvmOverloads
-    constructor(
-        subspecies: Collection<Species>,
-        id: String = crul.uuid.Generator.inNCName()
-    ): super(subspecies, id)
+    constructor(subspecies: Collection<Species>): super(subspecies)
 
     /**
      *  Copy constructor.
@@ -43,13 +35,9 @@ internal class MoleculeComplexImpl<A : Atom> : AbstractMoleculeComplex<A> {
     @JvmOverloads
     constructor(
         other: MoleculeComplexImpl<A>,
-        deep: Boolean = false,
-        id: String = other.id
-    ): super(other, deep, id)
+        deep: Boolean = false
+    ): super(other, deep)
 
     override fun clone(deep: Boolean): MoleculeComplexImpl<A> =
         MoleculeComplexImpl(this, deep)
-
-    override fun clone(deep: Boolean, newId: String): MoleculeComplexImpl<A> =
-        MoleculeComplexImpl(this, deep, newId)
 }

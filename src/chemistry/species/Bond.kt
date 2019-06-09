@@ -22,27 +22,10 @@ import org.apache.avro.generic.*
 
 import crul.serialize.AvroSimple
 
-private object BondAvsc {
-    val schema: Schema = Schema.Parser().parse(
-        """
-       |{
-       |    "type": "record",
-       |    "namespace": "crul.chemistry.species",
-       |    "name": "Bond",
-       |    "fields": [
-       |        { "type": "string", "name": "atom1_id" },
-       |        { "type": "string", "name": "atom2_id" },
-       |        { "type": "string", "name": "order" }
-       |    ]
-       |}
-        """.trimMargin()
-    )
-}
-
 /**
  *  Interface for a bond in a molecule.
  *
- *  Atoms in a bond are not equal to each other and have different identifiers.
+ *  Atoms in a bond are not referentially equal to each other.
  *
  *  To construct an instance of this class, use [newInstance].
  *
@@ -64,7 +47,7 @@ interface Bond<A : Atom> : Fragment<A> {
 
     /**
      *  Bonds are equal if and only if the atoms (without regards to their
-     *  order) and bond order are equal.
+     *  order) are referentially equal and bond orders are structurally equal.
      */
     abstract override fun equals(other: Any?): Boolean
 
@@ -98,68 +81,5 @@ interface Bond<A : Atom> : Fragment<A> {
             order: String
         ): Bond<A> =
             BondImpl(atom1, atom2, order)
-
-        /**
-         *  Serializes a [Bond] in Apache Avro.
-         *
-         *  @param obj
-         *      [Bond] to serialize.
-         *
-         *  @return
-         *      Avro serialization of `obj`.
-         */
-        @JvmStatic
-        fun <A : Atom> serialize(obj: Bond<A>): ByteBuffer {
-            val avroRecord = GenericData.Record(
-                BondAvsc.schema
-            )
-
-            val (atom1, atom2) = obj.toAtomPair()
-
-            avroRecord.put("atom1_id", atom1.id)
-            avroRecord.put("atom2_id", atom2.id)
-            avroRecord.put("order", obj.order)
-
-            return AvroSimple.serializeData<GenericRecord>(
-                BondAvsc.schema,
-                listOf(avroRecord)
-            )
-        }
-
-        /**
-         *  Deserializes a [Bond] in Apache Avro.
-         *
-         *  @param avroData
-         *      Serialized [Bond] as returned by [serialize].
-         *
-         *  @param atomMapper
-         *      Function that maps an atom identifier to an [Atom].
-         *
-         *  @return
-         *      Deserialized [Bond].
-         */
-        @JvmStatic
-        fun <A : Atom> deserialize(
-            avroData: ByteBuffer,
-            atomMapper: (String) -> A
-        ): Bond<A>
-        {
-            val avroRecord = AvroSimple.deserializeData<GenericRecord>(
-                BondAvsc.schema,
-                avroData
-            ).first()
-
-            val atom1 = atomMapper.invoke(
-                avroRecord.get("atom1_id").toString()
-            )
-
-            val atom2 = atomMapper.invoke(
-                avroRecord.get("atom2_id").toString()
-            )
-
-            val order = avroRecord.get("order").toString()
-
-            return newInstance(atom1, atom2, order)
-        }
     }
 }

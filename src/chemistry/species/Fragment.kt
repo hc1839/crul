@@ -23,25 +23,24 @@ import org.apache.avro.generic.*
 import crul.serialize.AvroSimple
 
 private object FragmentAvsc {
+    /**
+     *  Absolute path to the Avro schema file with respect to the JAR.
+     */
+    val path: String =
+        "/crul/chemistry/species/Fragment.avsc"
+
+    /**
+     *  Avro schema for the serialization of [Fragment].
+     */
     val schema: Schema = Schema.Parser().parse(
-        """
-       |{
-       |    "type": "record",
-       |    "namespace": "crul.chemistry.species",
-       |    "name": "Fragment",
-       |    "fields": [
-       |        {
-       |            "type": { "type": "array", "items": "bytes" },
-       |            "name": "atoms"
-       |        }
-       |    ]
-       |}
-        """.trimMargin()
+        this::class.java.getResourceAsStream(path)
     )
 }
 
 /**
  *  Interface for a fragment, which is a non-empty [Complex] of [Atom].
+ *
+ *  Atoms are compared by referentially equality.
  *
  *  @param A
  *      Type of atoms in this fragment.
@@ -50,17 +49,15 @@ interface Fragment<A : Atom> : Complex<A> {
     /**
      *  Whether an atom exists in this fragment.
      */
-    fun containsAtom(atom: A): Boolean
+    fun containsAtom(atom: A): Boolean =
+        atoms().any { it === atom }
 
     /**
-     *  Gets an atom by its ID, or `null` if there is no such atom.
-     *
-     *  If this fragment has more than one atom with the same given ID, the
-     *  first one encountered is returned.
+     *  Gets a list of atoms by tag, or an empty list if there are no such
+     *  atoms.
      */
-    fun getAtomById(atomId: String): A? =
-        @Suppress("UNCHECKED_CAST")
-        atoms().firstOrNull { it.id == atomId }
+    fun getAtomsByTag(tag: Int): List<A> =
+        atoms().filter { it.tag == tag }
 
     override fun atoms(): Collection<A> =
         @Suppress("UNCHECKED_CAST") (

@@ -26,7 +26,8 @@ package crul.chemistry.species
  */
 abstract class AbstractComplex<S : Species> : Complex<S> {
     /**
-     *  Subspecies in this complex.
+     *  Subspecies in this complex in the order that is given to the
+     *  constructor.
      */
     protected val subspecies: MutableList<S>
 
