@@ -68,8 +68,7 @@ data class TriposMolecule @JvmOverloads constructor(
 
         mol2RecordBuilder += molName ?: TriposStringField.FOUR_STARS
 
-        // Filtering is sufficient, since there are no string fields in this
-        // data line.
+        // Drop the trailing `null`s. There should be no intervening `null`s.
         mol2RecordBuilder +=
             listOf(
                 numAtoms,
@@ -78,7 +77,8 @@ data class TriposMolecule @JvmOverloads constructor(
                 numFeat,
                 numSets
             )
-            .map { it?.toString() ?: TriposStringField.FOUR_STARS }
+            .dropLastWhile { it == null }
+            .map { it!!.toString() }
             .joinToString(TriposRecord.FIELD_SEPARATOR)
 
         mol2RecordBuilder += molType?.value ?: TriposStringField.FOUR_STARS

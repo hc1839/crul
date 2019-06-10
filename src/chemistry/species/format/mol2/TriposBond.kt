@@ -39,7 +39,10 @@ data class TriposBond @JvmOverloads constructor(
         mol2RecordBuilder += originAtomId.toString()
         mol2RecordBuilder += targetAtomId.toString()
         mol2RecordBuilder += bondType?.value ?: TriposStringField.FOUR_STARS
-        mol2RecordBuilder += statusBits?.value ?: TriposStringField.FOUR_STARS
+
+        if (statusBits != null) {
+            mol2RecordBuilder += statusBits.value
+        }
 
         return mol2RecordBuilder.joinToString(TriposRecord.FIELD_SEPARATOR)
     }

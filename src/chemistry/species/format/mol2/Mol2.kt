@@ -50,7 +50,7 @@ import crul.math.coordsys.Vector3D
  *      Tripos bond type given a [Bond.order].
  *
  *  @return
- *      Molecule complexes in Mol2 format.
+ *      Reader of molecule complexes in Mol2 format with a trailing newline.
  */
 @JvmOverloads
 fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
@@ -164,7 +164,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
         }
     }
 
-    return StringReader(mol2Builder.joinToString("\n"))
+    return StringReader(mol2Builder.joinToString("\n") + "\n")
 }
 
 /**

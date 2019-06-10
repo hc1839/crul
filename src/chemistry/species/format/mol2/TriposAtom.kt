@@ -67,15 +67,15 @@ data class TriposAtom @JvmOverloads constructor(
         mol2RecordBuilder += z.toString()
         mol2RecordBuilder += atomType ?: TriposStringField.FOUR_STARS
 
-        mol2RecordBuilder += substId?.toString() ?:
-            TriposStringField.FOUR_STARS
-
-        mol2RecordBuilder += substName ?: TriposStringField.FOUR_STARS
-
-        mol2RecordBuilder += charge?.toString() ?:
-            TriposStringField.FOUR_STARS
-
-        mol2RecordBuilder += statusBit?.value ?: TriposStringField.FOUR_STARS
+        mol2RecordBuilder +=
+            listOf(
+                substId,
+                substName,
+                charge,
+                statusBit?.value
+            )
+            .dropLastWhile { it == null }
+            .map { it!!.toString() }
 
         return mol2RecordBuilder.joinToString(TriposRecord.FIELD_SEPARATOR)
     }
