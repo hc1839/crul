@@ -61,12 +61,7 @@ internal class Mol2ParserImpl :
      *      Reader from which Mol2 is to be read.
      */
     constructor(reader: Reader) {
-        this.parseStack = mutableListOf()
-        this.sectionType = null
-        this.currentToken = mutableListOf()
-
         val bufferedReader = BufferedReader(reader)
-        this.bufferedReader = bufferedReader
 
         var line = bufferedReader.readLine()?.trim()
 
@@ -78,6 +73,10 @@ internal class Mol2ParserImpl :
             line = bufferedReader.readLine()?.trim()
         }
 
+        this.bufferedReader = bufferedReader
+        this.parseStack = mutableListOf()
+        this.sectionType = null
+        this.currentToken = mutableListOf()
         this.lookaheadLine = line
     }
 

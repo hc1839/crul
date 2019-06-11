@@ -19,6 +19,9 @@
 
 package crul.chemistry.species.format.xyz
 
+import java.io.Reader
+import java.io.StringReader
+
 import crul.chemistry.species.Atom
 import crul.chemistry.species.Molecule
 import crul.chemistry.species.MoleculeComplex
@@ -44,14 +47,17 @@ import crul.measure.unit.UnitOfMeasure
  *
  *  @param separator
  *      Separator to use between columns in the output.
+ *
+ *  @return
+ *      Reader of this complex in XYZ format with a trailing newline.
  */
 @JvmOverloads
-fun <A : Atom> MoleculeComplex<A>.toXyz(
+fun <A : Atom> MoleculeComplex<A>.exportXyz(
     label: String,
     fromLengthUnit: UnitOfMeasure,
     toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
     separator: String = " "
-): String
+): Reader
 {
     if (label.isEmpty()) {
         throw IllegalArgumentException(
@@ -97,7 +103,5 @@ fun <A : Atom> MoleculeComplex<A>.toXyz(
         }
     }
 
-    xyzBuilder = xyzBuilder.trim() + "\n"
-
-    return xyzBuilder
+    return StringReader(xyzBuilder.trim() + "\n")
 }

@@ -19,6 +19,8 @@
 
 package crul.chemistry.species.format.cml
 
+import java.io.BufferedReader
+import java.io.Reader
 import java.io.StringReader
 import java.io.StringWriter
 import javax.xml.parsers.DocumentBuilderFactory
@@ -63,7 +65,7 @@ import crul.measure.unit.UnitOfMeasure
  *      complex.
  *
  *  @return
- *      CML serialization of this complex.
+ *      Reader of this complex in CML format with a trailing newline.
  */
 @JvmOverloads
 fun <A : Atom> MoleculeComplex<A>.exportCml(
@@ -71,7 +73,7 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
     fromLengthUnit: UnitOfMeasure,
     toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
     atomIdMapper: (A, MoleculeComplex<A>) -> String
-): String
+): Reader
 {
     if (complexId.isEmpty()) {
         throw IllegalArgumentException(
@@ -208,7 +210,7 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
 
     transformer.transform(DOMSource(cmlDoc), StreamResult(stringWriter))
 
-    return stringWriter.toString()
+    return StringReader(stringWriter.toString() + "\n")
 }
 
 /**
@@ -216,8 +218,8 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
  *
  *  The `id` attribute of the root element, `molecule`, is ignored.
  *
- *  @param cml
- *      CML to parse.
+ *  @param reader
+ *      Reader from which CML is to be read.
  *
  *  @param fromLengthUnit
  *      Unit of length that the coordinates in the CML are in.
@@ -230,11 +232,11 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
  *      tags are not set.
  *
  *  @return
- *      Molecule complex deserialized from CML.
+ *      Deserialized complex from `reader`.
  */
 @JvmOverloads
 fun MoleculeComplex.Companion.parseCml(
-    cml: String,
+    reader: Reader,
     fromLengthUnit: UnitOfMeasure,
     toLengthUnit: UnitOfMeasure,
     atomTagMapper: ((String) -> Int)? = null
@@ -258,7 +260,7 @@ fun MoleculeComplex.Companion.parseCml(
     val cmlDoc = DocumentBuilderFactory
         .newInstance()
         .newDocumentBuilder()
-        .parse(InputSource(StringReader(cml)))
+        .parse(InputSource(reader))
 
     val moleculeNode = cmlDoc.firstChild as org.w3c.dom.Element
 

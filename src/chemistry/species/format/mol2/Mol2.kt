@@ -184,7 +184,8 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
  *      Bond order given a Tripos bond type.
  *
  *  @return
- *      List of molecule complexes specified in the same order as in `reader`.
+ *      List of deserialized molecule complexes in the same order as from
+ *      `reader`.
  */
 fun MoleculeComplex.Companion.parseMol2(
     reader: Reader,
