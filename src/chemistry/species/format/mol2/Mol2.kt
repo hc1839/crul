@@ -30,6 +30,9 @@ import crul.chemistry.species.MoleculeComplex
 import crul.chemistry.species.MoleculeComplexBuilder
 import crul.chemistry.species.SpeciesSetElement
 import crul.math.coordsys.Vector3D
+import crul.measure.Quantity
+import crul.measure.dimension.Dimension
+import crul.measure.unit.UnitOfMeasure
 
 /**
  *  Exports a list of molecule complexes in Mol2 format.
@@ -37,6 +40,10 @@ import crul.math.coordsys.Vector3D
  *  Since determining the Tripos atom type is not supported, all atoms will
  *  have `Any` as the value of the Tripos atom type field. The element of an
  *  atom, then, is exported to the Tripos atom name field.
+ *
+ *  @param atomPosUnit
+ *      Unit of the coordinates that the atom positions are in. It must be a
+ *      unit of `L`.
  *
  *  @param atomIdMapper
  *      Tripos atom identifier given an atom and the complex that it is in. If
@@ -54,11 +61,18 @@ import crul.math.coordsys.Vector3D
  */
 @JvmOverloads
 fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
+    atomPosUnit: UnitOfMeasure,
     atomIdMapper: ((A, MoleculeComplex<A>) -> Int)? = null,
     molNameMapper: ((MoleculeComplex<A>) -> String)? = null,
     triposBondTypeMapper: (String) -> TriposBond.BondType
 ): Reader
 {
+    if (!atomPosUnit.isUnitOf(Dimension.parse("L"))) {
+        throw IllegalArgumentException(
+            "Unit of atom position is not a unit of length."
+        )
+    }
+
     // Builder of Mol2 lines.
     var mol2Builder = listOf<String>()
 
@@ -87,6 +101,8 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
             molNames = molNames.plusElement(uuid)
         }
     }
+
+    val angstromUnit = UnitOfMeasure.parse("Ao")
 
     // Serialize each complex.
     for ((complexIndex, complex) in withIndex()) {
@@ -120,12 +136,17 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
         // Construct Tripos-atom data.
         val triposAtomDataList = atoms
             .map { atom ->
+                // Components of the atom position in Angstroms.
+                val atomPosCmptsAo = atom.centroid.components.map {
+                    Quantity.convertUnit(it, atomPosUnit, angstromUnit)
+                }
+
                 TriposAtom(
                     atomId = atomIdsByAtom[SpeciesSetElement(atom)]!!,
                     atomName = atom.element.symbol,
-                    x = atom.centroid.components[0],
-                    y = atom.centroid.components[1],
-                    z = atom.centroid.components[2],
+                    x = atomPosCmptsAo[0],
+                    y = atomPosCmptsAo[1],
+                    z = atomPosCmptsAo[2],
                     atomType = "Any"
                 )
             }
@@ -180,6 +201,10 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
  *  @param reader
  *      Reader from which Mol2 is to be read.
  *
+ *  @param atomPosUnit
+ *      Unit of the coordinates that the atom positions are in. It must be a
+ *      unit of `L`.
+ *
  *  @param bondOrderMapper
  *      Bond order given a Tripos bond type.
  *
@@ -189,9 +214,16 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
  */
 fun MoleculeComplex.Companion.parseMol2(
     reader: Reader,
+    atomPosUnit: UnitOfMeasure,
     bondOrderMapper: (TriposBond.BondType?) -> String
 ): List<MoleculeComplex<Atom>>
 {
+    if (!atomPosUnit.isUnitOf(Dimension.parse("L"))) {
+        throw IllegalArgumentException(
+            "Unit of atom position is not a unit of length."
+        )
+    }
+
     val parser = Mol2Parser.newInstance(reader)
 
     parser.next()
@@ -262,6 +294,8 @@ fun MoleculeComplex.Companion.parseMol2(
         }
     }
 
+    val angstromUnit = UnitOfMeasure.parse("Ao")
+
     // Construct atoms from Tripos atom data for each complex. Atoms in each
     // complex are associated by Tripos atom ID for bond construction.
     val atomsByComplexId = atomDataListsByComplexId.mapValues {
@@ -296,9 +330,13 @@ fun MoleculeComplex.Companion.parseMol2(
                 }
 
                 val centroid = Vector3D(
-                    triposAtomData.x,
-                    triposAtomData.y,
-                    triposAtomData.z
+                    listOf(
+                        triposAtomData.x,
+                        triposAtomData.y,
+                        triposAtomData.z
+                    ).map {
+                        Quantity.convertUnit(it, angstromUnit, atomPosUnit)
+                    }
                 )
 
                 val formalCharge = triposAtomData.charge ?: 0.0

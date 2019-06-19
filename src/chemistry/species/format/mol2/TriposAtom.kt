@@ -19,7 +19,8 @@ package crul.chemistry.species.format.mol2
 /**
  *  Tripos `ATOM` record.
  *
- *  Parameter names correspond to those in the Mol2 format.
+ *  Parameter names correspond to those in the Mol2 format. `x`, `y`, and `z`
+ *  are in Angstroms.
  */
 data class TriposAtom @JvmOverloads constructor(
     val atomId: Int,
