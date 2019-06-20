@@ -30,7 +30,7 @@ class SiUnitSystemFactory {
 
     constructor() {
         for (baseDim in enumValues<BaseDimension>()) {
-            builder.baseUnit(baseDim, baseDim.siUnit)
+            builder.setBaseUnit(baseDim, baseDim.siUnit)
         }
     }
 

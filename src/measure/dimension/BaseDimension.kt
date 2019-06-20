@@ -113,6 +113,7 @@ enum class BaseDimension {
          *
          *  Returns `null` if there is no such base dimension.
          */
+        @JvmStatic
         fun getBySymbol(symbol: String): BaseDimension? =
             when (symbol) {
                 "L" -> LENGTH

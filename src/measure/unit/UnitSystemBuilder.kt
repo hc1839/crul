@@ -53,7 +53,7 @@ class UnitSystemBuilder {
      *  @return
      *      `this`.
      */
-    fun baseUnit(
+    fun setBaseUnit(
         baseDim: BaseDimension,
         baseUnit: UnitOfMeasure
     ): UnitSystemBuilder

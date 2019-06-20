@@ -59,6 +59,7 @@ enum class BaseUnit {
          *
          *  Returns `null` if there is no such base unit.
          */
+        @JvmStatic
         fun getByCs(cs: String): BaseUnit? =
             enumValues<BaseUnit>()
                 .asIterable()

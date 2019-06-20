@@ -49,31 +49,31 @@ class AtomicUnitSystemFactory {
             UnitOfMeasure(BaseUnit.SECOND) * 2.418884326505e-17
 
         builder
-            .baseUnit(
+            .setBaseUnit(
                 BaseDimension.LENGTH,
                 UnitOfMeasure(BaseUnit.METER) * 5.2917721092e-11
             )
-            .baseUnit(
+            .setBaseUnit(
                 BaseDimension.MASS,
                 UnitOfMeasure.parse("kg") * 9.10938291e-31
             )
-            .baseUnit(
+            .setBaseUnit(
                 BaseDimension.TIME,
                 atomicTimeUnit
             )
-            .baseUnit(
+            .setBaseUnit(
                 BaseDimension.ELECTRIC_CURRENT,
                 UnitOfMeasure(BaseUnit.COULOMB) * 1.602176565e-19 / atomicTimeUnit
             )
-            .baseUnit(
+            .setBaseUnit(
                 BaseDimension.THERMODYNAMIC_TEMPERATURE,
                 UnitOfMeasure(BaseUnit.KELVIN) * 3.1577464e5
             )
-            .baseUnit(
+            .setBaseUnit(
                 BaseDimension.AMOUNT_OF_SUBSTANCE,
                 UnitOfMeasure.parse("mol")
             )
-            .baseUnit(
+            .setBaseUnit(
                 BaseDimension.LUMINOUS_INTENSITY,
                 UnitOfMeasure(BaseUnit.CANDELA) * 671.2146654428731
             )
