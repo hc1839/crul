@@ -108,7 +108,7 @@ private object UnitOfMeasureAvsc {
        |        { "type": "double", "name": "magnitude" },
        |        {
        |            "type": { "type": "map", "values": "int" },
-       |            "name": "dimension"
+       |            "name": "exponents"
        |        }
        |    ]
        |}
@@ -131,14 +131,14 @@ class UnitOfMeasure {
     /**
      *  Base units associated with their exponents as a backing property.
      */
-    private val _dimension: MutableMap<BaseUnit, Int> = mutableMapOf()
+    private val _exponents: MutableMap<BaseUnit, Int> = mutableMapOf()
 
     /**
      *  Base unit raised to the power of 1.
      */
     constructor(baseUnit: BaseUnit) {
         this.magnitude = 1.0
-        this._dimension[baseUnit] = 1
+        this._exponents[baseUnit] = 1
     }
 
     /**
@@ -154,9 +154,9 @@ class UnitOfMeasure {
     private constructor(avroRecord: GenericRecord) {
         this.magnitude = avroRecord.get("magnitude") as Double
 
-        this._dimension.putAll(
+        this._exponents.putAll(
             @Suppress("UNCHECKED_CAST") (
-                avroRecord.get("dimension") as Map<*, Int>
+                avroRecord.get("exponents") as Map<*, Int>
             )
             .mapKeys { (baseUnitCs, _) ->
                 BaseUnit.getByCs(baseUnitCs.toString())!!
@@ -179,20 +179,20 @@ class UnitOfMeasure {
      *
      *  Only entries where the exponent is non-zero is returned.
      */
-    val dimension: Map<BaseUnit, Int>
-        get() = _dimension.filter { (_, exp) -> exp != 0 }
+    val exponents: Map<BaseUnit, Int>
+        get() = _exponents.filter { (_, exp) -> exp != 0 }
 
     /**
      *  Whether this unit is commensurable with another unit.
      */
     fun isCommensurableWith(other: UnitOfMeasure): Boolean =
-        dimension == other.dimension
+        exponents == other.exponents
 
     /**
-     *  Whether this unit is a unit of a given dimension.
+     *  Whether this unit is a unit of a given ISQ dimension.
      *
      *  @param dimension
-     *      Dimension to test.
+     *      ISQ dimension to test.
      *
      *  @return
      *      `true` if this unit is a unit of `dimension`; `false` if otherwise.
@@ -201,10 +201,10 @@ class UnitOfMeasure {
         isCommensurableWith(SiUnitSystem.createUnit(dimension))
 
     /**
-     *  Whether this unit is a unit of a given dimension in ISQ.
+     *  Whether this unit is a unit of a given dimension in ISQ format.
      *
      *  @param dimension
-     *      Dimension in ISQ to test.
+     *      Dimension in ISQ format to test.
      *
      *  @return
      *      `true` if this unit is a unit of `dimension`; `false` if otherwise.
@@ -248,13 +248,13 @@ class UnitOfMeasure {
                 val newMagnitude = 1.0 / unitPositivePowered.magnitude
 
                 val newDim = unitPositivePowered
-                    .dimension
+                    .exponents
                     .mapValues { (_, exp) -> -exp }
 
                 newObj.magnitude = newMagnitude
 
                 for ((baseUnit, exp) in newDim) {
-                    newObj._dimension[baseUnit] = exp
+                    newObj._exponents[baseUnit] = exp
                 }
 
                 newObj
@@ -282,7 +282,7 @@ class UnitOfMeasure {
 
         newObj.magnitude = magnitude.pow(1.0 / n)
 
-        val newDim = dimension
+        val newDim = exponents
             .mapValues { (_, exp) ->
                 if (exp % n != 0) {
                     throw RuntimeException(
@@ -294,7 +294,7 @@ class UnitOfMeasure {
             }
 
         for ((baseUnit, exp) in newDim) {
-            newObj._dimension[baseUnit] = exp
+            newObj._exponents[baseUnit] = exp
         }
 
         return newObj
@@ -303,14 +303,14 @@ class UnitOfMeasure {
     operator fun times(other: UnitOfMeasure): UnitOfMeasure {
         val newObj = UnitOfMeasure()
 
-        val thisDim = dimension
-        val otherDim = other.dimension
+        val thisDim = exponents
+        val otherDim = other.exponents
 
         newObj.magnitude = magnitude * other.magnitude
 
         // Add the exponents of each base unit.
         for (baseUnit in thisDim.keys.union(otherDim.keys)) {
-            newObj._dimension[baseUnit] =
+            newObj._exponents[baseUnit] =
                 thisDim.getOrDefault(baseUnit, 0) +
                 otherDim.getOrDefault(baseUnit, 0)
         }
@@ -323,8 +323,8 @@ class UnitOfMeasure {
 
         newObj.magnitude = magnitude * value
 
-        for ((baseUnit, exp) in dimension) {
-            newObj._dimension[baseUnit] = exp
+        for ((baseUnit, exp) in exponents) {
+            newObj._exponents[baseUnit] = exp
         }
 
         return newObj
@@ -333,14 +333,14 @@ class UnitOfMeasure {
     operator fun div(other: UnitOfMeasure): UnitOfMeasure {
         val newObj = UnitOfMeasure()
 
-        val thisDim = dimension
-        val otherDim = other.dimension
+        val thisDim = exponents
+        val otherDim = other.exponents
 
         newObj.magnitude = magnitude / other.magnitude
 
         // Subtract the exponents of each base unit.
         for (baseUnit in thisDim.keys.union(otherDim.keys)) {
-            newObj._dimension[baseUnit] =
+            newObj._exponents[baseUnit] =
                 thisDim.getOrDefault(baseUnit, 0) -
                 otherDim.getOrDefault(baseUnit, 0)
         }
@@ -349,7 +349,7 @@ class UnitOfMeasure {
     }
 
     override fun hashCode(): Int =
-        listOf(dimension).hashCode()
+        listOf(exponents).hashCode()
 
     /**
      *  Uses [float.Comparison.nearlyEquals] for the magnitude component.
@@ -362,7 +362,7 @@ class UnitOfMeasure {
                 magnitude,
                 other.magnitude
             ) &&
-            dimension == other.dimension
+            exponents == other.exponents
         )
 
     companion object {
@@ -458,8 +458,8 @@ class UnitOfMeasure {
             avroRecord.put("magnitude", obj.magnitude)
 
             avroRecord.put(
-                "dimension",
-                obj.dimension.mapKeys { (baseUnit, _) ->
+                "exponents",
+                obj.exponents.mapKeys { (baseUnit, _) ->
                     baseUnit.cs
                 }
             )
