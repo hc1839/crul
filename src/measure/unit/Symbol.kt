@@ -191,14 +191,47 @@ class UnitOfMeasure {
     /**
      *  Whether this unit is a unit of a given ISQ dimension.
      *
+     *  Since `mol` is not one of the UCUM base units, the ISQ dimension, `N`,
+     *  is ignored.
+     *
      *  @param dimension
      *      ISQ dimension to test.
      *
      *  @return
      *      `true` if this unit is a unit of `dimension`; `false` if otherwise.
      */
-    fun isUnitOf(dimension: Dimension): Boolean =
-        isCommensurableWith(SiUnitSystem.createUnit(dimension))
+    fun isUnitOf(dimension: Dimension): Boolean {
+        // Exponents associated by base dimension without amount of substance.
+        val expsByBaseDim = dimension.exponents -
+            BaseDimension.AMOUNT_OF_SUBSTANCE
+
+        val testDim = if (!expsByBaseDim.isEmpty()) {
+            expsByBaseDim
+                .map { (baseDim, exp) ->
+                    Dimension(baseDim).pow(exp)
+                }
+                .reduce { acc, dim ->
+                    acc * dim
+                }
+        } else {
+            Dimension()
+        }
+
+        val thisDim = if (!exponents.isEmpty()) {
+            exponents
+                .entries
+                .map { (baseUnit, exp) ->
+                    baseUnit.dimension.pow(exp)
+                }
+                .reduce { acc, dim ->
+                    acc * dim
+                }
+        } else {
+            Dimension()
+        }
+
+        return thisDim == testDim
+    }
 
     /**
      *  Whether this unit is a unit of a given dimension in ISQ format.
