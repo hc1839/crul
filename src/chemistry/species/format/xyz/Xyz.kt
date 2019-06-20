@@ -27,6 +27,7 @@ import crul.chemistry.species.Molecule
 import crul.chemistry.species.MoleculeComplex
 import crul.measure.Quantity
 import crul.measure.dimension.BaseDimension
+import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
 
 /**
@@ -65,13 +66,13 @@ fun <A : Atom> MoleculeComplex<A>.exportXyz(
         )
     }
 
-    if (!fromLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
+    if (!fromLengthUnit.isUnitOf(Dimension(BaseDimension.LENGTH))) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."
         )
     }
 
-    if (!toLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
+    if (!toLengthUnit.isUnitOf(Dimension(BaseDimension.LENGTH))) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."
         )

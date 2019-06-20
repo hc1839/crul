@@ -46,7 +46,7 @@ private object UnitSystemAvsc {
 /**
  *  Immutable system of units.
  */
-class UnitSystem {
+open class UnitSystem {
     /**
      *  Base units associated by base dimensions.
      */
@@ -68,7 +68,7 @@ class UnitSystem {
                 )
             }
 
-            if (!baseUnit.isCommensurableWith(baseDim.siUnit)) {
+            if (!baseUnit.isUnitOf(Dimension(baseDim))) {
                 throw IllegalArgumentException(
                     "Base unit is not commensurable with the " +
                     "corresponding SI base unit of '${baseDim.name}'."

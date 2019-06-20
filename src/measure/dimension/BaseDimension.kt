@@ -16,9 +16,6 @@
 
 package crul.measure.dimension
 
-import crul.measure.unit.BaseUnit
-import crul.measure.unit.UnitOfMeasure
-
 /**
  *  Base dimension according to the International System of Quantities (ISQ).
  */
@@ -28,9 +25,6 @@ enum class BaseDimension {
      */
     LENGTH {
         override val symbol: String = "L"
-
-        override val siUnit: UnitOfMeasure =
-            UnitOfMeasure(BaseUnit.METER)
     },
 
     /**
@@ -38,9 +32,6 @@ enum class BaseDimension {
      */
     MASS {
         override val symbol: String = "M"
-
-        override val siUnit: UnitOfMeasure =
-            UnitOfMeasure.parse("kg")
     },
 
     /**
@@ -48,9 +39,6 @@ enum class BaseDimension {
      */
     TIME {
         override val symbol: String = "T"
-
-        override val siUnit: UnitOfMeasure =
-            UnitOfMeasure(BaseUnit.SECOND)
     },
 
     /**
@@ -58,9 +46,6 @@ enum class BaseDimension {
      */
     ELECTRIC_CURRENT {
         override val symbol: String = "I"
-
-        override val siUnit: UnitOfMeasure =
-            UnitOfMeasure.parse("A")
     },
 
     /**
@@ -68,9 +53,6 @@ enum class BaseDimension {
      */
     THERMODYNAMIC_TEMPERATURE {
         override val symbol: String = "Th"
-
-        override val siUnit: UnitOfMeasure =
-            UnitOfMeasure(BaseUnit.KELVIN)
     },
 
     /**
@@ -78,9 +60,6 @@ enum class BaseDimension {
      */
     AMOUNT_OF_SUBSTANCE {
         override val symbol: String = "N"
-
-        override val siUnit: UnitOfMeasure =
-            UnitOfMeasure.parse("mol")
     },
 
     /**
@@ -88,9 +67,6 @@ enum class BaseDimension {
      */
     LUMINOUS_INTENSITY {
         override val symbol: String = "J"
-
-        override val siUnit: UnitOfMeasure =
-            UnitOfMeasure(BaseUnit.CANDELA)
     };
 
     /**
@@ -101,11 +77,6 @@ enum class BaseDimension {
      *  theta, '`Th`'.
      */
     abstract val symbol: String
-
-    /**
-     *  SI unit.
-     */
-    abstract val siUnit: UnitOfMeasure
 
     companion object {
         /**

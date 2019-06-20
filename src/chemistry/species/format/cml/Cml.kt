@@ -45,6 +45,7 @@ import crul.float.Comparison.nearlyEquals
 import crul.math.coordsys.Vector3D
 import crul.measure.Quantity
 import crul.measure.dimension.BaseDimension
+import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
 
 /**
@@ -81,13 +82,13 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
         )
     }
 
-    if (!fromLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
+    if (!fromLengthUnit.isUnitOf(Dimension(BaseDimension.LENGTH))) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."
         )
     }
 
-    if (!toLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
+    if (!toLengthUnit.isUnitOf(Dimension(BaseDimension.LENGTH))) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."
         )
@@ -242,13 +243,13 @@ fun MoleculeComplex.Companion.parseCml(
     atomTagMapper: ((String) -> Int)? = null
 ): MoleculeComplex<Atom>
 {
-    if (!fromLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
+    if (!fromLengthUnit.isUnitOf(Dimension(BaseDimension.LENGTH))) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."
         )
     }
 
-    if (!toLengthUnit.isCommensurableWith(BaseDimension.LENGTH.siUnit)) {
+    if (!toLengthUnit.isUnitOf(Dimension(BaseDimension.LENGTH))) {
         throw IllegalArgumentException(
             "Unit of a coordinate must be a unit of length."
         )

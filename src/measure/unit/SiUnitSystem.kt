@@ -19,24 +19,29 @@ package crul.measure.unit
 import crul.measure.dimension.BaseDimension
 
 /**
- *  Factory for SI unit system.
+ *  SI unit system.
  */
-class SiUnitSystemFactory {
-    /**
-     *  Builder for construction.
-     */
-    private val builder: UnitSystemBuilder =
-        UnitSystemBuilder.newInstance()
+object SiUnitSystem : UnitSystem(
+    mapOf(
+        BaseDimension.LENGTH to
+            UnitOfMeasure(BaseUnit.METER),
 
-    constructor() {
-        for (baseDim in enumValues<BaseDimension>()) {
-            builder.setBaseUnit(baseDim, baseDim.siUnit)
-        }
-    }
+        BaseDimension.MASS to
+            UnitOfMeasure.parse("kg"),
 
-    /**
-     *  Constructs an SI unit system.
-     */
-    fun create(): UnitSystem =
-        builder.build()
-}
+        BaseDimension.TIME to
+            UnitOfMeasure(BaseUnit.SECOND),
+
+        BaseDimension.ELECTRIC_CURRENT to
+            UnitOfMeasure.parse("A"),
+
+        BaseDimension.THERMODYNAMIC_TEMPERATURE to
+            UnitOfMeasure(BaseUnit.KELVIN),
+
+        BaseDimension.AMOUNT_OF_SUBSTANCE to
+            UnitOfMeasure.parse("mol"),
+
+        BaseDimension.LUMINOUS_INTENSITY to
+            UnitOfMeasure(BaseUnit.CANDELA)
+    )
+)

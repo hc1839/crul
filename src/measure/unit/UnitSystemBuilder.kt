@@ -17,6 +17,7 @@
 package crul.measure.unit
 
 import crul.measure.dimension.BaseDimension
+import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
 
 /**
@@ -24,21 +25,24 @@ import crul.measure.unit.UnitOfMeasure
  *
  *  To construct an instance of this class, use [newInstance].
  */
-class UnitSystemBuilder {
-    private constructor()
+open class UnitSystemBuilder<B : UnitSystemBuilder<B>> {
+    @Suppress("UNCHECKED_CAST")
+    protected val _this: B = this as B
+
+    protected constructor()
 
     /**
      *  Base units to use for each base dimension when constructing a
      *  [UnitSystem].
      */
-    private val baseUnits: MutableMap<BaseDimension, UnitOfMeasure?> =
+    protected val baseUnits: MutableMap<BaseDimension, UnitOfMeasure?> =
         enumValues<BaseDimension>()
             .asIterable()
             .associateWith { null }
             .toMutableMap()
 
     /**
-     *  Sets the base unit of a base dimension.
+     *  Configures the base unit of a base dimension.
      *
      *  Base units for all base dimensions must be set before [build] is
      *  called.
@@ -56,9 +60,9 @@ class UnitSystemBuilder {
     fun setBaseUnit(
         baseDim: BaseDimension,
         baseUnit: UnitOfMeasure
-    ): UnitSystemBuilder
+    ): B
     {
-        if (!baseUnit.isCommensurableWith(baseDim.siUnit)) {
+        if (!baseUnit.isUnitOf(Dimension(baseDim))) {
             throw IllegalArgumentException(
                 "New base unit is not commensurable with the " +
                 "corresponding SI base unit of '${baseDim.name}'."
@@ -67,7 +71,7 @@ class UnitSystemBuilder {
 
         baseUnits[baseDim] = baseUnit
 
-        return this
+        return _this
     }
 
     /**
@@ -87,11 +91,14 @@ class UnitSystemBuilder {
         )
 
     companion object {
+        private class UnitSystemBuilderImpl():
+            UnitSystemBuilder<UnitSystemBuilderImpl>()
+
         /**
          *  Creates an instance of [UnitSystemBuilder].
          */
         @JvmStatic
-        fun newInstance(): UnitSystemBuilder =
-            UnitSystemBuilder()
+        fun newInstance(): UnitSystemBuilder<*> =
+            UnitSystemBuilderImpl()
     }
 }

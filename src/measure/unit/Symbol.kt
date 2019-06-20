@@ -198,7 +198,7 @@ class UnitOfMeasure {
      *      `true` if this unit is a unit of `dimension`; `false` if otherwise.
      */
     fun isUnitOf(dimension: Dimension): Boolean =
-        isCommensurableWith(siUnitSystem.createUnit(dimension))
+        isCommensurableWith(SiUnitSystem.createUnit(dimension))
 
     /**
      *  Whether this unit is a unit of a given dimension in ISQ.
@@ -366,12 +366,6 @@ class UnitOfMeasure {
         )
 
     companion object {
-        /**
-         *  SI unit system.
-         */
-        private val siUnitSystem: UnitSystem =
-            SiUnitSystemFactory().create()
-
         /**
          *  JSON of UCUM derived units parsed by Gson.
          */
