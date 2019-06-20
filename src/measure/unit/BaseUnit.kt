@@ -16,42 +16,70 @@
 
 package crul.measure.unit
 
+import crul.measure.dimension.Dimension
+
 /**
  *  Base unit according to the Unified Code for Units of Measure (UCUM).
  */
 enum class BaseUnit {
     METER {
         override val cs: String = "m"
+
+        override val dimension: Dimension =
+            Dimension.parse("L")
     },
 
     SECOND {
         override val cs: String = "s"
+
+        override val dimension: Dimension =
+            Dimension.parse("T")
     },
 
     GRAM {
         override val cs: String = "g"
+
+        override val dimension: Dimension =
+            Dimension.parse("M")
     },
 
     RADIAN {
         override val cs: String = "rad"
+
+        override val dimension: Dimension =
+            Dimension()
     },
 
     KELVIN {
         override val cs: String = "K"
+
+        override val dimension: Dimension =
+            Dimension.parse("Th")
     },
 
     COULOMB {
         override val cs: String = "C"
+
+        override val dimension: Dimension =
+            Dimension.parse("T.I")
     },
 
     CANDELA {
         override val cs: String = "cd"
+
+        override val dimension: Dimension =
+            Dimension.parse("J")
     };
 
     /**
      *  UCUM c/s symbol.
      */
     abstract val cs: String
+
+    /**
+     *  ISQ dimension of the base unit.
+     */
+    abstract val dimension: Dimension
 
     companion object {
         /**
