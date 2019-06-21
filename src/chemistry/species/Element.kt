@@ -76,9 +76,15 @@ class Element {
 
     /**
      *  @param symbol
-     *      Symbol of the element.
+     *      Symbol of the element. If invalid, an exception is raised.
      */
     constructor(symbol: String) {
+        if (!isValidSymbol(symbol)) {
+            throw IllegalArgumentException(
+                "Not a valid symbol: $symbol"
+            )
+        }
+
         this.symbol = symbol
     }
 
@@ -150,6 +156,13 @@ class Element {
         )
 
     companion object {
+        /**
+         *  Whether a given symbol is a symbol of a known element.
+         */
+        @JvmStatic
+        fun isValidSymbol(symbol: String): Boolean =
+            ElementStore.json.containsKey(symbol)
+
         /**
          *  Gets the symbol of an element by its atomic number.
          *
