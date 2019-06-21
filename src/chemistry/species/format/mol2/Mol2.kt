@@ -202,8 +202,8 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
  *      Reader from which Mol2 is to be read.
  *
  *  @param atomPosUnit
- *      Unit of the coordinates that the atom positions are in. It must be a
- *      unit of `L`.
+ *      Unit of the coordinates that the positions of the deserialized atoms
+ *      are in. It must be a unit of `L`.
  *
  *  @param bondOrderMapper
  *      Bond order given a Tripos bond type.

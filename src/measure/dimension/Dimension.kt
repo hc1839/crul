@@ -203,16 +203,21 @@ class Dimension {
          *  according to [Production].
          */
         @JvmStatic
-        fun parse(dimensionText: String): Dimension =
-            if (isBase(dimensionText)) {
-                Dimension(BaseDimension.getBySymbol(dimensionText)!!)
+        fun parse(dimensionText: String): Dimension {
+            val dimTextTrimmed = dimensionText.trim()
+
+            return if (isBase(dimTextTrimmed)) {
+                Dimension(BaseDimension.getBySymbol(dimTextTrimmed)!!)
+            } else if (dimTextTrimmed == "1") {
+                Dimension()
             } else {
-                val tokens = TokenIterator(dimensionText)
+                val tokens = TokenIterator(dimTextTrimmed)
                 val actuator = Actuator(tokens)
                 val parseRoot = actuator.actuate()
 
                 parseRoot.getUserData(Production.userDataKey) as Dimension
             }
+        }
 
         /**
          *  Serializes a [Dimension] in MessagePack.

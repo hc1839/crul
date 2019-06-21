@@ -450,28 +450,33 @@ class UnitOfMeasure {
          *      Unit specified in the UCUM format.
          */
         @JvmStatic
-        fun parse(unitText: String): UnitOfMeasure =
-            if (isBase(unitText)) {
-                UnitOfMeasure(BaseUnit.getByCs(unitText)!!)
-            } else if (unitText == "1") {
+        fun parse(unitText: String): UnitOfMeasure {
+            val unitTextTrimmed = unitText.trim()
+
+            return if (isBase(unitTextTrimmed)) {
+                UnitOfMeasure(BaseUnit.getByCs(unitTextTrimmed)!!)
+            } else if (unitTextTrimmed == "1") {
                 UnitOfMeasure()
-            } else if (isUnitAtom(unitText)) {
+            } else if (isUnitAtom(unitTextTrimmed)) {
                 // It is a unit atom that is not a base unit.
 
                 val defValue =
-                    derivedUnits[unitText]!!["definition-value"] as Double
+                    derivedUnits[unitTextTrimmed]!!["definition-value"]
+                        as Double
 
                 val defUnitText =
-                    derivedUnits[unitText]!!["definition-unit"] as String
+                    derivedUnits[unitTextTrimmed]!!["definition-unit"]
+                        as String
 
                 parse(defUnitText) * defValue
             } else {
-                val tokens = TokenIterator(unitText)
+                val tokens = TokenIterator(unitTextTrimmed)
                 val actuator = Actuator(tokens)
                 val parseRoot = actuator.actuate()
 
                 parseRoot.getUserData(Production.userDataKey) as UnitOfMeasure
             }
+        }
 
         /**
          *  Serializes a [UnitOfMeasure] in Apache Avro.
