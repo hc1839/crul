@@ -100,4 +100,11 @@ interface Species : Cloneable {
                 atomIter.next().centroid += value
             }
         }
+
+    /**
+     *  Gets a list of atoms by tag, or an empty list if there are no such
+     *  atoms.
+     */
+    fun getAtomsByTag(tag: Int): List<Atom> =
+        atoms().filter { it.tag == tag }
 }

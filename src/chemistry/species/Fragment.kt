@@ -52,16 +52,14 @@ interface Fragment<A : Atom> : Complex<A> {
     fun containsAtom(atom: A): Boolean =
         atoms().any { it === atom }
 
-    /**
-     *  Gets a list of atoms by tag, or an empty list if there are no such
-     *  atoms.
-     */
-    fun getAtomsByTag(tag: Int): List<A> =
-        atoms().filter { it.tag == tag }
-
     override fun atoms(): Collection<A> =
         @Suppress("UNCHECKED_CAST") (
             super.atoms() as Collection<A>
+        )
+
+    override fun getAtomsByTag(tag: Int): List<A> =
+        @Suppress("UNCHECKED_CAST") (
+            super.getAtomsByTag(tag) as List<A>
         )
 
     override fun clone(): Fragment<A> =
