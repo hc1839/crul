@@ -110,9 +110,7 @@ object BondAggregator {
                     .fold(aggregatesBuilder.last()) { acc, partner ->
                         acc + partner
                     }
-            }
-
-            if (!remainingBondGroups.isEmpty()) {
+            } else {
                 aggregatesBuilder.add(remainingBondGroups.first())
                 remainingBondGroups = remainingBondGroups.drop(1)
             }
