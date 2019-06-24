@@ -113,7 +113,16 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
 
         mol2Builder += TriposMolecule(
             molName = molNames[complexIndex],
-            numAtoms = atoms.count()
+            numAtoms = atoms.count(),
+            numBonds = complex
+                .map {
+                    if (it is Molecule<*>) {
+                        it.bonds().count()
+                    } else {
+                        0
+                    }
+                }
+                .sum()
         ).exportMol2()
 
         // Tripos atom IDs associated by wrapped atom.

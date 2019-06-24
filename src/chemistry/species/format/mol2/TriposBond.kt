@@ -20,6 +20,8 @@ package crul.chemistry.species.format.mol2
  *  Tripos `BOND` record.
  *
  *  Parameter names correspond to those in the Mol2 format.
+ *
+ *  @constructor
  */
 data class TriposBond @JvmOverloads constructor(
     val bondId: Int,

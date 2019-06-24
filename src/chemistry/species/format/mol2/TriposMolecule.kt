@@ -20,11 +20,16 @@ package crul.chemistry.species.format.mol2
  *  Tripos `MOLECULE` record.
  *
  *  Parameter names correspond to those in the Mol2 format.
+ *
+ *  Despite the Tripos Mol2 specification, `numBonds` is required to be in
+ *  accordance with Jmol.
+ *
+ *  @constructor
  */
 data class TriposMolecule @JvmOverloads constructor(
     val molName: String?,
     val numAtoms: Int,
-    val numBonds: Int? = null,
+    val numBonds: Int,
     val numSubst: Int? = null,
     val numFeat: Int? = null,
     val numSets: Int? = null,
@@ -35,12 +40,6 @@ data class TriposMolecule @JvmOverloads constructor(
 ) : TriposRecord
 {
     init {
-        if (numSubst != null && numBonds == null) {
-            throw IllegalArgumentException(
-                "'numSubst' is not null, but 'numBonds' is."
-            )
-        }
-
         if (numFeat != null && numSubst == null) {
             throw IllegalArgumentException(
                 "'numFeat' is not null, but 'numSubst' is."
@@ -167,7 +166,7 @@ data class TriposMolecule @JvmOverloads constructor(
             val numAtomsFields = whitespaceDelim.split(dataLines[1])
 
             val numAtoms = numAtomsFields[0].toInt()
-            val numBonds = numAtomsFields.getOrNull(1)?.toInt()
+            val numBonds = numAtomsFields[1].toInt()
             val numSubst = numAtomsFields.getOrNull(2)?.toInt()
             val numFeat = numAtomsFields.getOrNull(3)?.toInt()
             val numSets = numAtomsFields.getOrNull(4)?.toInt()
