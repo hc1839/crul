@@ -21,15 +21,12 @@ package crul.chemistry.species.format.mol2
  *
  *  Parameter names correspond to those in the Mol2 format.
  *
- *  Despite the Tripos Mol2 specification, `numBonds` is required to be in
- *  accordance with Jmol.
- *
  *  @constructor
  */
 data class TriposMolecule @JvmOverloads constructor(
     val molName: String?,
     val numAtoms: Int,
-    val numBonds: Int,
+    val numBonds: Int? = null,
     val numSubst: Int? = null,
     val numFeat: Int? = null,
     val numSets: Int? = null,
@@ -39,26 +36,6 @@ data class TriposMolecule @JvmOverloads constructor(
     val molComment: String? = null
 ) : TriposRecord
 {
-    init {
-        if (numFeat != null && numSubst == null) {
-            throw IllegalArgumentException(
-                "'numFeat' is not null, but 'numSubst' is."
-            )
-        }
-
-        if (numSets != null && numFeat == null) {
-            throw IllegalArgumentException(
-                "'numSets' is not null, but 'numFeat' is."
-            )
-        }
-
-        if (molComment != null && statusBits == null) {
-            throw IllegalArgumentException(
-                "'molComment' is not null, but 'statusBits' is."
-            )
-        }
-    }
-
     override val recordType: TriposRecordType =
         TriposRecordType.MOLECULE
 
@@ -67,7 +44,7 @@ data class TriposMolecule @JvmOverloads constructor(
 
         mol2RecordBuilder += molName ?: TriposStringField.FOUR_STARS
 
-        // Drop the trailing `null`s. There should be no intervening `null`s.
+        // Drop the trailing `null`s.
         mol2RecordBuilder +=
             listOf(
                 numAtoms,
@@ -77,7 +54,7 @@ data class TriposMolecule @JvmOverloads constructor(
                 numSets
             )
             .dropLastWhile { it == null }
-            .map { it!!.toString() }
+            .map { it?.toString() ?: TriposStringField.FOUR_STARS }
             .joinToString(TriposRecord.FIELD_SEPARATOR)
 
         mol2RecordBuilder += molType?.value ?: TriposStringField.FOUR_STARS
@@ -163,13 +140,21 @@ data class TriposMolecule @JvmOverloads constructor(
 
             val molName = TriposStringField.stringValueOf(dataLines[0])
 
-            val numAtomsFields = whitespaceDelim.split(dataLines[1])
+            val numAtomsFields = whitespaceDelim
+                .split(dataLines[1])
+                .map {
+                    if (it != TriposStringField.FOUR_STARS) {
+                        it.toInt()
+                    } else {
+                        null
+                    }
+                }
 
-            val numAtoms = numAtomsFields[0].toInt()
-            val numBonds = numAtomsFields[1].toInt()
-            val numSubst = numAtomsFields.getOrNull(2)?.toInt()
-            val numFeat = numAtomsFields.getOrNull(3)?.toInt()
-            val numSets = numAtomsFields.getOrNull(4)?.toInt()
+            val numAtoms = numAtomsFields[0]!!
+            val numBonds = numAtomsFields.getOrNull(1)
+            val numSubst = numAtomsFields.getOrNull(2)
+            val numFeat = numAtomsFields.getOrNull(3)
+            val numSets = numAtomsFields.getOrNull(4)
 
             val molType =
                 TriposStringField.enumValueOf<MolType>(dataLines[2])

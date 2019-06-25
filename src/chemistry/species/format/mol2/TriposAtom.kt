@@ -37,26 +37,6 @@ data class TriposAtom @JvmOverloads constructor(
     val statusBit: StatusBit? = null
 ) : TriposRecord
 {
-    init {
-        if (substName != null && substId == null) {
-            throw IllegalArgumentException(
-                "'substName' is not null, but 'substId' is."
-            )
-        }
-
-        if (charge != null && substName == null) {
-            throw IllegalArgumentException(
-                "'charge' is not null, but 'substName' is."
-            )
-        }
-
-        if (statusBit != null && charge == null) {
-            throw IllegalArgumentException(
-                "'statusBit' is not null, but 'charge' is."
-            )
-        }
-    }
-
     override val recordType: TriposRecordType =
         TriposRecordType.ATOM
 
@@ -78,7 +58,7 @@ data class TriposAtom @JvmOverloads constructor(
                 statusBit?.value
             )
             .dropLastWhile { it == null }
-            .map { it!!.toString() }
+            .map { it?.toString() ?: TriposStringField.FOUR_STARS }
 
         return mol2RecordBuilder.joinToString(TriposRecord.FIELD_SEPARATOR)
     }

@@ -39,7 +39,7 @@ interface TriposStringField {
          *  @param value
          *      Value of the Tripos string field, or [FOUR_STARS]. If it does
          *      not correspond to [TriposStringField.value] of an enum value of
-         *      `F`, an exception is raised unless it is [FOUR_STARS].
+         *      `F` or is not [FOUR_STARS], an exception is raised.
          *
          *  @return
          *      Enum value of `F` such that [TriposStringField.value] is equal
