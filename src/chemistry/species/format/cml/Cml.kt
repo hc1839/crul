@@ -19,10 +19,8 @@
 
 package crul.chemistry.species.format.cml
 
-import java.io.BufferedReader
 import java.io.Reader
-import java.io.StringReader
-import java.io.StringWriter
+import java.io.Writer
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
@@ -51,6 +49,9 @@ import crul.measure.unit.UnitOfMeasure
 /**
  *  Exports this molecule complex in CML format.
  *
+ *  @param writer
+ *      Writer of CML with a trailing newline.
+ *
  *  @param complexId
  *      Non-empty string to use as the complex identifier in the CML output.
  *
@@ -64,17 +65,15 @@ import crul.measure.unit.UnitOfMeasure
  *  @param atomIdMapper
  *      Identifier to use for an atom in the CML output given the atom and this
  *      complex.
- *
- *  @return
- *      Reader of this complex in CML format with a trailing newline.
  */
 @JvmOverloads
 fun <A : Atom> MoleculeComplex<A>.exportCml(
+    writer: Writer,
     complexId: String,
     fromLengthUnit: UnitOfMeasure,
     toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
     atomIdMapper: (A, MoleculeComplex<A>) -> String
-): Reader
+)
 {
     if (complexId.isEmpty()) {
         throw IllegalArgumentException(
@@ -207,11 +206,10 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
         .newInstance()
         .newTransformer()
 
-    val stringWriter = StringWriter()
+    transformer.transform(DOMSource(cmlDoc), StreamResult(writer))
 
-    transformer.transform(DOMSource(cmlDoc), StreamResult(stringWriter))
-
-    return StringReader(stringWriter.toString() + "\n")
+    writer.write("\n")
+    writer.flush()
 }
 
 /**

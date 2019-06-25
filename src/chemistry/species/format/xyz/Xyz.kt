@@ -19,8 +19,7 @@
 
 package crul.chemistry.species.format.xyz
 
-import java.io.Reader
-import java.io.StringReader
+import java.io.Writer
 
 import crul.chemistry.species.Atom
 import crul.chemistry.species.Molecule
@@ -37,6 +36,9 @@ import crul.measure.unit.UnitOfMeasure
  *  [MoleculeComplex.molecules]. For each molecule, atoms are outputted in the
  *  order as returned by [Molecule.atoms].
  *
+ *  @param writer
+ *      Writer of XYZ with a trailing newline.
+ *
  *  @param fromLengthUnit
  *      The unit of length that the coordinates are in.
  *
@@ -48,17 +50,15 @@ import crul.measure.unit.UnitOfMeasure
  *
  *  @param separator
  *      Separator to use between columns in the output.
- *
- *  @return
- *      Reader of this complex in XYZ format with a trailing newline.
  */
 @JvmOverloads
 fun <A : Atom> MoleculeComplex<A>.exportXyz(
+    writer: Writer,
     label: String,
     fromLengthUnit: UnitOfMeasure,
     toLengthUnit: UnitOfMeasure = UnitOfMeasure.parse("Ao"),
     separator: String = " "
-): Reader
+)
 {
     if (label.isEmpty()) {
         throw IllegalArgumentException(
@@ -104,5 +104,6 @@ fun <A : Atom> MoleculeComplex<A>.exportXyz(
         }
     }
 
-    return StringReader(xyzBuilder.trim() + "\n")
+    writer.write(xyzBuilder.trim() + "\n")
+    writer.flush()
 }
