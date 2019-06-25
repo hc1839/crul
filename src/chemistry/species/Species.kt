@@ -74,13 +74,10 @@ interface Species : Cloneable {
                 )
             }
 
-            val atomIter = atoms().iterator()
             var positionSum = Vector3D(0.0, 0.0, 0.0)
             var atomCount = 0
 
-            while (atomIter.hasNext()) {
-                val atom = atomIter.next()
-
+            for (atom in atoms()) {
                 positionSum += atom.centroid
                 ++atomCount
             }
@@ -94,10 +91,10 @@ interface Species : Cloneable {
             return positionSum / atomCount.toDouble()
         }
         set(value) {
-            val atomIter = atoms().iterator()
+            val displacement = value - centroid
 
-            while (atomIter.hasNext()) {
-                atomIter.next().centroid += value
+            for (atom in atoms()) {
+                atom.centroid += displacement
             }
         }
 
