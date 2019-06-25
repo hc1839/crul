@@ -20,7 +20,7 @@
 package crul.chemistry.species.format.mol2
 
 import java.io.Reader
-import java.io.StringReader
+import java.io.Writer
 
 import crul.chemistry.species.Atom
 import crul.chemistry.species.Bond
@@ -41,6 +41,9 @@ import crul.measure.unit.UnitOfMeasure
  *  have `Any` as the value of the Tripos atom type field. The element of an
  *  atom, then, is exported to the Tripos atom name field.
  *
+ *  @param writer
+ *      Writer of Mol2 with a trailing newline.
+ *
  *  @param atomPosUnit
  *      Unit of the coordinates that the atom positions are in. It must be a
  *      unit of `L`.
@@ -55,17 +58,15 @@ import crul.measure.unit.UnitOfMeasure
  *
  *  @param triposBondTypeMapper
  *      Tripos bond type given a [Bond.order].
- *
- *  @return
- *      Reader of molecule complexes in Mol2 format with a trailing newline.
  */
 @JvmOverloads
 fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
+    writer: Writer,
     atomPosUnit: UnitOfMeasure,
     atomIdMapper: ((A, MoleculeComplex<A>) -> Int)? = null,
     molNameMapper: ((MoleculeComplex<A>) -> String)? = null,
     triposBondTypeMapper: (String) -> TriposBond.BondType
-): Reader
+)
 {
     if (!atomPosUnit.isUnitOf(Dimension.parse("L"))) {
         throw IllegalArgumentException(
@@ -194,16 +195,18 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
         }
     }
 
-    return StringReader(mol2Builder.joinToString("\n") + "\n")
+    writer.write(mol2Builder.joinToString("\n") + "\n")
+    writer.flush()
 }
 
 /**
  *  Parses Mol2 format.
  *
- *  Element of an atom is determined from the Tripos atom type or Tripos atom
- *  name, where the former takes priority since it is the technically correct
- *  field. However, the Tripos atom name is considered if the Tripos atom type
- *  does not contain the element.
+ *  Element of an atom is determined from the leading alphabetical characters
+ *  of the Tripos atom type or Tripos atom name, where the former takes
+ *  priority since it is the technically correct field. However, the Tripos
+ *  atom name is considered if the Tripos atom type does not contain the
+ *  element.
  *
  *  Atom tags are populated with the atom identifiers in Mol2.
  *
@@ -313,30 +316,42 @@ fun MoleculeComplex.Companion.parseMol2(
         triposAtomDataList
             .associateBy { it.atomId }
             .mapValues { (_, triposAtomData) ->
-                // Strings to test for symbol of an element.
-                val hypotheticalSymbols = listOf(
-                    triposAtomData
-                        .atomType
-                        ?.split(".")
-                        ?.firstOrNull(),
+                // Regex to find the symbol of an element.
+                val elementSymbolRegex = Regex("^([A-Za-z]+)")
+
+                // Input strings possibly containing an element symbol.
+                val elementInputStrings = listOf(
+                    triposAtomData.atomType,
                     triposAtomData.atomName
                 ).filterNotNull()
 
-                val element = hypotheticalSymbols.mapNotNull {
-                    try {
-                        Element(it)
-                    } catch (e: Throwable) {
-                        null
-                    }
-                }.firstOrNull()
+                val matchResults = elementInputStrings
+                    .map { elementSymbolRegex.find(it) }
+                    .filterNotNull()
 
-                if (element == null) {
+                if (matchResults.isEmpty()) {
                     throw RuntimeException(
-                        "Not at least one of the following " +
-                        "is a recognized element: " +
-                        hypotheticalSymbols.joinToString(", ")
+                        "Tripos atom type and atom name do not contain " +
+                        "leading alphabetical characters."
                     )
                 }
+
+                val possibleElementSymbols = matchResults.map {
+                    it.groupValues[1]
+                }
+
+                val elementSymbol = possibleElementSymbols.find {
+                    Element.isValidSymbol(it)
+                }
+
+                if (elementSymbol == null) {
+                    throw RuntimeException(
+                        "No valid element symbol found " +
+                        "in Tripos atom type or atom name."
+                    )
+                }
+
+                val element = Element(elementSymbol)
 
                 val centroid = Vector3D(
                     listOf(
