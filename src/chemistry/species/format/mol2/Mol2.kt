@@ -37,9 +37,8 @@ import crul.measure.unit.UnitOfMeasure
 /**
  *  Exports a list of molecule complexes in Mol2 format.
  *
- *  Since determining the Tripos atom type is not supported, all atoms will
- *  have `Any` as the value of the Tripos atom type field. The element of an
- *  atom, then, is exported to the Tripos atom name field.
+ *  Since determining the Tripos atom type is not supported, the values of the
+ *  Tripos atom-type and atom-name fields are the atom's element.
  *
  *  @param writer
  *      Writer of Mol2 with a trailing newline.
@@ -157,7 +156,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
                     x = atomPosCmptsAo[0],
                     y = atomPosCmptsAo[1],
                     z = atomPosCmptsAo[2],
-                    atomType = "Any"
+                    atomType = atom.element.symbol
                 )
             }
             .sortedBy { it.atomId }
