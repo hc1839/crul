@@ -202,9 +202,9 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
 /**
  *  Parses Mol2 format.
  *
- *  Element of an atom is determined from the leading alphabetical characters
- *  of the Tripos atom type or Tripos atom name, where the former takes
- *  priority since it is the technically correct field. However, the Tripos
+ *  Element of an atom is determined from the leading one or two alphabetical
+ *  characters of the Tripos atom type or Tripos atom name, where Tripos atom
+ *  type takes priority since it is the technically correct field. The Tripos
  *  atom name is considered if the Tripos atom type does not contain the
  *  element.
  *
@@ -317,7 +317,7 @@ fun MoleculeComplex.Companion.parseMol2(
             .associateBy { it.atomId }
             .mapValues { (_, triposAtomData) ->
                 // Regex to find the symbol of an element.
-                val elementSymbolRegex = Regex("^([A-Za-z]+)")
+                val elementSymbolRegex = Regex("^([A-Z][a-z]?)")
 
                 // Input strings possibly containing an element symbol.
                 val elementInputStrings = listOf(
@@ -332,7 +332,8 @@ fun MoleculeComplex.Companion.parseMol2(
                 if (matchResults.isEmpty()) {
                     throw RuntimeException(
                         "Tripos atom type and atom name do not contain " +
-                        "leading alphabetical characters."
+                        "leading alphabetical characters " +
+                        "of a possible element symbol."
                     )
                 }
 
