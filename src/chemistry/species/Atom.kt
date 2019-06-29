@@ -60,7 +60,12 @@ interface Atom : Species {
 
     override var centroid: Vector3D
 
-    override var formalCharge: Double
+    /**
+     *  Charge associated with this atom.
+     *
+     *  Interpretation depends on the context that the atom is in.
+     */
+    override var charge: Double
 
     /**
      *  Arbitrary integer tag.
@@ -87,8 +92,8 @@ interface Atom : Species {
          *  @param centroid
          *      Centroid of the atom.
          *
-         *  @param formalCharge
-         *      Formal charge of the atom.
+         *  @param charge
+         *      Charge associated with the atom.
          *
          *  @param tag
          *      Arbitrary integer tag.
@@ -97,12 +102,12 @@ interface Atom : Species {
         fun newInstance(
             element: Element,
             centroid: Vector3D,
-            formalCharge: Double,
+            charge: Double,
             tag: Int
         ): Atom = AtomImpl(
             element,
             centroid,
-            formalCharge,
+            charge,
             tag
         )
 
@@ -115,18 +120,18 @@ interface Atom : Species {
          *  @param centroid
          *      Centroid of the atom.
          *
-         *  @param formalCharge
-         *      Formal charge of the atom.
+         *  @param charge
+         *      Charge associated with the atom.
          */
         @JvmStatic
         fun newInstance(
             element: Element,
             centroid: Vector3D,
-            formalCharge: Double
+            charge: Double
         ): Atom = newInstance(
             element,
             centroid,
-            formalCharge,
+            charge,
             0
         )
 
@@ -147,7 +152,7 @@ interface Atom : Species {
 
             avroRecord.put("element", Element.serialize(obj.element))
             avroRecord.put("centroid", Vector3D.serialize(obj.centroid))
-            avroRecord.put("formal_charge", obj.formalCharge)
+            avroRecord.put("charge", obj.charge)
             avroRecord.put("tag", obj.tag)
 
             return AvroSimple.serializeData<GenericRecord>(
@@ -180,13 +185,13 @@ interface Atom : Species {
                 avroRecord.get("centroid") as ByteBuffer
             )
 
-            val formalCharge = avroRecord.get("formal_charge") as Double
+            val charge = avroRecord.get("charge") as Double
             val tag = avroRecord.get("tag") as Int
 
             return newInstance(
                 element,
                 centroid,
-                formalCharge,
+                charge,
                 tag
             )
         }

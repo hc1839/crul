@@ -20,6 +20,8 @@ import crul.math.coordsys.Vector3D
 
 /**
  *  Interface for species.
+ *
+ *  Comparisons of species shall be referential.
  */
 interface Species : Cloneable {
     /**
@@ -50,11 +52,11 @@ interface Species : Cloneable {
     fun atoms(): Collection<Atom>
 
     /**
-     *  Formal charge, which is the sum of the formal charges of the atoms.
+     *  Charge, which is the sum of the charges of the atoms.
      */
-    val formalCharge: Double
+    val charge: Double
         get() = atoms()
-            .map { it.formalCharge }
+            .map { it.charge }
             .reduce { acc, item -> acc + item }
 
     /**

@@ -38,7 +38,8 @@ private object FragmentAvsc {
 }
 
 /**
- *  Interface for a fragment, which is a non-empty [Complex] of [Atom].
+ *  Interface for a fragment, which is a non-empty [Complex] of [Atom]
+ *  instances.
  *
  *  Atoms are compared by referentially equality.
  *

@@ -36,7 +36,17 @@ abstract class AbstractComplex<S : Species> : Complex<S> {
      *      Subspecies in this complex.
      */
     constructor(subspecies: Collection<S>) {
-        this.subspecies = subspecies.toMutableList()
+        val subspeciesList = subspecies
+            .distinctBy { SpeciesSetElement(it) }
+            .toMutableList()
+
+        if (subspeciesList.count() != subspecies.count()) {
+            throw IllegalArgumentException(
+                "Subspecies in the collection are not unique."
+            )
+        }
+
+        this.subspecies = subspeciesList
     }
 
     /**

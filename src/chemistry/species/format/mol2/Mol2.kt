@@ -73,11 +73,8 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
         )
     }
 
-    // Builder of Mol2 lines.
-    var mol2Builder = listOf<String>()
-
     // Tripos molecule names.
-    var molNames: List<String> = listOf()
+    val molNames = mutableListOf<String>()
 
     // Add or create Tripos molecule names.
     for (complex in this) {
@@ -90,7 +87,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
                 )
             }
 
-            molNames = molNames.plusElement(molName)
+            molNames.add(molName)
         } else {
             var uuid: String
 
@@ -98,7 +95,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
                 uuid = crul.uuid.Generator.inNCName()
             } while (molNames.contains(uuid))
 
-            molNames = molNames.plusElement(uuid)
+            molNames.add(uuid)
         }
     }
 
@@ -106,28 +103,31 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
 
     // Serialize each complex.
     for ((complexIndex, complex) in withIndex()) {
-        mol2Builder += TriposRecordType.MOLECULE.rti()
+        writer.write(TriposRecordType.MOLECULE.rti())
+        writer.write("\n")
 
         // Atoms in this complex.
         val atoms = complex.atoms().toList()
 
-        mol2Builder += TriposMolecule(
-            molName = molNames[complexIndex],
-            numAtoms = atoms.count(),
-            numBonds = complex
-                .map {
-                    if (it is Molecule<*>) {
-                        it.bonds().count()
-                    } else {
-                        0
+        writer.write(
+            TriposMolecule(
+                molName = molNames[complexIndex],
+                numAtoms = atoms.count(),
+                numBonds = complex
+                    .map {
+                        if (it is Molecule<*>) {
+                            it.bonds().count()
+                        } else {
+                            0
+                        }
                     }
-                }
-                .sum()
-        ).exportMol2()
+                    .sum()
+            ).exportMol2()
+        )
+        writer.write("\n")
 
         // Tripos atom IDs associated by wrapped atom.
-        val atomIdsByAtom: MutableMap<SpeciesSetElement<A>, Int> =
-            mutableMapOf()
+        val atomIdsByAtom = mutableMapOf<SpeciesSetElement<A>, Int>()
 
         // Add or create Tripos atom IDs.
         for ((atomIndex, atom) in atoms.withIndex()) {
@@ -161,11 +161,13 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
             }
             .sortedBy { it.atomId }
 
-        mol2Builder += TriposRecordType.ATOM.rti()
+        writer.write(TriposRecordType.ATOM.rti())
+        writer.write("\n")
 
         // Serialize each atom.
         for (triposAtomData in triposAtomDataList) {
-            mol2Builder += triposAtomData.exportMol2()
+            writer.write(triposAtomData.exportMol2())
+            writer.write("\n")
         }
 
         val bonds = complex.mapNotNull {
@@ -186,15 +188,16 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
             )
         }
 
-        mol2Builder += TriposRecordType.BOND.rti()
+        writer.write(TriposRecordType.BOND.rti())
+        writer.write("\n")
 
         // Serialize each bond.
         for (triposBondData in triposBondDataList) {
-            mol2Builder += triposBondData.exportMol2()
+            writer.write(triposBondData.exportMol2())
+            writer.write("\n")
         }
     }
 
-    writer.write(mol2Builder.joinToString("\n") + "\n")
     writer.flush()
 }
 
@@ -363,12 +366,12 @@ fun MoleculeComplex.Companion.parseMol2(
                     }
                 )
 
-                val formalCharge = triposAtomData.charge ?: 0.0
+                val charge = triposAtomData.charge ?: 0.0
 
                 Atom.newInstance(
                     element,
                     centroid,
-                    formalCharge,
+                    charge,
                     triposAtomData.atomId
                 )
             }

@@ -47,7 +47,7 @@ abstract class AbstractAtom : Atom {
 
     override var centroid: Vector3D
 
-    override var formalCharge: Double
+    override var charge: Double
 
     override var tag: Int
 
@@ -58,8 +58,8 @@ abstract class AbstractAtom : Atom {
      *  @param centroid
      *      Centroid of the atom.
      *
-     *  @param formalCharge
-     *      Formal charge of the atom.
+     *  @param charge
+     *      Charge associated with the atom.
      *
      *  @param tag
      *      Arbitrary integer tag.
@@ -68,12 +68,12 @@ abstract class AbstractAtom : Atom {
     constructor(
         element: Element,
         centroid: Vector3D,
-        formalCharge: Double,
+        charge: Double,
         tag: Int = 0
     ) {
         this.element = element
         this.centroid = centroid
-        this.formalCharge = formalCharge
+        this.charge = charge
         this.tag = tag
     }
 
@@ -84,7 +84,7 @@ abstract class AbstractAtom : Atom {
     constructor(other: AbstractAtom, tag: Int = other.tag) {
         this.element = other.element
         this.centroid = other.centroid
-        this.formalCharge = other.formalCharge
+        this.charge = other.charge
         this.tag = tag
     }
 
@@ -98,7 +98,7 @@ abstract class AbstractAtom : Atom {
         Vector3D.deserialize(
             avroRecord.get("position") as ByteBuffer
         ),
-        avroRecord.get("formal-charge") as Double,
+        avroRecord.get("charge") as Double,
         avroRecord.get("tag") as Int
     )
 
@@ -130,7 +130,7 @@ abstract class AbstractAtom : Atom {
 
             avroRecord.put("element", Element.serialize(obj.element))
             avroRecord.put("centroid", Vector3D.serialize(obj.centroid))
-            avroRecord.put("formal_charge", obj.formalCharge)
+            avroRecord.put("charge", obj.charge)
             avroRecord.put("tag", obj.tag)
 
             return AvroSimple.serializeData<GenericRecord>(

@@ -5,7 +5,7 @@
     "fields": [
         { "type": "bytes", "name": "element" },
         { "type": "bytes", "name": "centroid" },
-        { "type": "double", "name": "formal_charge" },
+        { "type": "double", "name": "charge" },
         { "type": "int", "name": "tag" }
     ]
 }

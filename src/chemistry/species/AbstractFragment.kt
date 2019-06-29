@@ -49,7 +49,7 @@ abstract class AbstractFragment<A : Atom> :
      *      Atoms of the fragment.
      */
     constructor(atoms: Collection<A>): super(atoms) {
-        if (atoms.firstOrNull() == null) {
+        if (atoms.isEmpty()) {
             throw IllegalArgumentException(
                 "Fragment must have at least one atom."
             )

@@ -40,12 +40,12 @@ data class TriposMolecule @JvmOverloads constructor(
         TriposRecordType.MOLECULE
 
     override fun exportMol2(): String {
-        var mol2RecordBuilder = listOf<String>()
+        val mol2RecordBuilder = mutableListOf<String>()
 
-        mol2RecordBuilder += molName ?: TriposStringField.FOUR_STARS
+        mol2RecordBuilder.add(molName ?: TriposStringField.FOUR_STARS)
 
         // Drop the trailing `null`s.
-        mol2RecordBuilder +=
+        mol2RecordBuilder.add(
             listOf(
                 numAtoms,
                 numBonds,
@@ -56,11 +56,20 @@ data class TriposMolecule @JvmOverloads constructor(
             .dropLastWhile { it == null }
             .map { it?.toString() ?: TriposStringField.FOUR_STARS }
             .joinToString(TriposRecord.FIELD_SEPARATOR)
+        )
 
-        mol2RecordBuilder += molType?.value ?: TriposStringField.FOUR_STARS
-        mol2RecordBuilder += chargeType?.value ?: TriposStringField.FOUR_STARS
-        mol2RecordBuilder += statusBits?.value ?: TriposStringField.FOUR_STARS
-        mol2RecordBuilder += molComment ?: TriposStringField.FOUR_STARS
+        mol2RecordBuilder.add(
+            molType?.value ?: TriposStringField.FOUR_STARS
+        )
+        mol2RecordBuilder.add(
+            chargeType?.value ?: TriposStringField.FOUR_STARS
+        )
+        mol2RecordBuilder.add(
+            statusBits?.value ?: TriposStringField.FOUR_STARS
+        )
+        mol2RecordBuilder.add(
+            molComment ?: TriposStringField.FOUR_STARS
+        )
 
         return mol2RecordBuilder.joinToString("\n")
     }

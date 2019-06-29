@@ -104,21 +104,12 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
 
     moleculeNode.setAttribute("xmlns", "http://www.xml-cml.org/schema")
 
-    val moleculeFormalCharge = formalCharge
+    val moleculeFormalCharge = charge.roundToInt()
 
     // Set the formal charge, converting it to an integer if it is.
     moleculeNode.setAttribute(
         "formalCharge",
-        if (
-            nearlyEquals(
-                moleculeFormalCharge,
-                round(moleculeFormalCharge)
-            )
-        ) {
-            moleculeFormalCharge.roundToInt().toString()
-        } else {
-            moleculeFormalCharge.toString()
-        }
+        moleculeFormalCharge.toString()
     )
 
     moleculeNode.setAttribute("id", complexId)
@@ -157,21 +148,12 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
             )
         }
 
-        val atomFormalCharge = atom.formalCharge
+        val atomFormalCharge = atom.charge.roundToInt()
 
         // Set the formal charge, converting it to an integer if it is.
         atomNode.setAttribute(
             "formalCharge",
-            if (
-                nearlyEquals(
-                    atomFormalCharge,
-                    round(atomFormalCharge)
-                )
-            ) {
-                atomFormalCharge.roundToInt().toString()
-            } else {
-                atomFormalCharge.toString()
-            }
+            atomFormalCharge.toString()
         )
     }
 
@@ -298,7 +280,7 @@ fun MoleculeComplex.Companion.parseCml(
             positionCmpts[2]
         )
 
-        val formalCharge =
+        val charge =
             if (atomNode.hasAttribute("formalCharge")) {
                 atomNode.getAttribute("formalCharge").toDouble()
             } else {
@@ -320,14 +302,14 @@ fun MoleculeComplex.Companion.parseCml(
             Atom.newInstance(
                 element,
                 centroid,
-                formalCharge,
+                charge,
                 atomTag
             )
         } else {
             Atom.newInstance(
                 element,
                 centroid,
-                formalCharge
+                charge
             )
         }
 
@@ -339,20 +321,18 @@ fun MoleculeComplex.Companion.parseCml(
     if (moleculeNode.hasAttribute("formalCharge")) {
         val molecularFormalCharge = moleculeNode
             .getAttribute("formalCharge")
-            .toDouble()
+            .toInt()
 
         if (
-            !nearlyEquals(
-                molecularFormalCharge,
+            molecularFormalCharge !=
                 atomsById
                     .values
-                    .map { it.formalCharge }
+                    .map { it.charge.roundToInt() }
                     .reduce { acc, item -> acc + item }
-            )
         ) {
             throw RuntimeException(
-                "Formal charge of the complex does not equal " +
-                "to the sum of the formal charges of the atoms."
+                "Charge of the complex does not equal " +
+                "to the sum of the charges of the atoms."
             )
         }
     }
