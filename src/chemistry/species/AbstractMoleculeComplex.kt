@@ -94,7 +94,7 @@ abstract class AbstractMoleculeComplex<A : Atom> :
      */
     constructor(
         other: AbstractMoleculeComplex<A>,
-        deep: Boolean = false
+        deep: Boolean
     ): super(other, deep)
 
     /**

@@ -81,10 +81,9 @@ abstract class AbstractMolecule<A : Atom> :
      *  @param deep
      *      Whether atoms and bonds are copied.
      */
-    @JvmOverloads
     constructor(
         other: AbstractMolecule<A>,
-        deep: Boolean = false
+        deep: Boolean
     ): this(
         if (deep) {
             val clonedAtomsByOtherAtom = other
@@ -92,7 +91,7 @@ abstract class AbstractMolecule<A : Atom> :
                 .map { SpeciesSetElement(it) }
                 .associateWith {
                     @Suppress("UNCHECKED_CAST")
-                    it.species.clone() as A
+                    it.species.clone(true) as A
                 }
 
             // Bonds cannot be directly cloned, since the same atom

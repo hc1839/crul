@@ -65,10 +65,9 @@ abstract class AbstractFragment<A : Atom> :
      *  @param deep
      *      Whether atoms are copied.
      */
-    @JvmOverloads
     constructor(
         other: AbstractFragment<A>,
-        deep: Boolean = false
+        deep: Boolean
     ): super(other, deep)
 
     /**

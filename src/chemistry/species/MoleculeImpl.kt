@@ -32,10 +32,9 @@ internal class MoleculeImpl<A : Atom> : AbstractMolecule<A> {
     /**
      *  Copy constructor.
      */
-    @JvmOverloads
     constructor(
         other: MoleculeImpl<A>,
-        deep: Boolean = false
+        deep: Boolean
     ): super(other, deep)
 
     override fun clone(deep: Boolean): MoleculeImpl<A> =

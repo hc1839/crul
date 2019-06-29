@@ -63,10 +63,6 @@ interface Fragment<A : Atom> : Complex<A> {
             super.getAtomsByTag(tag) as List<A>
         )
 
-    override fun clone(): Fragment<A> =
-        @Suppress("UNCHECKED_CAST")
-        super.clone() as Fragment<A>
-
     abstract override fun clone(deep: Boolean): Fragment<A>
 
     companion object {

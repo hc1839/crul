@@ -58,13 +58,12 @@ abstract class AbstractComplex<S : Species> : Complex<S> {
      *  @param deep
      *      Whether subspecies are copied.
      */
-    @JvmOverloads
-    constructor(other: AbstractComplex<S>, deep: Boolean = false) {
+    constructor(other: AbstractComplex<S>, deep: Boolean) {
         @Suppress("UNCHECKED_CAST")
         this.subspecies = if (deep) {
             other
                 .subspecies
-                .map { it.clone() as S }
+                .map { it.clone(true) as S }
                 .toMutableList()
         } else {
             other.subspecies.toMutableList()

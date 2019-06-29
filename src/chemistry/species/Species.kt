@@ -23,13 +23,7 @@ import crul.math.coordsys.Vector3D
  *
  *  Comparisons of species shall be referential.
  */
-interface Species : Cloneable {
-    /**
-     *  Clones this species and any subspecies.
-     */
-    public override fun clone(): Species =
-        clone(true)
-
+interface Species {
     /**
      *  Clones this species.
      *

@@ -52,10 +52,5 @@ interface Complex<S : Species> :
             .flatMap { it.atoms() }
             .distinctBy { SpeciesSetElement(it) }
 
-    override fun clone(): Complex<S> =
-        @Suppress("UNCHECKED_CAST") (
-            super.clone() as Complex<S>
-        )
-
     abstract override fun clone(deep: Boolean): Complex<S>
 }

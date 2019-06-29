@@ -99,10 +99,6 @@ interface Molecule<A : Atom> : Fragment<A> {
             }
             .singleOrNull()
 
-    override fun clone(): Molecule<A> =
-        @Suppress("UNCHECKED_CAST")
-        super.clone() as Molecule<A>
-
     abstract override fun clone(deep: Boolean): Molecule<A>
 
     companion object {

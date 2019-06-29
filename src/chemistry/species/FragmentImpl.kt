@@ -38,10 +38,9 @@ internal class FragmentImpl<A : Atom> : AbstractFragment<A> {
      *  @param deep
      *      Whether atoms are copied.
      */
-    @JvmOverloads
     constructor(
         other: FragmentImpl<A>,
-        deep: Boolean = false
+        deep: Boolean
     ): super(other, deep)
 
     override fun clone(deep: Boolean): FragmentImpl<A> =

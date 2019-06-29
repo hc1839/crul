@@ -61,12 +61,12 @@ internal class BondImpl<A : Atom> : Bond<A> {
     @Suppress("UNCHECKED_CAST")
     constructor(other: BondImpl<A>, deep: Boolean = false): this(
         if (deep) {
-            other.toAtomPair().first.clone() as A
+            other.toAtomPair().first.clone(true) as A
         } else {
             other.toAtomPair().first
         },
         if (deep) {
-            other.toAtomPair().second.clone() as A
+            other.toAtomPair().second.clone(true) as A
         } else {
             other.toAtomPair().second
         },

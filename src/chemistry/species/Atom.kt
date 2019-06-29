@@ -68,19 +68,16 @@ interface Atom : Species {
     override var charge: Double
 
     /**
+     *  Clones this atom with a new tag.
+     */
+    fun clone(newTag: Int): Atom
+
+    /**
      *  Arbitrary integer tag.
      */
     var tag: Int
 
-    override fun clone(): Atom =
-        super.clone() as Atom
-
     abstract override fun clone(deep: Boolean): Atom
-
-    /**
-     *  Clones this atom with a new tag.
-     */
-    fun clone(newTag: Int): Atom
 
     companion object {
         /**

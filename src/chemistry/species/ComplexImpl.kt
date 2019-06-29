@@ -34,10 +34,9 @@ internal class ComplexImpl<S : Species> : AbstractComplex<S> {
      *  @param deep
      *      Whether subspecies are copied.
      */
-    @JvmOverloads
     constructor(
         other: ComplexImpl<S>,
-        deep: Boolean = false
+        deep: Boolean
     ): super(other, deep)
 
     override fun clone(deep: Boolean): ComplexImpl<S> =

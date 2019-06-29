@@ -59,11 +59,6 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
      */
     fun getSubspeciesWithAtom(atom: A): Species?
 
-    override fun clone(): MoleculeComplex<A> =
-        @Suppress("UNCHECKED_CAST") (
-            super.clone() as MoleculeComplex<A>
-        )
-
     abstract override fun clone(deep: Boolean): MoleculeComplex<A>
 
     companion object {

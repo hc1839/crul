@@ -51,11 +51,6 @@ interface Bond<A : Atom> : Fragment<A> {
      */
     abstract override fun equals(other: Any?): Boolean
 
-    override fun clone(): Bond<A> =
-        @Suppress("UNCHECKED_CAST") (
-            super.clone() as Bond<A>
-        )
-
     abstract override fun clone(deep: Boolean): Bond<A>
 
     companion object {
