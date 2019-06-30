@@ -34,12 +34,18 @@ class Molecule<A : Atom> : AbstractMolecule<A> {
 
     /**
      *  Copy constructor.
+     *
+     *  Copy is deep.
      */
-    constructor(
-        other: Molecule<A>,
-        deep: Boolean
-    ): super(other, deep)
+    constructor(other: Molecule<A>): super(other, true)
 
-    override fun clone(deep: Boolean): Molecule<A> =
-        Molecule(this, deep)
+    override fun clone(deep: Boolean): Molecule<A> {
+        if (!deep) {
+            throw IllegalArgumentException(
+                "Cloning a molecule must be deep."
+            )
+        }
+
+        return Molecule(this)
+    }
 }
