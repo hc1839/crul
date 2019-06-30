@@ -110,19 +110,28 @@ data class TriposAtom @JvmOverloads constructor(
             val z = fields[4].toDouble()
             val atomType = TriposStringField.stringValueOf(fields[5])
 
-            val substId = if (fields.lastIndex >= 6) {
+            val substId = if (
+                fields.lastIndex >= 6 &&
+                fields[6] != TriposStringField.FOUR_STARS
+            ) {
                 fields[6].toInt()
             } else {
                 null
             }
 
-            val substName = if (fields.lastIndex >= 7) {
+            val substName = if (
+                fields.lastIndex >= 7 &&
+                fields[7] != TriposStringField.FOUR_STARS
+            ) {
                 fields[7]
             } else {
                 null
             }
 
-            val charge = if (fields.lastIndex >= 8) {
+            val charge = if (
+                fields.lastIndex >= 8 &&
+                fields[8] != TriposStringField.FOUR_STARS
+            ) {
                 fields[8].toDouble()
             } else {
                 null
