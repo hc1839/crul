@@ -18,6 +18,9 @@ package crul.permute.variation
 
 /**
  *  Variator over a sequence of elements.
+ *
+ *  @param E
+ *      Type of elements.
  */
 interface Variator<out E> {
     /**

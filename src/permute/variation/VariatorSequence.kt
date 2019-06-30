@@ -21,55 +21,39 @@ package crul.permute.variation
  *
  *  Instances of this class are iterable over the individual variators.
  *
+ *  @param variators
+ *      Variators of the sequence. There must be at least one variator.
+ *
+ *  @param bigEndian
+ *      Whether the incrementation/decrementation occurs fastest at the
+ *      rightmost (highest index) variator in the sequence.
+ *
  *  @param V
  *      Type of variators in this sequence.
+ *
+ *  @constructor
+ *      Constructs a variator positioned at the current positions of the
+ *      individual variators.
  */
-class VariatorSequence<V : Variator<V>> :
-    Variator<VariatorSequence<V>>,
-    Iterable<V>
+class VariatorSequence<V : Variator<*>> @JvmOverloads constructor(
+    private val variators: List<V>,
+    val bigEndian: Boolean = true
+) : List<V> by variators,
+    Variator<List<V>>
 {
-    /**
-     *  Variators of this sequence.
-     */
-    private val variators: List<V>
-
-    /**
-     *  Whether the incrementation/decrementation occurs fastest at the
-     *  rightmost (highest index) variator in the sequence.
-     */
-    val bigEndian: Boolean
-
-    /**
-     *  Constructs a variator positioned at the current positions of the
-     *  individual variators.
-     *
-     *  @param variators
-     *      Variators of the sequence. There must be at least one variator.
-     *
-     *  @param bigEndian
-     *      Whether the incrementation/decrementation occurs fastest at the
-     *      rightmost (highest index) variator in the sequence.
-     */
-    @JvmOverloads
-    constructor(variators: Iterable<V>, bigEndian: Boolean = true) {
+    init {
         if (variators.count() < 1) {
             throw IllegalArgumentException(
                 "Number of variators is less than one."
             )
         }
-
-        this.variators = variators.toList()
-        this.bigEndian = bigEndian
     }
 
-    override fun iterator(): Iterator<V> =
-        variators.iterator()
-
     /**
-     *  Returns itself.
+     *  Returns the variators as a list.
      */
-    override fun value(): VariatorSequence<V> =
-        this
+    override fun value(): List<V> =
+        variators.toList()
 
     override fun isBegin(): Boolean =
         variators.all { it.isBegin() }
