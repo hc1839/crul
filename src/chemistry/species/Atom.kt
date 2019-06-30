@@ -53,19 +53,21 @@ interface Atom : Species {
     override fun atoms(): Collection<Atom> =
         listOf(this)
 
+    override var centroid: Vector3D
+
+    abstract override fun clone(deep: Boolean): Atom
+
     /**
      *  Element.
      */
     val element: Element
-
-    override var centroid: Vector3D
 
     /**
      *  Charge associated with this atom.
      *
      *  Interpretation depends on the context that the atom is in.
      */
-    override var charge: Double
+    var charge: Double?
 
     /**
      *  Clones this atom with a new tag.
@@ -77,7 +79,20 @@ interface Atom : Species {
      */
     var tag: Int
 
-    abstract override fun clone(deep: Boolean): Atom
+    /**
+     *  Island that represents this atom.
+     *
+     *  Two islands are referentially equal if and only if the two atoms are
+     *  referentially equal.
+     *
+     *  @param islandCharge
+     *      Charge to assign to the island. It is independent of the charge
+     *      associated with this atom.
+     *
+     *  @return
+     *      Island containing this atom.
+     */
+    fun island(islandCharge: Int): Island<Atom>
 
     companion object {
         /**
@@ -99,7 +114,7 @@ interface Atom : Species {
         fun newInstance(
             element: Element,
             centroid: Vector3D,
-            charge: Double,
+            charge: Double?,
             tag: Int
         ): Atom = AtomImpl(
             element,
@@ -124,7 +139,7 @@ interface Atom : Species {
         fun newInstance(
             element: Element,
             centroid: Vector3D,
-            charge: Double
+            charge: Double?
         ): Atom = newInstance(
             element,
             centroid,
@@ -182,7 +197,7 @@ interface Atom : Species {
                 avroRecord.get("centroid") as ByteBuffer
             )
 
-            val charge = avroRecord.get("charge") as Double
+            val charge = avroRecord.get("charge") as Double?
             val tag = avroRecord.get("tag") as Int
 
             return newInstance(

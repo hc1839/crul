@@ -47,9 +47,11 @@ abstract class AbstractAtom : Atom {
 
     override var centroid: Vector3D
 
-    override var charge: Double
+    override var charge: Double?
 
     override var tag: Int
+
+    private var _island: Island<Atom>? = null
 
     /**
      *  @param element
@@ -68,7 +70,7 @@ abstract class AbstractAtom : Atom {
     constructor(
         element: Element,
         centroid: Vector3D,
-        charge: Double,
+        charge: Double?,
         tag: Int = 0
     ) {
         this.element = element
@@ -98,7 +100,7 @@ abstract class AbstractAtom : Atom {
         Vector3D.deserialize(
             avroRecord.get("position") as ByteBuffer
         ),
-        avroRecord.get("charge") as Double,
+        avroRecord.get("charge") as Double?,
         avroRecord.get("tag") as Int
     )
 
@@ -111,6 +113,34 @@ abstract class AbstractAtom : Atom {
             avroData
         ).first()
     )
+
+    override fun island(islandCharge: Int): Island<Atom> {
+        if (_island == null) {
+            _island = object :
+                AbstractFragment<Atom>(listOf(this@AbstractAtom)),
+                Island<Atom>
+            {
+                override var charge: Int = islandCharge
+
+                override fun bonds(): Collection<Bond<Atom>> =
+                    listOf()
+
+                override fun clone(deep: Boolean): Island<Atom> {
+                    if (!deep) {
+                        throw IllegalArgumentException(
+                            "Cloning an island must be deep."
+                        )
+                    }
+
+                    return atoms().single().clone(true).island(charge)
+                }
+            }
+        }
+
+        _island!!.charge = islandCharge
+
+        return _island!!
+    }
 
     companion object {
         /**

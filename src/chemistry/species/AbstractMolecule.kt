@@ -38,21 +38,32 @@ private object AbstractMoleculeAvsc {
 }
 
 /**
- *  Skeletal implementation of [Molecule].
+ *  Skeletal implementation of a molecule, which is an [Island] with at least
+ *  two atoms that has every pair of atoms connected by bonds, directly or
+ *  indirectly.
+ *
+ *  A molecule is taken in a more general sense to include polyatomic ions.
+ *
+ *  Atoms are referentially distinct.
  *
  *  @param A
  *      Type of atoms.
  */
 abstract class AbstractMolecule<A : Atom> :
     AbstractFragment<A>,
-    Molecule<A>
+    Island<A>
 {
+    override var charge: Int
+
     /**
      *  Lists of bonds associated by the participating atom.
      */
     private val bondListsByAtom: Map<SpeciesSetElement<A>, List<Bond<A>>>
 
     /**
+     *  @param charge
+     *      Charge of the molecule.
+     *
      *  @param bonds
      *      Non-empty collection of bonds of the molecule. Order is not
      *      important, and referentially equivalent bonds are removed.
@@ -60,7 +71,7 @@ abstract class AbstractMolecule<A : Atom> :
      *      but unequal orders or (2) collection of bonds represents more than
      *      one molecule.
      */
-    constructor(bonds: Collection<Bond<A>>): super(
+    constructor(charge: Int, bonds: Collection<Bond<A>>): super(
         if (!bonds.isEmpty()) {
             bonds
                 .flatMap { it.atoms() }
@@ -69,6 +80,7 @@ abstract class AbstractMolecule<A : Atom> :
             throw IllegalArgumentException("Collection of bonds is empty.")
         }
     ) {
+        this.charge = charge
         this.bondListsByAtom = bondIndexing(bonds)
     }
 
@@ -85,6 +97,7 @@ abstract class AbstractMolecule<A : Atom> :
         other: AbstractMolecule<A>,
         deep: Boolean
     ): this(
+        other.charge,
         if (deep) {
             val clonedAtomsByOtherAtom = other
                 .atoms()
@@ -115,6 +128,12 @@ abstract class AbstractMolecule<A : Atom> :
             other.bonds()
         }
     )
+
+    /**
+     *  Always `false`.
+     */
+    final override fun isSingleAtom(): Boolean =
+        false
 
     override fun bonds(): Collection<Bond<A>> =
         bondListsByAtom.values.flatten().distinctBy {
@@ -164,6 +183,7 @@ abstract class AbstractMolecule<A : Atom> :
                 )
             }
 
+        this.charge = avroRecord.get("charge") as Int
         this.bondListsByAtom = bondIndexing(bonds)
     }
 
@@ -305,6 +325,8 @@ abstract class AbstractMolecule<A : Atom> :
             val avroRecord = GenericData.Record(
                 AbstractMoleculeAvsc.schema
             )
+
+            avroRecord.put("charge", obj.charge)
 
             val atoms = obj.atoms()
 

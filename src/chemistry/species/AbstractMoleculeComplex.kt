@@ -44,28 +44,22 @@ private object AbstractMoleculeComplexAvsc {
  *      Type of atoms.
  */
 abstract class AbstractMoleculeComplex<A : Atom> :
-    AbstractComplex<Species>,
+    AbstractComplex<Island<A>>,
     MoleculeComplex<A>
 {
     /**
      *  @param subspecies
      *      Molecules and atoms of the complex.
      */
-    constructor(subspecies: Collection<Species>): super(subspecies) {
-        if (!subspecies.all { it is Molecule<*> || it is Atom }) {
-            throw IllegalArgumentException(
-                "Subspecies are not molecules or atoms."
-            )
-        }
-
-        // Distinct atoms from each subspecies.
-        val wrappedAtomSets = subspecies.map { species ->
-            species.atoms().map { atom ->
+    constructor(islands: Collection<Island<A>>): super(islands) {
+        // Referentially distinct atoms from all islands.
+        val wrappedAtomSets = islands.map { island ->
+            island.atoms().map { atom ->
                 SpeciesSetElement(atom)
             }.toSet()
         }
 
-        // Number of distinct atoms across all subspecies.
+        // Number of distinct atoms across all islands.
         val numDistinctAtoms = wrappedAtomSets
             .flatten()
             .distinct()
@@ -78,7 +72,7 @@ abstract class AbstractMoleculeComplex<A : Atom> :
                 }
         ) {
             throw IllegalArgumentException(
-                "At least one atom exists in more than one subspecies."
+                "At least one atom exists in more than one island."
             )
         }
     }
@@ -105,11 +99,8 @@ abstract class AbstractMoleculeComplex<A : Atom> :
         avroRecord: GenericRecord,
         atomDeserializer: (ByteBuffer) -> A
     ): this(
-        (avroRecord.get("molecules_subspecies") as List<ByteBuffer>).map {
-            Molecule.deserialize(it, atomDeserializer)
-        } +
-        (avroRecord.get("atom_subspecies") as List<ByteBuffer>).map {
-            atomDeserializer.invoke(it)
+        (avroRecord.get("islands") as List<ByteBuffer>).map {
+            Island.deserialize(it, atomDeserializer)
         }
     )
 
@@ -127,24 +118,9 @@ abstract class AbstractMoleculeComplex<A : Atom> :
         atomDeserializer
     )
 
-    override fun getSubspeciesWithAtom(atom: A): Species? =
+    override fun getIslandWithAtom(atom: A): Island<A>? =
         toList()
-            .filter { subspecies ->
-                when (subspecies) {
-                    is Molecule<*> -> {
-                        @Suppress("UNCHECKED_CAST") (
-                            (subspecies as Molecule<A>).containsAtom(atom)
-                        )
-                    }
-
-                    is Atom -> subspecies === atom
-
-                    else -> throw RuntimeException(
-                        "[Internal Error] Unexpected type: " +
-                        "${subspecies::class.qualifiedName}"
-                    )
-                }
-            }
+            .filter { island -> island.containsAtom(atom) }
             .singleOrNull()
 
     companion object {
@@ -171,26 +147,9 @@ abstract class AbstractMoleculeComplex<A : Atom> :
             )
 
             avroRecord.put(
-                "molecule_subspecies",
-                obj.mapNotNull {
-                    @Suppress("UNCHECKED_CAST")
-                    if (it as? Molecule<A> != null) {
-                        Molecule.serialize(it, atomSerializer)
-                    } else {
-                        null
-                    }
-                }
-            )
-
-            avroRecord.put(
-                "atom_subspecies",
-                obj.mapNotNull {
-                    @Suppress("UNCHECKED_CAST")
-                    if (it as? A != null) {
-                        atomSerializer.invoke(it)
-                    } else {
-                        null
-                    }
+                "islands",
+                obj.map {
+                    Island.serialize(it, atomSerializer)
                 }
             )
 

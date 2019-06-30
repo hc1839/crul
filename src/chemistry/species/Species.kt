@@ -25,17 +25,6 @@ import crul.math.coordsys.Vector3D
  */
 interface Species {
     /**
-     *  Clones this species.
-     *
-     *  @param deep
-     *      Whether subspecies are cloned.
-     *
-     *  @return
-     *      Clone of this species.
-     */
-    fun clone(deep: Boolean): Species
-
-    /**
      *  All atoms in this species, or itself if [Atom].
      *
      *  Collection may be empty. Atoms are unique and are in the same order
@@ -44,14 +33,6 @@ interface Species {
      *  allowed to make specified guarantees.
      */
     fun atoms(): Collection<Atom>
-
-    /**
-     *  Charge, which is the sum of the charges of the atoms.
-     */
-    val charge: Double
-        get() = atoms()
-            .map { it.charge }
-            .reduce { acc, item -> acc + item }
 
     /**
      *  Centroid of [atoms].
@@ -100,4 +81,15 @@ interface Species {
      */
     fun getAtomsByTag(tag: Int): List<Atom> =
         atoms().filter { it.tag == tag }
+
+    /**
+     *  Clones this species.
+     *
+     *  @param deep
+     *      Whether subspecies are cloned.
+     *
+     *  @return
+     *      Clone of this species.
+     */
+    fun clone(deep: Boolean): Species
 }

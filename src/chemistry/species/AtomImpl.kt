@@ -28,12 +28,12 @@ internal class AtomImpl : AbstractAtom {
     constructor(
         element: Element,
         centroid: Vector3D,
-        formalCharge: Double,
+        charge: Double?,
         tag: Int = 0
     ): super(
         element,
         centroid,
-        formalCharge,
+        charge,
         tag
     )
 

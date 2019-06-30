@@ -5,11 +5,7 @@
     "fields": [
         {
             "type": { "type": "array", "items": "bytes" },
-            "name": "molecule_subspecies"
-        },
-        {
-            "type": { "type": "array", "items": "bytes" },
-            "name": "atom_subspecies"
+            "name": "islands"
         }
     ]
 }

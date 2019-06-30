@@ -38,41 +38,46 @@ private object MoleculeComplexAvsc {
 }
 
 /**
- *  Interface for a complex of molecules and atoms.
- *
- *  A subspecies is either a [Molecule] or an [Atom]. An atom identifier exists
- *  in exactly one subspecies.
+ *  Complex of molecules and atoms as islands.
  *
  *  @param A
  *      Type of atoms.
  */
-interface MoleculeComplex<A : Atom> : Complex<Species> {
+interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
     override fun atoms(): Collection<A> =
         super.atoms().map {
             @Suppress("UNCHECKED_CAST")
             it as A
         }
 
-    /**
-     *  Gets the subspecies that contains a given atom by referential equality,
-     *  or `null` if there is no such subspecies.
-     */
-    fun getSubspeciesWithAtom(atom: A): Species?
-
     abstract override fun clone(deep: Boolean): MoleculeComplex<A>
+
+    /**
+     *  Charge, which is the sum of the charges of the islands.
+     */
+    val charge: Int
+        get() = fold(0) { acc, island ->
+            acc + island.charge
+        }
+
+    /**
+     *  Gets the island that contains a given atom by referential equality, or
+     *  `null` if there is no such island.
+     */
+    fun getIslandWithAtom(atom: A): Island<A>?
 
     companion object {
         /**
          *  Constructs a [MoleculeComplex].
          *
-         *  @param subspecies
-         *      Molecules and atoms of the complex.
+         *  @param islands
+         *      Molecules and atoms as islands of the complex.
          */
         @JvmStatic
         fun <A : Atom> newInstance(
-            subspecies: Collection<Species>
+            islands: Collection<Island<A>>
         ): MoleculeComplex<A> =
-            MoleculeComplexImpl(subspecies)
+            MoleculeComplexImpl(islands)
 
         /**
          *  Serializes a [MoleculeComplex] in Apache Avro.
@@ -97,26 +102,9 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
             )
 
             avroRecord.put(
-                "molecule_subspecies",
-                obj.mapNotNull {
-                    @Suppress("UNCHECKED_CAST")
-                    if (it as? Molecule<A> != null) {
-                        Molecule.serialize(it, atomSerializer)
-                    } else {
-                        null
-                    }
-                }
-            )
-
-            avroRecord.put(
-                "atom_subspecies",
-                obj.mapNotNull {
-                    @Suppress("UNCHECKED_CAST")
-                    if (it as? A != null) {
-                        atomSerializer.invoke(it)
-                    } else {
-                        null
-                    }
+                "islands",
+                obj.map {
+                    Island.serialize(it, atomSerializer)
                 }
             )
 
@@ -149,19 +137,13 @@ interface MoleculeComplex<A : Atom> : Complex<Species> {
                 avroData
             ).first()
 
-            val moleculeSubspecies = @Suppress("UNCHECKED_CAST") (
-                avroRecord.get("molecule_subspecies") as List<ByteBuffer>
+            val islands = @Suppress("UNCHECKED_CAST") (
+                avroRecord.get("islands") as List<ByteBuffer>
             ).map {
-                Molecule.deserialize(it, atomDeserializer)
+                Island.deserialize(it, atomDeserializer)
             }
 
-            val atomSubspecies = @Suppress("UNCHECKED_CAST") (
-                avroRecord.get("atom_subspecies") as List<ByteBuffer>
-            ).map {
-                atomDeserializer.invoke(it)
-            }
-
-            return newInstance(moleculeSubspecies + atomSubspecies)
+            return newInstance(islands)
         }
     }
 }

@@ -27,17 +27,17 @@ import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
-import kotlin.math.round
 import kotlin.math.roundToInt
 import org.w3c.dom.NodeList
 import org.xml.sax.InputSource
 
 import crul.chemistry.species.Atom
 import crul.chemistry.species.Bond
+import crul.chemistry.species.BondAggregator
 import crul.chemistry.species.Element
+import crul.chemistry.species.Island
 import crul.chemistry.species.Molecule
 import crul.chemistry.species.MoleculeComplex
-import crul.chemistry.species.MoleculeComplexBuilder
 import crul.chemistry.species.SpeciesSetElement
 import crul.float.Comparison.nearlyEquals
 import crul.math.coordsys.Vector3D
@@ -104,12 +104,12 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
 
     moleculeNode.setAttribute("xmlns", "http://www.xml-cml.org/schema")
 
-    val moleculeFormalCharge = charge.roundToInt()
+    val moleculeCharge = charge
 
-    // Set the formal charge, converting it to an integer if it is.
+    // Set the charge of the CML molecule.
     moleculeNode.setAttribute(
         "formalCharge",
-        moleculeFormalCharge.toString()
+        moleculeCharge.toString()
     )
 
     moleculeNode.setAttribute("id", complexId)
@@ -121,7 +121,7 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
     // For serializing the bonds.
     val atomIdsByAtom = mutableMapOf<SpeciesSetElement<A>, String>()
 
-    // Create and append a node for each atom.
+    // Create and append a node for each atom, ignoring assigned charges.
     for (atom in atoms()) {
         val atomNode = cmlDoc.createElement("atom")
         atomArrayNode.appendChild(atomNode)
@@ -147,14 +147,6 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
                     .toString()
             )
         }
-
-        val atomFormalCharge = atom.charge.roundToInt()
-
-        // Set the formal charge, converting it to an integer if it is.
-        atomNode.setAttribute(
-            "formalCharge",
-            atomFormalCharge.toString()
-        )
     }
 
     // Create and append the node for an array of bonds.
@@ -196,6 +188,12 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
 
 /**
  *  Parses CML format.
+ *
+ *  The charge of an island is the sum of the assigned atomic charges, with the
+ *  sum rounded to the nearest integer. If an atom in an island does not have
+ *  an assigned charge, the charge of the island is `0`. The charge of the CML
+ *  molecule, which corresponds to a complex and not an individual molecule, is
+ *  ignored.
  *
  *  The `id` attribute of the root element, `molecule`, is ignored.
  *
@@ -284,7 +282,7 @@ fun MoleculeComplex.Companion.parseCml(
             if (atomNode.hasAttribute("formalCharge")) {
                 atomNode.getAttribute("formalCharge").toDouble()
             } else {
-                0.0
+                null
             }
 
         val atomId = atomNode.getAttribute("id")
@@ -316,27 +314,6 @@ fun MoleculeComplex.Companion.parseCml(
         atomsById[atomId] = atom
     }
 
-    // Check that the formal charge specified in the root node matches the
-    // sum of the formal charges of the atoms.
-    if (moleculeNode.hasAttribute("formalCharge")) {
-        val molecularFormalCharge = moleculeNode
-            .getAttribute("formalCharge")
-            .toInt()
-
-        if (
-            molecularFormalCharge !=
-                atomsById
-                    .values
-                    .map { it.charge.roundToInt() }
-                    .reduce { acc, item -> acc + item }
-        ) {
-            throw RuntimeException(
-                "Charge of the complex does not equal " +
-                "to the sum of the charges of the atoms."
-            )
-        }
-    }
-
     // Get the node list of bond nodes.
     val bondsNodeList = xpath
         .evaluate("/*/bondArray/bond", cmlDoc, XPathConstants.NODESET)
@@ -347,7 +324,7 @@ fun MoleculeComplex.Companion.parseCml(
             bondsNodeList.item(index) as org.w3c.dom.Element
         }
 
-    val bonds: MutableList<Bond<*>> = mutableListOf()
+    val bonds = mutableListOf<Bond<Atom>>()
 
     // Construct each bond.
     for (bondNode in bondNodes) {
@@ -372,28 +349,45 @@ fun MoleculeComplex.Companion.parseCml(
         )
     }
 
-    val complexBuilder = MoleculeComplexBuilder.newInstance()
-
-    // Add the bonds to the builder.
-    for (bond in bonds) {
-        complexBuilder.addBond(bond)
-    }
-
     // Set of wrapped atoms that are participating in a bond.
     val wrappedBondedAtoms = bonds
         .flatMap { bond -> bond.atoms() }
         .map { atom -> SpeciesSetElement(atom) }
         .toSet()
 
-    // Add atoms that are not participating in a bond to the builder.
+    val atomIslands = mutableListOf<Island<Atom>>()
+
+    // Add atoms as islands that are not participating in a bond.
     for (
-        atom in
+        unbondedAtom in
         atomsById.values.filter { atom ->
             SpeciesSetElement(atom) !in wrappedBondedAtoms
         }
     ) {
-        complexBuilder.addAtom(atom)
+        val islandCharge = unbondedAtom.charge?.roundToInt() ?: 0
+
+        atomIslands.add(unbondedAtom.island(islandCharge))
     }
 
-    return complexBuilder.build<Atom>()
+    val molecules = BondAggregator.aggregate(bonds).map { bondGroup ->
+        val bondedAtoms = bondGroup.flatMap { bond ->  bond.atoms() }
+
+        val islandCharge = if (
+            bondedAtoms.any { bondedAtom -> bondedAtom.charge == null }
+        ) {
+            0
+        } else {
+            bondedAtoms
+                .fold(0.0) { acc, bondedAtom ->
+                    acc + bondedAtom.charge!!
+                }
+                .roundToInt()
+        }
+
+        Molecule(islandCharge, bondGroup)
+    }
+
+    return MoleculeComplex.newInstance(
+        molecules + atomIslands
+    )
 }

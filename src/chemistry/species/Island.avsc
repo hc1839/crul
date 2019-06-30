@@ -1,8 +1,12 @@
 {
     "type": "record",
     "namespace": "crul.chemistry.species",
-    "name": "Molecule",
+    "name": "Island",
     "fields": [
+        {
+            "type": "int",
+            "name": "charge"
+        },
         {
             "type": { "type": "array", "items": "bytes" },
             "name": "atoms"

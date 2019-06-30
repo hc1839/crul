@@ -27,7 +27,7 @@ internal class MoleculeComplexImpl<A : Atom> : AbstractMoleculeComplex<A> {
      *  @param subspecies
      *      Molecules and atoms of the complex.
      */
-    constructor(subspecies: Collection<Species>): super(subspecies)
+    constructor(subspecies: Collection<Island<A>>): super(subspecies)
 
     /**
      *  Copy constructor.

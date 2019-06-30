@@ -21,13 +21,15 @@ package crul.chemistry.species.format.mol2
 
 import java.io.Reader
 import java.io.Writer
+import kotlin.math.roundToInt
 
 import crul.chemistry.species.Atom
 import crul.chemistry.species.Bond
+import crul.chemistry.species.BondAggregator
 import crul.chemistry.species.Element
+import crul.chemistry.species.Island
 import crul.chemistry.species.Molecule
 import crul.chemistry.species.MoleculeComplex
-import crul.chemistry.species.MoleculeComplexBuilder
 import crul.chemistry.species.SpeciesSetElement
 import crul.math.coordsys.Vector3D
 import crul.measure.Quantity
@@ -51,7 +53,7 @@ import crul.measure.unit.UnitOfMeasure
  *      Tripos atom identifier given an atom and the complex that it is in. If
  *      `null`, atoms are arbitrarily assigned a Tripos atom identifier.
  *
- *  @param molNameMapper
+ *  @param complexNameMapper
  *      Tripos molecule name given a complex. If `null`, UUID Version 4 is
  *      used.
  *
@@ -63,7 +65,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
     writer: Writer,
     atomPosUnit: UnitOfMeasure,
     atomIdMapper: ((A, MoleculeComplex<A>) -> Int)? = null,
-    molNameMapper: ((MoleculeComplex<A>) -> String)? = null,
+    complexNameMapper: ((MoleculeComplex<A>) -> String)? = null,
     triposBondTypeMapper: (String) -> TriposBond.BondType
 )
 {
@@ -74,28 +76,28 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
     }
 
     // Tripos molecule names.
-    val molNames = mutableListOf<String>()
+    val complexNames = mutableListOf<String>()
 
     // Add or create Tripos molecule names.
     for (complex in this) {
-        val molName = molNameMapper?.invoke(complex)
+        val complexName = complexNameMapper?.invoke(complex)
 
-        if (molName != null) {
-            if (molNames.contains(molName)) {
+        if (complexName != null) {
+            if (complexNames.contains(complexName)) {
                 throw RuntimeException(
-                    "Tripos molecule name is not unique: $molName"
+                    "Tripos molecule name is not unique: $complexName"
                 )
             }
 
-            molNames.add(molName)
+            complexNames.add(complexName)
         } else {
             var uuid: String
 
             do {
                 uuid = crul.uuid.Generator.inNCName()
-            } while (molNames.contains(uuid))
+            } while (complexNames.contains(uuid))
 
-            molNames.add(uuid)
+            complexNames.add(uuid)
         }
     }
 
@@ -111,7 +113,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
 
         writer.write(
             TriposMolecule(
-                molName = molNames[complexIndex],
+                molName = complexNames[complexIndex],
                 numAtoms = atoms.count(),
                 numBonds = complex
                     .map {
@@ -142,7 +144,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
             atomIdsByAtom[SpeciesSetElement(atom)] = atomId
         }
 
-        // Construct Tripos-atom data.
+        // Construct Tripos atom data.
         val triposAtomDataList = atoms
             .map { atom ->
                 // Components of the atom position in Angstroms.
@@ -156,7 +158,8 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
                     x = atomPosCmptsAo[0],
                     y = atomPosCmptsAo[1],
                     z = atomPosCmptsAo[2],
-                    atomType = atom.element.symbol
+                    atomType = atom.element.symbol,
+                    charge = atom.charge
                 )
             }
             .sortedBy { it.atomId }
@@ -170,12 +173,11 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
             writer.write("\n")
         }
 
-        val bonds = complex.mapNotNull {
-            @Suppress("UNCHECKED_CAST")
-            (it as? Molecule<A>)?.bonds()
-        }.flatten()
+        val bonds = complex.flatMap { island ->
+            island.bonds()
+        }
 
-        // Construct Tripos-bond data.
+        // Construct Tripos bond data.
         val triposBondDataList = bonds.mapIndexed { index, bond ->
             val bondId = index + 1
             val (originAtom, targetAtom) = bond.toAtomPair()
@@ -209,6 +211,10 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
  *  type takes priority since it is the technically correct field. The Tripos
  *  atom name is considered if the Tripos atom type does not contain the
  *  element.
+ *
+ *  The charge of an island is the sum of the assigned atomic charges, with the
+ *  sum rounded to the nearest integer. If an atom in an island does not have
+ *  an assigned charge, the charge of the island is `0`.
  *
  *  Atom tags are populated with the atom identifiers in Mol2.
  *
@@ -247,11 +253,11 @@ fun MoleculeComplex.Companion.parseMol2(
     // Complex IDs in the same order as in the reader.
     val complexIds = mutableListOf<String>()
 
-    // Tripos-atom data.
+    // Tripos atom data.
     val atomDataListsByComplexId =
         mutableMapOf<String, MutableList<TriposAtom>>()
 
-    // Tripos-bond data.
+    // Tripos bond data.
     val bondDataListsByComplexId =
         mutableMapOf<String, MutableList<TriposBond>>()
 
@@ -366,7 +372,7 @@ fun MoleculeComplex.Companion.parseMol2(
                     }
                 )
 
-                val charge = triposAtomData.charge ?: 0.0
+                val charge = triposAtomData.charge
 
                 Atom.newInstance(
                     element,
@@ -404,30 +410,47 @@ fun MoleculeComplex.Companion.parseMol2(
         // Atoms in this complex.
         val atoms = atomsByComplexId[complexId]!!.values
 
-        val complexBuilder = MoleculeComplexBuilder.newInstance()
-
-        // Add the bonds to the builder.
-        for (bond in bonds) {
-            complexBuilder.addBond(bond)
-        }
-
         // Set of wrapped atoms that are participating in a bond.
         val wrappedBondedAtoms = bonds
             .flatMap { bond -> bond.atoms() }
             .map { atom -> SpeciesSetElement(atom) }
             .toSet()
 
+        val atomIslands = mutableListOf<Island<Atom>>()
+
         // Add atoms that are not participating in a bond to the builder.
         for (
-            atom in
+            unbondedAtom in
             atoms.filter { atom ->
                 SpeciesSetElement(atom) !in wrappedBondedAtoms
             }
         ) {
-            complexBuilder.addAtom(atom)
+            val islandCharge = unbondedAtom.charge?.roundToInt() ?: 0
+
+            atomIslands.add(unbondedAtom.island(islandCharge))
         }
 
-        complexBuilder.build<Atom>()
+        val molecules = BondAggregator.aggregate(bonds).map { bondGroup ->
+            val bondedAtoms = bondGroup.flatMap { bond ->  bond.atoms() }
+
+            val islandCharge = if (
+                bondedAtoms.any { bondedAtom -> bondedAtom.charge == null }
+            ) {
+                0
+            } else {
+                bondedAtoms
+                    .fold(0.0) { acc, bondedAtom ->
+                        acc + bondedAtom.charge!!
+                    }
+                    .roundToInt()
+            }
+
+            Molecule(islandCharge, bondGroup)
+        }
+
+        MoleculeComplex.newInstance(
+            molecules + atomIslands
+        )
     }
 
     // Return the complexes in the same order as in Mol2.

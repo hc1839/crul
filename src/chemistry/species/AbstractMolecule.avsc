@@ -4,6 +4,10 @@
     "name": "AbstractMolecule",
     "fields": [
         {
+            "type": "int",
+            "name": "charge"
+        },
+        {
             "type": { "type": "array", "items": "bytes" },
             "name": "atoms"
         },
