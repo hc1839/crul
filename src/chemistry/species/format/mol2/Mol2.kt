@@ -431,7 +431,9 @@ fun MoleculeComplex.Companion.parseMol2(
         }
 
         val molecules = BondAggregator.aggregate(bonds).map { bondGroup ->
-            val bondedAtoms = bondGroup.flatMap { bond ->  bond.atoms() }
+            val bondedAtoms = bondGroup
+                .flatMap { bond ->  bond.atoms() }
+                .distinctBy { atom -> SpeciesSetElement(atom) }
 
             val islandCharge = if (
                 bondedAtoms.any { bondedAtom -> bondedAtom.charge == null }
