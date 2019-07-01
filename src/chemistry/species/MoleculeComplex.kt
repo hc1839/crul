@@ -147,3 +147,95 @@ interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
         }
     }
 }
+
+/**
+ *  Maps atoms of a molecule complex from one type to another.
+ *
+ *  Connectivity and order of bonds are the same as in the receiver.
+ *
+ *  @param atomMapper
+ *      Atom of a new type given an atom of the original type. If it yields an
+ *      atom that is referentially equal to an atom that has already been
+ *      yielded, an exception is raised.
+ *
+ *  @return
+ *      New molecule complex with atoms from the result of applying
+ *      `atomMapper` to each atom.
+ */
+fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
+    atomMapper: (A) -> B
+): MoleculeComplex<B>
+{
+    // From wrapped input atom to output atom.
+    val atomCorrespondence = atoms()
+        .map { inputAtom ->
+            SpeciesSetElement(inputAtom)
+        }
+        .associateWith { wrappedInputAtom ->
+            atomMapper.invoke(wrappedInputAtom.species)
+        }
+
+    // Check that there are no two referentially equal output atoms.
+    if (
+        atomCorrespondence
+            .entries
+            .map { SpeciesSetElement(it.value) }
+            .distinct()
+            .count() != atomCorrespondence.count()
+    ) {
+        throw RuntimeException(
+            "Atom mapper yielded referentially equal atoms."
+        )
+    }
+
+    val outputIslands = mutableListOf<Island<B>>()
+
+    // Convert each input island to output island.
+    for (inputIsland in this) {
+        if (inputIsland.isSingleAtom()) {
+            val wrappedInputAtom = SpeciesSetElement(
+                inputIsland.atoms().single()
+            )
+
+            // Convert input atom island to output atom island.
+            @Suppress("UNCHECKED_CAST")
+            outputIslands.add(
+                atomCorrespondence[wrappedInputAtom]!!
+                    .island(inputIsland.charge) as Island<B>
+            )
+        } else {
+            val outputBonds = mutableListOf<Bond<B>>()
+
+            // Connect output atoms into output bonds.
+            for (inputBond in inputIsland.bonds()) {
+                val wrappedInputAtoms = inputBond.atoms().map {
+                    SpeciesSetElement(it)
+                }
+
+                val outputAtoms = wrappedInputAtoms.map {
+                    atomCorrespondence[it]!!
+                }
+
+                // Add the output bond.
+                outputBonds.add(
+                    Bond.newInstance(
+                        outputAtoms[0],
+                        outputAtoms[1],
+                        inputBond.order
+                    )
+                )
+            }
+
+            // Add the output molecule.
+            outputIslands.add(
+                Molecule(
+                    inputIsland.charge,
+                    outputBonds.toList()
+                )
+            )
+        }
+    }
+
+    // Convert output islands to output complex.
+    return MoleculeComplex.newInstance(outputIslands)
+}
