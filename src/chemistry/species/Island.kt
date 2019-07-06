@@ -47,11 +47,7 @@ private object IslandAvsc {
  *      Type of atoms in this island.
  */
 interface Island<A : Atom> : Fragment<A> {
-    /**
-     *  Cloning is necessarily deep. If `deep` is `false`, an exception is
-     *  raised.
-     */
-    abstract override fun clone(deep: Boolean): Island<A>
+    abstract override fun clone(): Island<A>
 
     /**
      *  Charge of the molecule or atom represented by this island.

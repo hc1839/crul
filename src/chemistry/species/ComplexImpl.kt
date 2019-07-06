@@ -27,18 +27,9 @@ internal class ComplexImpl<S : Species> : AbstractComplex<S> {
 
     /**
      *  Copy constructor.
-     *
-     *  @param other
-     *      Complex to copy.
-     *
-     *  @param deep
-     *      Whether subspecies are copied.
      */
-    constructor(
-        other: ComplexImpl<S>,
-        deep: Boolean
-    ): super(other, deep)
+    constructor(other: ComplexImpl<S>): super(other)
 
-    override fun clone(deep: Boolean): ComplexImpl<S> =
-        ComplexImpl(this, deep)
+    override fun clone(): ComplexImpl<S> =
+        ComplexImpl(this)
 }

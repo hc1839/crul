@@ -20,6 +20,7 @@ import java.nio.ByteBuffer
 import org.apache.avro.Schema
 import org.apache.avro.generic.*
 
+import crul.math.coordsys.Vector3D
 import crul.serialize.AvroSimple
 
 private object FragmentAvsc {
@@ -63,7 +64,7 @@ interface Fragment<A : Atom> : Complex<A> {
             super.getAtomsByTag(tag) as List<A>
         )
 
-    abstract override fun clone(deep: Boolean): Fragment<A>
+    abstract override fun clone(): Fragment<A>
 
     companion object {
         /**

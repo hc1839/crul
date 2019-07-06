@@ -57,19 +57,10 @@ internal class BondImpl<A : Atom> : Bond<A> {
     /**
      *  Copy constructor.
      */
-    @JvmOverloads
     @Suppress("UNCHECKED_CAST")
-    constructor(other: BondImpl<A>, deep: Boolean = false): this(
-        if (deep) {
-            other.toAtomPair().first.clone(true) as A
-        } else {
-            other.toAtomPair().first
-        },
-        if (deep) {
-            other.toAtomPair().second.clone(true) as A
-        } else {
-            other.toAtomPair().second
-        },
+    constructor(other: BondImpl<A>): this(
+        other.toAtomPair().first.clone() as A,
+        other.toAtomPair().second.clone() as A,
         other.order
     )
 
@@ -100,6 +91,6 @@ internal class BondImpl<A : Atom> : Bond<A> {
     override fun toAtomPair(): Pair<A, A> =
         atomPair
 
-    override fun clone(deep: Boolean): Bond<A> =
-        BondImpl(this, deep)
+    override fun clone(): Bond<A> =
+        BondImpl(this)
 }

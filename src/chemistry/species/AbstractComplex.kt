@@ -53,21 +53,16 @@ abstract class AbstractComplex<S : Species> : Complex<S> {
      *  Copy constructor.
      *
      *  @param other
-     *      Complex to copy.
-     *
-     *  @param deep
-     *      Whether subspecies are copied.
+     *      Complex and subspecies to copy.
      */
-    constructor(other: AbstractComplex<S>, deep: Boolean) {
-        @Suppress("UNCHECKED_CAST")
-        this.subspecies = if (deep) {
-            other
-                .subspecies
-                .map { it.clone(true) as S }
-                .toMutableList()
-        } else {
-            other.subspecies.toMutableList()
-        }
+    constructor(other: AbstractComplex<S>) {
+        this.subspecies = other
+            .subspecies
+            .map {
+                @Suppress("UNCHECKED_CAST")
+                it.clone() as S
+            }
+            .toMutableList()
     }
 
     override fun iterator(): Iterator<S> =

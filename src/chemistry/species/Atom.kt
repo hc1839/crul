@@ -48,14 +48,17 @@ private object AtomAvsc {
  */
 interface Atom : Species {
     /**
+     *  Tag is cloned.
+     */
+    abstract override fun clone(): Atom
+
+    /**
      *  Singleton collection containing itself.
      */
     override fun atoms(): Collection<Atom> =
         listOf(this)
 
-    override var centroid: Vector3D
-
-    abstract override fun clone(deep: Boolean): Atom
+    var position: Vector3D
 
     /**
      *  Element.
@@ -68,11 +71,6 @@ interface Atom : Species {
      *  Interpretation depends on the context that the atom is in.
      */
     var charge: Double?
-
-    /**
-     *  Clones this atom with a new tag.
-     */
-    fun clone(newTag: Int): Atom
 
     /**
      *  Arbitrary integer tag.
@@ -101,8 +99,8 @@ interface Atom : Species {
          *  @param element
          *      Element of the atom.
          *
-         *  @param centroid
-         *      Centroid of the atom.
+         *  @param position
+         *      Position of the atom.
          *
          *  @param charge
          *      Charge associated with the atom.
@@ -113,12 +111,12 @@ interface Atom : Species {
         @JvmStatic
         fun newInstance(
             element: Element,
-            centroid: Vector3D,
+            position: Vector3D,
             charge: Double?,
             tag: Int
         ): Atom = AtomImpl(
             element,
-            centroid,
+            position,
             charge,
             tag
         )
@@ -129,8 +127,8 @@ interface Atom : Species {
          *  @param element
          *      Element of the atom.
          *
-         *  @param centroid
-         *      Centroid of the atom.
+         *  @param position
+         *      Position of the atom.
          *
          *  @param charge
          *      Charge associated with the atom.
@@ -138,11 +136,11 @@ interface Atom : Species {
         @JvmStatic
         fun newInstance(
             element: Element,
-            centroid: Vector3D,
+            position: Vector3D,
             charge: Double?
         ): Atom = newInstance(
             element,
-            centroid,
+            position,
             charge,
             0
         )
@@ -163,7 +161,7 @@ interface Atom : Species {
             )
 
             avroRecord.put("element", Element.serialize(obj.element))
-            avroRecord.put("centroid", Vector3D.serialize(obj.centroid))
+            avroRecord.put("position", Vector3D.serialize(obj.position))
             avroRecord.put("charge", obj.charge)
             avroRecord.put("tag", obj.tag)
 
@@ -193,8 +191,8 @@ interface Atom : Species {
                 avroRecord.get("element") as ByteBuffer
             )
 
-            val centroid = Vector3D.deserialize(
-                avroRecord.get("centroid") as ByteBuffer
+            val position = Vector3D.deserialize(
+                avroRecord.get("position") as ByteBuffer
             )
 
             val charge = avroRecord.get("charge") as Double?
@@ -202,7 +200,7 @@ interface Atom : Species {
 
             return newInstance(
                 element,
-                centroid,
+                position,
                 charge,
                 tag
             )

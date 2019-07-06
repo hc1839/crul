@@ -52,5 +52,36 @@ interface Complex<S : Species> :
             .flatMap { it.atoms() }
             .distinctBy { SpeciesSetElement(it) }
 
-    abstract override fun clone(deep: Boolean): Complex<S>
+    abstract override fun clone(): Complex<S>
+
+    /**
+     *  Centroid of [atoms].
+     */
+    fun centroid(): Vector3D {
+        var positionSum = Vector3D(0.0, 0.0, 0.0)
+        var atomCount = 0
+
+        for (atom in atoms()) {
+            positionSum += atom.position
+            ++atomCount
+        }
+
+        return positionSum / atomCount.toDouble()
+    }
+
+    /**
+     *  Radius.
+     *
+     *  It is defined as the largest distance between the centroid and any
+     *  atom.
+     */
+    fun radius(): Double {
+        val centroid = centroid()
+
+        return atoms()
+            .map {
+                (it.position - centroid).magnitude()
+            }
+            .max()!!
+    }
 }

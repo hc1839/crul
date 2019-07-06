@@ -61,14 +61,8 @@ abstract class AbstractFragment<A : Atom> :
      *
      *  @param other
      *      Fragment to copy.
-     *
-     *  @param deep
-     *      Whether atoms are copied.
      */
-    constructor(
-        other: AbstractFragment<A>,
-        deep: Boolean
-    ): super(other, deep)
+    constructor(other: AbstractFragment<A>): super(other)
 
     /**
      *  Delegated deserialization constructor.

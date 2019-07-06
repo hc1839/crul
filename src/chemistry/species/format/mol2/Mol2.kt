@@ -148,7 +148,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
         val triposAtomDataList = atoms
             .map { atom ->
                 // Components of the atom position in Angstroms.
-                val atomPosCmptsAo = atom.centroid.components.map {
+                val atomPosCmptsAo = atom.position.components.map {
                     Quantity.convertUnit(it, atomPosUnit, angstromUnit)
                 }
 
@@ -362,7 +362,7 @@ fun MoleculeComplex.Companion.parseMol2(
 
                 val element = Element(elementSymbol)
 
-                val centroid = Vector3D(
+                val position = Vector3D(
                     listOf(
                         triposAtomData.x,
                         triposAtomData.y,
@@ -376,7 +376,7 @@ fun MoleculeComplex.Companion.parseMol2(
 
                 Atom.newInstance(
                     element,
-                    centroid,
+                    position,
                     charge,
                     triposAtomData.atomId
                 )

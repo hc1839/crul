@@ -33,6 +33,20 @@ import crul.serialize.AvroSimple
  *      Type of atoms.
  */
 interface Bond<A : Atom> : Fragment<A> {
+    abstract override fun hashCode(): Int
+
+    /**
+     *  Bonds are equal if and only if the atoms (without regards to their
+     *  order) are referentially equal and bond orders are structurally equal.
+     */
+    abstract override fun equals(other: Any?): Boolean
+
+    /**
+     *  Bonds cannot be directly cloned when cloning a molecule, since the
+     *  atoms would be cloned as well.
+     */
+    abstract override fun clone(): Bond<A>
+
     /**
      *  Bond order as an aribtrary string.
      */
@@ -42,16 +56,6 @@ interface Bond<A : Atom> : Fragment<A> {
      *  Atoms as a pair in the given order.
      */
     fun toAtomPair(): Pair<A, A>
-
-    abstract override fun hashCode(): Int
-
-    /**
-     *  Bonds are equal if and only if the atoms (without regards to their
-     *  order) are referentially equal and bond orders are structurally equal.
-     */
-    abstract override fun equals(other: Any?): Boolean
-
-    abstract override fun clone(deep: Boolean): Bond<A>
 
     companion object {
         /**

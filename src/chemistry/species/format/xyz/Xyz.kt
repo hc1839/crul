@@ -92,7 +92,7 @@ fun <A : Atom> MoleculeComplex<A>.exportXyz(
         for (atom in molecule.atoms()) {
             xyzBuilder += atom.element.symbol + separator
             xyzBuilder += atom
-                .centroid
+                .position
                 .components
                 .map {
                     Quantity

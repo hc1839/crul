@@ -45,7 +45,7 @@ private object AbstractAtomAvsc {
 abstract class AbstractAtom : Atom {
     override val element: Element
 
-    override var centroid: Vector3D
+    override var position: Vector3D
 
     override var charge: Double?
 
@@ -57,8 +57,8 @@ abstract class AbstractAtom : Atom {
      *  @param element
      *      Element of the atom.
      *
-     *  @param centroid
-     *      Centroid of the atom.
+     *  @param position
+     *      Position of the atom.
      *
      *  @param charge
      *      Charge associated with the atom.
@@ -69,12 +69,12 @@ abstract class AbstractAtom : Atom {
     @JvmOverloads
     constructor(
         element: Element,
-        centroid: Vector3D,
+        position: Vector3D,
         charge: Double?,
         tag: Int = 0
     ) {
         this.element = element
-        this.centroid = centroid
+        this.position = position
         this.charge = charge
         this.tag = tag
     }
@@ -85,7 +85,7 @@ abstract class AbstractAtom : Atom {
     @JvmOverloads
     constructor(other: AbstractAtom, tag: Int = other.tag) {
         this.element = other.element
-        this.centroid = other.centroid
+        this.position = other.position
         this.charge = other.charge
         this.tag = tag
     }
@@ -125,14 +125,8 @@ abstract class AbstractAtom : Atom {
                 override fun bonds(): Collection<Bond<Atom>> =
                     listOf()
 
-                override fun clone(deep: Boolean): Island<Atom> {
-                    if (!deep) {
-                        throw IllegalArgumentException(
-                            "Cloning an island must be deep."
-                        )
-                    }
-
-                    return atoms().single().clone(true).island(charge)
+                override fun clone(): Island<Atom> {
+                    return atoms().single().clone().island(charge)
                 }
             }
         }
@@ -159,7 +153,7 @@ abstract class AbstractAtom : Atom {
             )
 
             avroRecord.put("element", Element.serialize(obj.element))
-            avroRecord.put("centroid", Vector3D.serialize(obj.centroid))
+            avroRecord.put("position", Vector3D.serialize(obj.position))
             avroRecord.put("charge", obj.charge)
             avroRecord.put("tag", obj.tag)
 

@@ -50,7 +50,7 @@ interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
             it as A
         }
 
-    abstract override fun clone(deep: Boolean): MoleculeComplex<A>
+    abstract override fun clone(): MoleculeComplex<A>
 
     /**
      *  Charge, which is the sum of the charges of the islands.

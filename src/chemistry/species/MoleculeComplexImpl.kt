@@ -32,11 +32,8 @@ internal class MoleculeComplexImpl<A : Atom> : AbstractMoleculeComplex<A> {
     /**
      *  Copy constructor.
      */
-    constructor(
-        other: MoleculeComplexImpl<A>,
-        deep: Boolean
-    ): super(other, deep)
+    constructor(other: MoleculeComplexImpl<A>): super(other)
 
-    override fun clone(deep: Boolean): MoleculeComplexImpl<A> =
-        MoleculeComplexImpl(this, deep)
+    override fun clone(): MoleculeComplexImpl<A> =
+        MoleculeComplexImpl(this)
 }

@@ -4,7 +4,7 @@
     "name": "Atom",
     "fields": [
         { "type": "bytes", "name": "element" },
-        { "type": "bytes", "name": "centroid" },
+        { "type": "bytes", "name": "position" },
         { "type": ["null", "double"], "name": "charge" },
         { "type": "int", "name": "tag" }
     ]

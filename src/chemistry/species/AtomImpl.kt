@@ -27,12 +27,12 @@ internal class AtomImpl : AbstractAtom {
      */
     constructor(
         element: Element,
-        centroid: Vector3D,
+        position: Vector3D,
         charge: Double?,
         tag: Int = 0
     ): super(
         element,
-        centroid,
+        position,
         charge,
         tag
     )
@@ -46,14 +46,6 @@ internal class AtomImpl : AbstractAtom {
         tag: Int = other.tag
     ): super(other, tag)
 
-    /**
-     *  @param deep
-     *      Ignored.
-     */
-    @Suppress("UNUSED_PARAMETER")
-    override fun clone(deep: Boolean): Atom =
-        AtomImpl(this, tag)
-
-    override fun clone(newTag: Int): Atom =
-        AtomImpl(this, newTag)
+    override fun clone(): Atom =
+        AtomImpl(this)
 }

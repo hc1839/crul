@@ -135,10 +135,10 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
         atomNode.setAttribute("elementType", atom.element.symbol)
 
         val cmptsByName = listOf("x3", "y3", "z3")
-            .zip(atom.centroid.components)
+            .zip(atom.position.components)
             .toMap()
 
-        // Set the centroid of the atom.
+        // Set the position of the atom.
         for ((cmptName, cmpt) in cmptsByName) {
             atomNode.setAttribute(
                 cmptName,
@@ -272,7 +272,7 @@ fun MoleculeComplex.Companion.parseCml(
                 )
             }
 
-        val centroid = Vector3D(
+        val position = Vector3D(
             positionCmpts[0],
             positionCmpts[1],
             positionCmpts[2]
@@ -299,14 +299,14 @@ fun MoleculeComplex.Companion.parseCml(
         val atom: Atom = if (atomTag != null) {
             Atom.newInstance(
                 element,
-                centroid,
+                position,
                 charge,
                 atomTag
             )
         } else {
             Atom.newInstance(
                 element,
-                centroid,
+                position,
                 charge
             )
         }

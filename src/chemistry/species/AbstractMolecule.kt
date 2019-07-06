@@ -86,25 +86,16 @@ abstract class AbstractMolecule<A : Atom> :
 
     /**
      *  Copy constructor.
-     *
-     *  @param other
-     *      Molecule to copy.
-     *
-     *  @param deep
-     *      Whether atoms and bonds are copied.
      */
-    constructor(
-        other: AbstractMolecule<A>,
-        deep: Boolean
-    ): this(
+    constructor(other: AbstractMolecule<A>): this(
         other.charge,
-        if (deep) {
+        {
             val clonedAtomsByOtherAtom = other
                 .atoms()
                 .map { SpeciesSetElement(it) }
                 .associateWith {
                     @Suppress("UNCHECKED_CAST")
-                    it.species.clone(true) as A
+                    it.species.clone() as A
                 }
 
             // Bonds cannot be directly cloned, since the same atom
@@ -124,9 +115,7 @@ abstract class AbstractMolecule<A : Atom> :
                         otherBond.order
                     )
                 }
-        } else {
-            other.bonds()
-        }
+        }.invoke()
     )
 
     /**

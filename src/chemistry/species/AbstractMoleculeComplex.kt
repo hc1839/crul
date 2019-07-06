@@ -79,17 +79,8 @@ abstract class AbstractMoleculeComplex<A : Atom> :
 
     /**
      *  Copy constructor.
-     *
-     *  @param other
-     *      Molecule complex to copy.
-     *
-     *  @param deep
-     *      Whether molecules and atoms are copied.
      */
-    constructor(
-        other: AbstractMoleculeComplex<A>,
-        deep: Boolean
-    ): super(other, deep)
+    constructor(other: AbstractMoleculeComplex<A>): super(other)
 
     /**
      *  Delegated deserialization constructor.

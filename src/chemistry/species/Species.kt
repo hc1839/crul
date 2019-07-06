@@ -19,11 +19,11 @@ package crul.chemistry.species
 import crul.math.coordsys.Vector3D
 
 /**
- *  Interface for species.
+ *  Chemical species.
  *
- *  Comparisons of species shall be referential.
+ *  Comparisons of species are referential.
  */
-interface Species {
+interface Species : Cloneable {
     /**
      *  All atoms in this species, or itself if [Atom].
      *
@@ -35,45 +35,16 @@ interface Species {
     fun atoms(): Collection<Atom>
 
     /**
-     *  Centroid of [atoms].
+     *  Translates atoms in this species by a given displacement.
      *
-     *  If this species is an [Atom], this property must be overridden to
-     *  provide and to set the position of the atom itself, or an exception is
-     *  raised.
+     *  @param displacement
+     *      Displacement of the translation.
      */
-    var centroid: Vector3D
-        get() {
-            // Check that this species is not an atom.
-            if (atoms().singleOrNull() == this) {
-                throw RuntimeException(
-                    "This species is an atom, and the property " +
-                    "for obtaining the centroid is not properly overridden."
-                )
-            }
-
-            var positionSum = Vector3D(0.0, 0.0, 0.0)
-            var atomCount = 0
-
-            for (atom in atoms()) {
-                positionSum += atom.centroid
-                ++atomCount
-            }
-
-            if (atomCount == 0) {
-                throw RuntimeException(
-                    "No atoms in this complex."
-                )
-            }
-
-            return positionSum / atomCount.toDouble()
+    fun translate(displacement: Vector3D) {
+        for (atom in atoms()) {
+            atom.position += displacement
         }
-        set(value) {
-            val displacement = value - centroid
-
-            for (atom in atoms()) {
-                atom.centroid += displacement
-            }
-        }
+    }
 
     /**
      *  Gets a list of atoms by tag, or an empty list if there are no such
@@ -83,13 +54,10 @@ interface Species {
         atoms().filter { it.tag == tag }
 
     /**
-     *  Clones this species.
-     *
-     *  @param deep
-     *      Whether subspecies are cloned.
+     *  Clones this species and all subspecies.
      *
      *  @return
-     *      Clone of this species.
+     *      Deep clone of this species.
      */
-    fun clone(deep: Boolean): Species
+    public abstract override fun clone(): Species
 }

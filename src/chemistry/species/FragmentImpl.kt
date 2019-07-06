@@ -34,15 +34,9 @@ internal class FragmentImpl<A : Atom> : AbstractFragment<A> {
      *
      *  @param other
      *      Fragment to copy.
-     *
-     *  @param deep
-     *      Whether atoms are copied.
      */
-    constructor(
-        other: FragmentImpl<A>,
-        deep: Boolean
-    ): super(other, deep)
+    constructor(other: FragmentImpl<A>): super(other)
 
-    override fun clone(deep: Boolean): FragmentImpl<A> =
-        FragmentImpl(this, deep)
+    override fun clone(): FragmentImpl<A> =
+        FragmentImpl(this)
 }
