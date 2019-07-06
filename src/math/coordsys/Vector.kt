@@ -126,7 +126,7 @@ open class Vector : Spatial {
      *
      *  The vector cannot be zero-dimensional and cannot be a zero vector.
      */
-    fun unit(): Vector {
+    open fun unit(): Vector {
         if (dimensionality == 0) {
             throw IllegalArgumentException(
                 "Vector has zero dimensions."

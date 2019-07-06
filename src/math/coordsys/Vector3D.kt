@@ -85,8 +85,16 @@ open class Vector3D : Vector {
     )
 
     operator fun component1() = this.components[0]
+
     operator fun component2() = this.components[1]
+
     operator fun component3() = this.components[2]
+
+    override fun unit(): Vector3D {
+        val superValue = super.unit()
+
+        return Vector3D(superValue.components)
+    }
 
     override fun plus(other: Vector): Vector3D =
         Vector3D(super.plus(other).components)
