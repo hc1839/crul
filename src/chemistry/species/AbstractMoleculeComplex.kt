@@ -48,7 +48,7 @@ abstract class AbstractMoleculeComplex<A : Atom> :
     MoleculeComplex<A>
 {
     /**
-     *  @param subspecies
+     *  @param islands
      *      Molecules and atoms of the complex.
      */
     constructor(islands: Collection<Island<A>>): super(islands) {
