@@ -154,16 +154,16 @@ interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
  *  Connectivity and order of bonds are the same as in the receiver.
  *
  *  @param atomMapper
- *      Atom of a new type given an atom of the original type. If it yields an
- *      atom that is referentially equal to an atom that has already been
- *      yielded, an exception is raised.
+ *      Atom of a new type given the molecule complex and an atom of the
+ *      original type. If it yields an atom that is referentially equal to an
+ *      atom that has already been yielded, an exception is raised.
  *
  *  @return
  *      New molecule complex with atoms from the result of applying
  *      `atomMapper` to each atom.
  */
 fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
-    atomMapper: (A) -> B
+    atomMapper: (MoleculeComplex<A>, A) -> B
 ): MoleculeComplex<B>
 {
     // From wrapped input atom to output atom.
@@ -172,7 +172,7 @@ fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
             SpeciesSetElement(inputAtom)
         }
         .associateWith { wrappedInputAtom ->
-            atomMapper.invoke(wrappedInputAtom.species)
+            atomMapper.invoke(this, wrappedInputAtom.species)
         }
 
     // Check that there are no two referentially equal output atoms.
