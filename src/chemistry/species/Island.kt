@@ -82,6 +82,25 @@ interface Island<A : Atom> : Fragment<A> {
         bonds().filter { it.containsAtom(atom) }
 
     /**
+     *  Gets the atoms that are bonded to a given atom.
+     *
+     *  @param atom
+     *      Atom whose bonded atoms are to be retrieved.
+     *
+     *  @return
+     *      Atoms bonded to `atom`. If `atom` does not exist in this island, an
+     *      empty list is returned.
+     */
+    fun getAtomsBondedTo(atom: A): List<A> =
+        getBondsByAtom(atom)
+            .flatMap { bond ->
+                bond.toAtomPair().toList()
+            }
+            .filter {
+                it !== atom
+            }
+
+    /**
      *  Gets the bond between two atoms.
      *
      *  By default, [bonds] is used. An implementation may override this for a
