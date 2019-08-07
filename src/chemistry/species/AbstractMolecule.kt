@@ -20,6 +20,7 @@ import java.nio.ByteBuffer
 import org.apache.avro.Schema
 import org.apache.avro.generic.*
 
+import crul.distinct.Referential
 import crul.serialize.AvroSimple
 
 private object AbstractMoleculeAvsc {
@@ -58,7 +59,7 @@ abstract class AbstractMolecule<A : Atom> :
     /**
      *  Lists of bonds associated by the participating atom.
      */
-    private val bondListsByAtom: Map<SpeciesSetElement<A>, List<Bond<A>>>
+    private val bondListsByAtom: Map<Referential<A>, List<Bond<A>>>
 
     /**
      *  @param charge
@@ -75,7 +76,7 @@ abstract class AbstractMolecule<A : Atom> :
         if (!bonds.isEmpty()) {
             bonds
                 .flatMap { it.atoms() }
-                .distinctBy { SpeciesSetElement(it) }
+                .distinctBy { Referential(it) }
         } else {
             throw IllegalArgumentException("Collection of bonds is empty.")
         }
@@ -92,10 +93,10 @@ abstract class AbstractMolecule<A : Atom> :
         {
             val clonedAtomsByOtherAtom = other
                 .atoms()
-                .map { SpeciesSetElement(it) }
+                .map { Referential(it) }
                 .associateWith {
                     @Suppress("UNCHECKED_CAST")
-                    it.species.clone() as A
+                    it.value.clone() as A
                 }
 
             // Bonds cannot be directly cloned, since the same atom
@@ -107,10 +108,10 @@ abstract class AbstractMolecule<A : Atom> :
 
                     Bond.newInstance(
                         clonedAtomsByOtherAtom[
-                            SpeciesSetElement(otherAtom1)
+                            Referential(otherAtom1)
                         ]!!,
                         clonedAtomsByOtherAtom[
-                            SpeciesSetElement(otherAtom2)
+                            Referential(otherAtom2)
                         ]!!,
                         otherBond.order
                     )
@@ -126,11 +127,11 @@ abstract class AbstractMolecule<A : Atom> :
 
     override fun bonds(): Collection<Bond<A>> =
         bondListsByAtom.values.flatten().distinctBy {
-            SpeciesSetElement(it)
+            Referential(it)
         }
 
     override fun getBondsByAtom(atom: A): List<Bond<A>> {
-        val wrappedAtom = SpeciesSetElement(atom)
+        val wrappedAtom = Referential(atom)
 
         if (!bondListsByAtom.containsKey(wrappedAtom)) {
             throw IllegalArgumentException(
@@ -191,8 +192,8 @@ abstract class AbstractMolecule<A : Atom> :
     )
 
     override fun getBond(atom1: A, atom2: A): Bond<A>? {
-        val wrappedAtom1 = SpeciesSetElement(atom1)
-        val wrappedAtom2 = SpeciesSetElement(atom2)
+        val wrappedAtom1 = Referential(atom1)
+        val wrappedAtom2 = Referential(atom2)
 
         if (
             !bondListsByAtom.contains(wrappedAtom1) ||
@@ -210,7 +211,7 @@ abstract class AbstractMolecule<A : Atom> :
         } else {
             val wrappedBondAtoms = bond
                 .atoms()
-                .map { SpeciesSetElement(it) }
+                .map { Referential(it) }
                 .toSet()
 
             if (wrappedBondAtoms == setOf(wrappedAtom1, wrappedAtom2)) {
@@ -255,7 +256,7 @@ abstract class AbstractMolecule<A : Atom> :
          */
         private fun <A : Atom> bondIndexing(
             bonds: Collection<Bond<A>>
-        ): Map<SpeciesSetElement<A>, List<Bond<A>>>
+        ): Map<Referential<A>, List<Bond<A>>>
         {
             if (bonds.isEmpty()) {
                 throw IllegalArgumentException(
@@ -274,11 +275,11 @@ abstract class AbstractMolecule<A : Atom> :
             val bondAggregate = bondAggregates.single()
 
             val bondListsByAtom =
-                mutableMapOf<SpeciesSetElement<A>, MutableList<Bond<A>>>()
+                mutableMapOf<Referential<A>, MutableList<Bond<A>>>()
 
             for (bond in bondAggregate) {
                 for (atom in bond.atoms()) {
-                    val wrappedAtom = SpeciesSetElement(atom)
+                    val wrappedAtom = Referential(atom)
 
                     if (!bondListsByAtom.containsKey(wrappedAtom)) {
                         bondListsByAtom[wrappedAtom] = mutableListOf()

@@ -30,7 +30,7 @@ import crul.chemistry.species.Element
 import crul.chemistry.species.Island
 import crul.chemistry.species.Molecule
 import crul.chemistry.species.MoleculeComplex
-import crul.chemistry.species.SpeciesSetElement
+import crul.distinct.Referential
 import crul.math.coordsys.Vector3D
 import crul.measure.Quantity
 import crul.measure.dimension.Dimension
@@ -129,7 +129,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
         writer.write("\n")
 
         // Tripos atom IDs associated by wrapped atom.
-        val atomIdsByAtom = mutableMapOf<SpeciesSetElement<A>, Int>()
+        val atomIdsByAtom = mutableMapOf<Referential<A>, Int>()
 
         // Add or create Tripos atom IDs.
         for ((atomIndex, atom) in atoms.withIndex()) {
@@ -141,7 +141,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
                 )
             }
 
-            atomIdsByAtom[SpeciesSetElement(atom)] = atomId
+            atomIdsByAtom[Referential(atom)] = atomId
         }
 
         // Construct Tripos atom data.
@@ -153,7 +153,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
                 }
 
                 TriposAtom(
-                    atomId = atomIdsByAtom[SpeciesSetElement(atom)]!!,
+                    atomId = atomIdsByAtom[Referential(atom)]!!,
                     atomName = atom.element.symbol,
                     x = atomPosCmptsAo[0],
                     y = atomPosCmptsAo[1],
@@ -184,8 +184,8 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
 
             TriposBond(
                 bondId = bondId,
-                originAtomId = atomIdsByAtom[SpeciesSetElement(originAtom)]!!,
-                targetAtomId = atomIdsByAtom[SpeciesSetElement(targetAtom)]!!,
+                originAtomId = atomIdsByAtom[Referential(originAtom)]!!,
+                targetAtomId = atomIdsByAtom[Referential(targetAtom)]!!,
                 bondType = triposBondTypeMapper.invoke(bond.order)
             )
         }
@@ -413,7 +413,7 @@ fun MoleculeComplex.Companion.parseMol2(
         // Set of wrapped atoms that are participating in a bond.
         val wrappedBondedAtoms = bonds
             .flatMap { bond -> bond.atoms() }
-            .map { atom -> SpeciesSetElement(atom) }
+            .map { atom -> Referential(atom) }
             .toSet()
 
         val atomIslands = mutableListOf<Island<Atom>>()
@@ -422,7 +422,7 @@ fun MoleculeComplex.Companion.parseMol2(
         for (
             unbondedAtom in
             atoms.filter { atom ->
-                SpeciesSetElement(atom) !in wrappedBondedAtoms
+                Referential(atom) !in wrappedBondedAtoms
             }
         ) {
             val islandCharge = unbondedAtom.charge?.roundToInt() ?: 0
@@ -433,7 +433,7 @@ fun MoleculeComplex.Companion.parseMol2(
         val molecules = BondAggregator.aggregate(bonds).map { bondGroup ->
             val bondedAtoms = bondGroup
                 .flatMap { bond ->  bond.atoms() }
-                .distinctBy { atom -> SpeciesSetElement(atom) }
+                .distinctBy { atom -> Referential(atom) }
 
             val islandCharge = if (
                 bondedAtoms.any { bondedAtom -> bondedAtom.charge == null }

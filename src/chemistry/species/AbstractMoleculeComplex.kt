@@ -20,6 +20,7 @@ import java.nio.ByteBuffer
 import org.apache.avro.Schema
 import org.apache.avro.generic.*
 
+import crul.distinct.Referential
 import crul.serialize.AvroSimple
 
 private object AbstractMoleculeComplexAvsc {
@@ -55,7 +56,7 @@ abstract class AbstractMoleculeComplex<A : Atom> :
         // Referentially distinct atoms from all islands.
         val wrappedAtomSets = islands.map { island ->
             island.atoms().map { atom ->
-                SpeciesSetElement(atom)
+                Referential(atom)
             }.toSet()
         }
 

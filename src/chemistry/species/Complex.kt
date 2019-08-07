@@ -16,6 +16,7 @@
 
 package crul.chemistry.species
 
+import crul.distinct.Referential
 import crul.math.coordsys.Vector3D
 
 /**
@@ -50,7 +51,7 @@ interface Complex<S : Species> :
             .asSequence()
             .toList()
             .flatMap { it.atoms() }
-            .distinctBy { SpeciesSetElement(it) }
+            .distinctBy { Referential(it) }
 
     abstract override fun clone(): Complex<S>
 

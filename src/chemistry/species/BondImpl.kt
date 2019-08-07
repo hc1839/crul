@@ -20,6 +20,7 @@ import java.nio.ByteBuffer
 import org.msgpack.core.MessagePack
 import org.msgpack.value.Value
 
+import crul.distinct.Referential
 import crul.serialize.MessagePackSimple
 
 /**
@@ -73,11 +74,11 @@ internal class BondImpl<A : Atom> : Bond<A> {
         (
             atomPair
                 .toList()
-                .map { SpeciesSetElement(it) }
+                .map { Referential(it) }
                 .toSet() == other
                     .atomPair
                     .toList()
-                    .map { SpeciesSetElement(it) }
+                    .map { Referential(it) }
                     .toSet() &&
             order == other.order
         )

@@ -38,7 +38,7 @@ import crul.chemistry.species.Element
 import crul.chemistry.species.Island
 import crul.chemistry.species.Molecule
 import crul.chemistry.species.MoleculeComplex
-import crul.chemistry.species.SpeciesSetElement
+import crul.distinct.Referential
 import crul.float.Comparison.nearlyEquals
 import crul.math.coordsys.Vector3D
 import crul.measure.Quantity
@@ -119,7 +119,7 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
     moleculeNode.appendChild(atomArrayNode)
 
     // For serializing the bonds.
-    val atomIdsByAtom = mutableMapOf<SpeciesSetElement<A>, String>()
+    val atomIdsByAtom = mutableMapOf<Referential<A>, String>()
 
     // Create and append a node for each atom, ignoring assigned charges.
     for (atom in atoms()) {
@@ -129,7 +129,7 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
         val atomId = atomIdMapper.invoke(atom, this)
 
         // Store the atom ID for bond serialization.
-        atomIdsByAtom[SpeciesSetElement(atom)] = atomId
+        atomIdsByAtom[Referential(atom)] = atomId
 
         atomNode.setAttribute("id", atomId)
         atomNode.setAttribute("elementType", atom.element.symbol)
@@ -168,7 +168,7 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
             bond
                 .atoms()
                 .map { atom ->
-                    atomIdsByAtom[SpeciesSetElement(atom)]!!
+                    atomIdsByAtom[Referential(atom)]!!
                 }
                 .joinToString(" ")
         )
@@ -352,7 +352,7 @@ fun MoleculeComplex.Companion.parseCml(
     // Set of wrapped atoms that are participating in a bond.
     val wrappedBondedAtoms = bonds
         .flatMap { bond -> bond.atoms() }
-        .map { atom -> SpeciesSetElement(atom) }
+        .map { atom -> Referential(atom) }
         .toSet()
 
     val atomIslands = mutableListOf<Island<Atom>>()
@@ -361,7 +361,7 @@ fun MoleculeComplex.Companion.parseCml(
     for (
         unbondedAtom in
         atomsById.values.filter { atom ->
-            SpeciesSetElement(atom) !in wrappedBondedAtoms
+            Referential(atom) !in wrappedBondedAtoms
         }
     ) {
         val islandCharge = unbondedAtom.charge?.roundToInt() ?: 0

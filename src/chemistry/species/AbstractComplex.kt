@@ -16,6 +16,8 @@
 
 package crul.chemistry.species
 
+import crul.distinct.Referential
+
 /**
  *  Skeletal implementation of [Complex].
  *
@@ -37,7 +39,7 @@ abstract class AbstractComplex<S : Species> : Complex<S> {
      */
     constructor(subspecies: Collection<S>) {
         val subspeciesList = subspecies
-            .distinctBy { SpeciesSetElement(it) }
+            .distinctBy { Referential(it) }
             .toMutableList()
 
         if (subspeciesList.count() != subspecies.count()) {

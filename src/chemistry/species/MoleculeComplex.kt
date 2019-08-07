@@ -20,6 +20,7 @@ import java.nio.ByteBuffer
 import org.apache.avro.Schema
 import org.apache.avro.generic.*
 
+import crul.distinct.Referential
 import crul.serialize.AvroSimple
 
 private object MoleculeComplexAvsc {
@@ -169,17 +170,17 @@ fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
     // From wrapped input atom to output atom.
     val atomCorrespondence = atoms()
         .map { inputAtom ->
-            SpeciesSetElement(inputAtom)
+            Referential(inputAtom)
         }
         .associateWith { wrappedInputAtom ->
-            atomMapper.invoke(this, wrappedInputAtom.species)
+            atomMapper.invoke(this, wrappedInputAtom.value)
         }
 
     // Check that there are no two referentially equal output atoms.
     if (
         atomCorrespondence
             .entries
-            .map { SpeciesSetElement(it.value) }
+            .map { Referential(it.value) }
             .distinct()
             .count() != atomCorrespondence.count()
     ) {
@@ -193,7 +194,7 @@ fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
     // Convert each input island to output island.
     for (inputIsland in this) {
         if (inputIsland.isSingleAtom()) {
-            val wrappedInputAtom = SpeciesSetElement(
+            val wrappedInputAtom = Referential(
                 inputIsland.atoms().single()
             )
 
@@ -209,7 +210,7 @@ fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
             // Connect output atoms into output bonds.
             for (inputBond in inputIsland.bonds()) {
                 val wrappedInputAtoms = inputBond.atoms().map {
-                    SpeciesSetElement(it)
+                    Referential(it)
                 }
 
                 val outputAtoms = wrappedInputAtoms.map {

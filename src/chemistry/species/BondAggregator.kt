@@ -16,22 +16,23 @@
 
 package crul.chemistry.species
 
+import crul.distinct.Referential
+
 /**
  *  Aggregator of bonds.
  */
 object BondAggregator {
     /**
-     *  Aggregates the bonds into bond lists, each of which represents a
-     *  molecule.
+     *  Aggregates bonds into bond lists, each of which corresponds an island.
      *
      *  @param bonds
      *      Collection of bonds. Order is not important, and referentially
-     *      equivalent bonds are removed.  Exception is raised if two bonds
-     *      have referentially equal atoms but unequal orders.
+     *      equivalent bonds are removed. Exception is raised if two bonds have
+     *      referentially equal atoms but unequal orders.
      *
      *  @return
      *      List of bond lists such that different bond lists correspond to
-     *      different molecules.
+     *      different islands.
      */
     @JvmStatic
     fun <A : Atom> aggregate(bonds: Collection<Bond<A>>): List<List<Bond<A>>> {
@@ -41,7 +42,7 @@ object BondAggregator {
 
         // Bonds that are referentially distinct.
         val distinctBonds = bonds.distinctBy {
-            SpeciesSetElement(it)
+            Referential(it)
         }
 
         if (
@@ -51,7 +52,7 @@ object BondAggregator {
                     // Make the distinction of a bond depend only on the atoms
                     // and not on the bond order.
                     bond.atoms().map { atom ->
-                        SpeciesSetElement(atom)
+                        Referential(atom)
                     }.toSet()
                 }
                 .count()
@@ -63,23 +64,23 @@ object BondAggregator {
 
         // Sets of wrapped atoms that are bonded to the key of the map.
         val bondPartnerSetsByAtom: Map<
-            SpeciesSetElement<A>,
-            MutableSet<SpeciesSetElement<A>>> = bonds
+            Referential<A>,
+            MutableSet<Referential<A>>> = bonds
                 .flatMap { bond -> bond.atoms() }
-                .map { atom -> SpeciesSetElement(atom) }
-                .associateWith { mutableSetOf<SpeciesSetElement<A>>() }
+                .map { atom -> Referential(atom) }
+                .associateWith { mutableSetOf<Referential<A>>() }
                 .toMutableMap()
 
         // Index the bonds.
         for (bond in bonds) {
             val (atom1, atom2) = bond.toAtomPair()
 
-            bondPartnerSetsByAtom[SpeciesSetElement(atom1)]!!.add(
-                SpeciesSetElement(atom2)
+            bondPartnerSetsByAtom[Referential(atom1)]!!.add(
+                Referential(atom2)
             )
 
-            bondPartnerSetsByAtom[SpeciesSetElement(atom2)]!!.add(
-                SpeciesSetElement(atom1)
+            bondPartnerSetsByAtom[Referential(atom2)]!!.add(
+                Referential(atom1)
             )
         }
 
@@ -89,9 +90,9 @@ object BondAggregator {
             dstAtoms.plusElement(srcAtom)
         }
 
-        // Builder for the groups of atom identifiers, each of which represents
-        // a molecule.
-        val aggregatesBuilder = mutableListOf<Set<SpeciesSetElement<A>>>(
+        // Builder for the groups of wrapped atoms, where each group
+        // corresponds to an island.
+        val aggregatesBuilder = mutableListOf<Set<Referential<A>>>(
             remainingBondGroups.first()
         )
 
@@ -116,10 +117,10 @@ object BondAggregator {
             }
         }
 
-        // Convert each set of wrapped atoms, which represents a molecule, to a
+        // Convert each set of wrapped atoms, which represents an island, to a
         // list of bonds.
         return aggregatesBuilder.map { wrappedAtoms ->
-            val atoms = wrappedAtoms.map { it.species }
+            val atoms = wrappedAtoms.map { it.value }
 
             // Filter bonds such that at least one of its atoms is in the
             // group.
