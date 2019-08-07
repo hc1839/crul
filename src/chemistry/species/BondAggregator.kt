@@ -23,6 +23,76 @@ import crul.distinct.Referential
  */
 object BondAggregator {
     /**
+     *  Aggregates atoms into atom lists, each of which corresponds an island.
+     *
+     *  It uses breadth-first search.
+     *
+     *  @param partners
+     *      Map of atom to set of atoms that are bonded to the key. Atoms
+     *      appearing as values must also exist as a key.
+     *
+     *  @return
+     *      Atoms aggregated into molecules.
+     */
+    private fun <A : Atom> aggregateAtoms(
+        partners: Map<Referential<A>, Set<Referential<A>>>
+    ): List<List<A>>
+    {
+        if (partners.none()) {
+            return listOf()
+        }
+
+        val wrappedAtoms = partners
+            .flatMap { (key, value) -> value.plusElement(key) }
+            .toSet()
+
+        if (wrappedAtoms.any { !partners.containsKey(it) }) {
+            throw IllegalArgumentException(
+                "Not all atoms appearing as values exist as keys."
+            )
+        }
+
+        // Collection of aggregates.
+        val aggregates = mutableListOf<List<A>>()
+
+        // Whether an atom has been visited.
+        val visited = wrappedAtoms
+            .associateWith { false }
+            .toMutableMap()
+
+        while (visited.any { !it.value }) {
+            // Buffer to hold the next set of unvisited atoms to visit.
+            var nextLevelAtoms = setOf(
+                visited
+                    .entries
+                    .first { (_, isVisited) -> !isVisited }
+                    .key
+            )
+
+            // Builder of the current aggregate.
+            val aggregateBuilder = nextLevelAtoms.toMutableSet()
+
+            while (!nextLevelAtoms.isEmpty()) {
+                aggregateBuilder.addAll(nextLevelAtoms)
+
+                for (wrappedAtom in nextLevelAtoms) {
+                    visited[wrappedAtom] = true
+                }
+
+                // Get the next level of atoms for the next iteration.
+                nextLevelAtoms = nextLevelAtoms
+                    .flatMap { partners[it]!! }
+                    .filter { !visited[it]!! }
+                    .toSet()
+            }
+
+            aggregates.add(aggregateBuilder.map { it.value })
+        }
+
+        return aggregates.toList()
+    }
+
+    /**
      *  Aggregates bonds into bond lists, each of which corresponds an island.
      *
      *  @param bonds
@@ -62,75 +132,45 @@ object BondAggregator {
             )
         }
 
-        // Sets of wrapped atoms that are bonded to the key of the map.
-        val bondPartnerSetsByAtom: Map<
-            Referential<A>,
-            MutableSet<Referential<A>>> = bonds
-                .flatMap { bond -> bond.atoms() }
-                .map { atom -> Referential(atom) }
-                .associateWith { mutableSetOf<Referential<A>>() }
-                .toMutableMap()
+        val wrappedAtoms = distinctBonds
+            .flatMap { bond -> bond.atoms() }
+            .map { atom -> Referential(atom) }
 
-        // Index the bonds.
-        for (bond in bonds) {
+        // Sets of atoms that are bonded to the key of the map.
+        val partners = wrappedAtoms.associateWith {
+            mutableSetOf<Referential<A>>()
+        }
+
+        // Sets of bonds associated with participating atom.
+        val bondSetsByAtom = wrappedAtoms.associateWith {
+            mutableSetOf<Referential<Bond<A>>>()
+        }
+
+        // Index the partners and bonds.
+        for (bond in distinctBonds) {
             val (atom1, atom2) = bond.toAtomPair()
 
-            bondPartnerSetsByAtom[Referential(atom1)]!!.add(
-                Referential(atom2)
-            )
+            val wrappedAtom1 = Referential(atom1)
+            val wrappedAtom2 = Referential(atom2)
 
-            bondPartnerSetsByAtom[Referential(atom2)]!!.add(
-                Referential(atom1)
-            )
-        }
+            partners[Referential(atom1)]!!.add(wrappedAtom2)
+            partners[Referential(atom2)]!!.add(wrappedAtom1)
 
-        var remainingBondGroups = bondPartnerSetsByAtom.map {
-            (srcAtom, dstAtoms) ->
+            val wrappedBond = Referential(bond)
 
-            dstAtoms.plusElement(srcAtom)
-        }
-
-        // Builder for the groups of wrapped atoms, where each group
-        // corresponds to an island.
-        val aggregatesBuilder = mutableListOf<Set<Referential<A>>>(
-            remainingBondGroups.first()
-        )
-
-        remainingBondGroups = remainingBondGroups.drop(1)
-
-        // Successively form the aggregates.
-        while (!remainingBondGroups.isEmpty()) {
-            val (partners, rest) = remainingBondGroups.partition {
-                !aggregatesBuilder.last().intersect(it).isEmpty()
-            }
-
-            remainingBondGroups = rest
-
-            if (!partners.isEmpty()) {
-                aggregatesBuilder[aggregatesBuilder.lastIndex] = partners
-                    .fold(aggregatesBuilder.last()) { acc, partner ->
-                        acc + partner
-                    }
-            } else {
-                aggregatesBuilder.add(remainingBondGroups.first())
-                remainingBondGroups = remainingBondGroups.drop(1)
+            for (wrappedAtom in listOf(wrappedAtom1, wrappedAtom2)) {
+                bondSetsByAtom[wrappedAtom]!!.add(wrappedBond)
             }
         }
 
-        // Convert each set of wrapped atoms, which represents an island, to a
-        // list of bonds.
-        return aggregatesBuilder.map { wrappedAtoms ->
-            val atoms = wrappedAtoms.map { it.value }
+        val atomAggregates = aggregateAtoms(partners)
 
-            // Filter bonds such that at least one of its atoms is in the
-            // group.
-            distinctBonds.filter { bond ->
-                bond.atoms().any { bondAtom ->
-                    atoms.any { atom ->
-                        atom === bondAtom
-                    }
-                }
-            }
+        // Convert each list of atoms to a list of bonds.
+        return atomAggregates.map { atomAggregate ->
+            atomAggregate
+                .flatMap { atom -> bondSetsByAtom[Referential(atom)]!! }
+                .distinct()
+                .map { it.value }
         }
     }
 }
