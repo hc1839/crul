@@ -90,7 +90,7 @@ interface Atom : Species {
      *  @return
      *      Island containing this atom.
      */
-    fun island(islandCharge: Int): Island<Atom>
+    fun getIsland(islandCharge: Int): Island<Atom>
 
     companion object {
         /**

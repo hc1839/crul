@@ -114,7 +114,7 @@ abstract class AbstractAtom : Atom {
         ).first()
     )
 
-    override fun island(islandCharge: Int): Island<Atom> {
+    override fun getIsland(islandCharge: Int): Island<Atom> {
         if (_island == null) {
             _island = object :
                 AbstractFragment<Atom>(listOf(this@AbstractAtom)),
@@ -126,7 +126,7 @@ abstract class AbstractAtom : Atom {
                     listOf()
 
                 override fun clone(): Island<Atom> {
-                    return atoms().single().clone().island(charge)
+                    return atoms().single().clone().getIsland(charge)
                 }
             }
         }

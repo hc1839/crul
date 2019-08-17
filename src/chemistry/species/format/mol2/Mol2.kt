@@ -427,7 +427,7 @@ fun MoleculeComplex.Companion.parseMol2(
         ) {
             val islandCharge = unbondedAtom.charge?.roundToInt() ?: 0
 
-            atomIslands.add(unbondedAtom.island(islandCharge))
+            atomIslands.add(unbondedAtom.getIsland(islandCharge))
         }
 
         val molecules = BondAggregator.aggregate(bonds).map { bondGroup ->

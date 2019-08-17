@@ -263,7 +263,7 @@ interface Island<A : Atom> : Fragment<A> {
 
             return if (bonds.isEmpty()) {
                 @Suppress("UNCHECKED_CAST")
-                atoms.single().island(charge) as Island<A>
+                atoms.single().getIsland(charge) as Island<A>
             } else {
                 Molecule(charge, bonds)
             }

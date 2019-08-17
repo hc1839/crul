@@ -202,7 +202,7 @@ fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
             @Suppress("UNCHECKED_CAST")
             outputIslands.add(
                 atomCorrespondence[wrappedInputAtom]!!
-                    .island(inputIsland.charge) as Island<B>
+                    .getIsland(inputIsland.charge) as Island<B>
             )
         } else {
             val outputBonds = mutableListOf<Bond<B>>()
