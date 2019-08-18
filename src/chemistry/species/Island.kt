@@ -254,7 +254,7 @@ interface Island<A : Atom> : Fragment<A> {
                     val atom2Index = bondRecord.get("atom2_index") as Int
                     val bondOrder = bondRecord.get("bond_order").toString()
 
-                    Bond.newInstance(
+                    Bond(
                         atoms[atom1Index],
                         atoms[atom2Index],
                         bondOrder
@@ -262,8 +262,7 @@ interface Island<A : Atom> : Fragment<A> {
                 }
 
             return if (bonds.isEmpty()) {
-                @Suppress("UNCHECKED_CAST")
-                atoms.single().getIsland(charge) as Island<A>
+                atoms.single().getIsland<A>(charge)
             } else {
                 Molecule(charge, bonds)
             }

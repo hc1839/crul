@@ -374,7 +374,7 @@ fun MoleculeComplex.Companion.parseMol2(
 
                 val charge = triposAtomData.charge
 
-                Atom.newInstance(
+                Atom(
                     element,
                     position,
                     charge,
@@ -395,7 +395,7 @@ fun MoleculeComplex.Companion.parseMol2(
             val originAtom = atomsByTriposId[triposBondData.originAtomId]!!
             val targetAtom = atomsByTriposId[triposBondData.targetAtomId]!!
 
-            Bond.newInstance(
+            Bond(
                 originAtom,
                 targetAtom,
                 bondOrderMapper(triposBondData.bondType)
@@ -427,7 +427,7 @@ fun MoleculeComplex.Companion.parseMol2(
         ) {
             val islandCharge = unbondedAtom.charge?.roundToInt() ?: 0
 
-            atomIslands.add(unbondedAtom.getIsland(islandCharge))
+            atomIslands.add(unbondedAtom.getIsland<Atom>(islandCharge))
         }
 
         val molecules = BondAggregator.aggregate(bonds).map { bondGroup ->
@@ -450,7 +450,7 @@ fun MoleculeComplex.Companion.parseMol2(
             Molecule(islandCharge, bondGroup)
         }
 
-        MoleculeComplex.newInstance(
+        MoleculeComplex(
             molecules + atomIslands
         )
     }

@@ -83,14 +83,17 @@ interface Atom : Species {
      *  Two islands are referentially equal if and only if the two atoms are
      *  referentially equal.
      *
+     *  @param A
+     *      Type of this atom that the returned island is representing.
+     *
      *  @param islandCharge
      *      Charge to assign to the island. It is independent of the charge
      *      associated with this atom.
      *
      *  @return
-     *      Island containing this atom.
+     *      Island representing this atom.
      */
-    fun getIsland(islandCharge: Int): Island<Atom>
+    fun <A : Atom> getIsland(islandCharge: Int): Island<A>
 
     companion object {
         /**
@@ -114,12 +117,13 @@ interface Atom : Species {
             position: Vector3D,
             charge: Double?,
             tag: Int
-        ): Atom = AtomImpl(
-            element,
-            position,
-            charge,
-            tag
-        )
+        ): Atom =
+            Atom(
+                element,
+                position,
+                charge,
+                tag
+            )
 
         /**
          *  Constructs an [Atom] with a tag value of `0`.
@@ -207,3 +211,21 @@ interface Atom : Species {
         }
     }
 }
+
+/**
+ *  Constructs a new instance of [Atom].
+ *
+ *  See [Atom.newInstance] for description.
+ */
+fun Atom(
+    element: Element,
+    position: Vector3D,
+    charge: Double?,
+    tag: Int = 0
+): Atom =
+    AtomImpl(
+        element,
+        position,
+        charge,
+        tag
+    )

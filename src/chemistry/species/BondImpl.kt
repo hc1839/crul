@@ -38,7 +38,7 @@ internal class BondImpl<A : Atom> : Bond<A> {
     override val order: String
 
     /**
-     *  See [crul.chemistry.species.Bond.newInstance] for the description.
+     *  See [Bond.newInstance] for the description.
      */
     constructor(
         atom1: A,

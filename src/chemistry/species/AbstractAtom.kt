@@ -51,7 +51,7 @@ abstract class AbstractAtom : Atom {
 
     override var tag: Int
 
-    private var _island: Island<Atom>? = null
+    private var _island: Island<*>? = null
 
     /**
      *  @param element
@@ -114,26 +114,15 @@ abstract class AbstractAtom : Atom {
         ).first()
     )
 
-    override fun getIsland(islandCharge: Int): Island<Atom> {
+    override fun <A : Atom> getIsland(islandCharge: Int): Island<A> {
         if (_island == null) {
-            _island = object :
-                AbstractFragment<Atom>(listOf(this@AbstractAtom)),
-                Island<Atom>
-            {
-                override var charge: Int = islandCharge
-
-                override fun bonds(): Collection<Bond<Atom>> =
-                    listOf()
-
-                override fun clone(): Island<Atom> {
-                    return atoms().single().clone().getIsland(charge)
-                }
-            }
+            _island = AtomIsland(islandCharge, this)
         }
 
         _island!!.charge = islandCharge
 
-        return _island!!
+        @Suppress("UNCHECKED_CAST")
+        return _island!! as Island<A>
     }
 
     companion object {

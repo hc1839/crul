@@ -106,7 +106,7 @@ abstract class AbstractMolecule<A : Atom> :
                 .map { otherBond ->
                     val (otherAtom1, otherAtom2) = otherBond.toAtomPair()
 
-                    Bond.newInstance(
+                    Bond(
                         clonedAtomsByOtherAtom[
                             Referential(otherAtom1)
                         ]!!,
@@ -166,7 +166,7 @@ abstract class AbstractMolecule<A : Atom> :
                 val atom2Index = bondRecord.get("atom2_index") as Int
                 val bondOrder = bondRecord.get("bond_order").toString()
 
-                Bond.newInstance(
+                Bond(
                     subspecies[atom1Index],
                     subspecies[atom2Index],
                     bondOrder

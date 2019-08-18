@@ -75,7 +75,7 @@ open class BondBuilder<B : BondBuilder<B>> {
      */
     open fun <A : Atom> build(): Bond<A> =
         @Suppress("UNCHECKED_CAST")
-        Bond.newInstance<A>(
+        Bond<A>(
             atom1!! as A,
             atom2!! as A,
             order!!

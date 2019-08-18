@@ -23,7 +23,7 @@ import crul.math.coordsys.Vector3D
  */
 internal class AtomImpl : AbstractAtom {
     /**
-     *  See [crul.chemistry.species.Atom.newInstance] for the description.
+     *  See [Atom.newInstance] for the description.
      */
     constructor(
         element: Element,

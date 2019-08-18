@@ -78,7 +78,7 @@ interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
         fun <A : Atom> newInstance(
             islands: Collection<Island<A>>
         ): MoleculeComplex<A> =
-            MoleculeComplexImpl(islands)
+            MoleculeComplex(islands)
 
         /**
          *  Serializes a [MoleculeComplex] in Apache Avro.
@@ -150,9 +150,23 @@ interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
 }
 
 /**
- *  Maps atoms of a molecule complex from one type to another.
+ *  Constructs a new instance of [MoleculeComplex].
  *
- *  Connectivity and order of bonds are the same as in the receiver.
+ *  See [MoleculeComplex.newInstance] for description.
+ */
+fun <A : Atom> MoleculeComplex(
+    islands: Collection<Island<A>>
+): MoleculeComplex<A> =
+    MoleculeComplexImpl(islands)
+
+/**
+ *  Constructs a new molecule complex with the atoms of a given complex mapped
+ *  from one type to another.
+ *
+ *  Connectivities and bond orders are the same as in the receiver.
+ *
+ *  Atoms in the output complex are not necessarily in the same order as in the
+ *  input complex.
  *
  *  @param atomMapper
  *      Atom of a new type given the molecule complex and an atom of the
@@ -199,10 +213,10 @@ fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
             )
 
             // Convert input atom island to output atom island.
-            @Suppress("UNCHECKED_CAST")
             outputIslands.add(
-                atomCorrespondence[wrappedInputAtom]!!
-                    .getIsland(inputIsland.charge) as Island<B>
+                atomCorrespondence[wrappedInputAtom]!!.getIsland<B>(
+                    inputIsland.charge
+                )
             )
         } else {
             val outputBonds = mutableListOf<Bond<B>>()
@@ -219,7 +233,7 @@ fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
 
                 // Add the output bond.
                 outputBonds.add(
-                    Bond.newInstance(
+                    Bond(
                         outputAtoms[0],
                         outputAtoms[1],
                         inputBond.order
@@ -238,5 +252,5 @@ fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
     }
 
     // Convert output islands to output complex.
-    return MoleculeComplex.newInstance(outputIslands)
+    return MoleculeComplex(outputIslands)
 }

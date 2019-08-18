@@ -297,14 +297,14 @@ fun MoleculeComplex.Companion.parseCml(
 
         // Construct the atom.
         val atom: Atom = if (atomTag != null) {
-            Atom.newInstance(
+            Atom(
                 element,
                 position,
                 charge,
                 atomTag
             )
         } else {
-            Atom.newInstance(
+            Atom(
                 element,
                 position,
                 charge
@@ -341,7 +341,7 @@ fun MoleculeComplex.Companion.parseCml(
         }
 
         bonds.add(
-            Bond.newInstance<Atom>(
+            Bond<Atom>(
                 atomsById[atomRefids[0]]!!,
                 atomsById[atomRefids[1]]!!,
                 bondNode.getAttribute("order")
@@ -366,7 +366,7 @@ fun MoleculeComplex.Companion.parseCml(
     ) {
         val islandCharge = unbondedAtom.charge?.roundToInt() ?: 0
 
-        atomIslands.add(unbondedAtom.getIsland(islandCharge))
+        atomIslands.add(unbondedAtom.getIsland<Atom>(islandCharge))
     }
 
     val molecules = BondAggregator.aggregate(bonds).map { bondGroup ->
@@ -387,7 +387,5 @@ fun MoleculeComplex.Companion.parseCml(
         Molecule(islandCharge, bondGroup)
     }
 
-    return MoleculeComplex.newInstance(
-        molecules + atomIslands
-    )
+    return MoleculeComplex(molecules + atomIslands)
 }

@@ -86,7 +86,7 @@ open class AtomBuilder<B : AtomBuilder<B>> {
      *  Constructs an [Atom] from the data in this builder.
      */
     open fun build(): Atom =
-        Atom.newInstance(
+        Atom(
             element!!,
             centroid!!,
             formalCharge!!,

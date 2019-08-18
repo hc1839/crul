@@ -79,6 +79,18 @@ interface Bond<A : Atom> : Fragment<A> {
             atom2: A,
             order: String
         ): Bond<A> =
-            BondImpl(atom1, atom2, order)
+            Bond(atom1, atom2, order)
     }
 }
+
+/**
+ *  Constructs a new instance of [Bond].
+ *
+ *  See [Bond.newInstance] for description.
+ */
+fun <A : Atom> Bond(
+    atom1: A,
+    atom2: A,
+    order: String
+): Bond<A> =
+    BondImpl(atom1, atom2, order)

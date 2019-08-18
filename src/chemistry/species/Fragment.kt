@@ -75,7 +75,7 @@ interface Fragment<A : Atom> : Complex<A> {
          */
         @JvmStatic
         fun <A : Atom> newInstance(atoms: Collection<A>): Fragment<A> =
-            FragmentImpl(atoms)
+            Fragment(atoms)
 
         /**
          *  Serializes a [Fragment] in Apache Avro.
@@ -145,3 +145,11 @@ interface Fragment<A : Atom> : Complex<A> {
         }
     }
 }
+
+/**
+ *  Constructs a new instance of [Fragment].
+ *
+ *  See [Fragment.newInstance] for description.
+ */
+fun <A : Atom> Fragment(atoms: Collection<A>): Fragment<A> =
+    FragmentImpl(atoms)
