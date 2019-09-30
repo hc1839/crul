@@ -207,7 +207,7 @@ fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
 
     // Convert each input island to output island.
     for (inputIsland in this) {
-        if (inputIsland.isSingleAtom()) {
+        if (inputIsland.isSingleAtom) {
             val wrappedInputAtom = Referential(
                 inputIsland.atoms().single()
             )

@@ -122,7 +122,7 @@ abstract class AbstractMolecule<A : Atom> :
     /**
      *  Always `false`.
      */
-    final override fun isSingleAtom(): Boolean =
+    final override val isSingleAtom: Boolean =
         false
 
     override fun bonds(): Collection<Bond<A>> =

@@ -50,6 +50,14 @@ interface Island<A : Atom> : Fragment<A> {
     abstract override fun clone(): Island<A>
 
     /**
+     *  Whether this island contains a single atom.
+     *
+     *  Implementation may override this to be a constant property.
+     */
+    val isSingleAtom: Boolean
+        get() = atoms().count() == 1
+
+    /**
      *  Charge of the molecule or atom represented by this island.
      *
      *  It is independent of the charges associated with the individual atoms.
@@ -124,14 +132,6 @@ interface Island<A : Atom> : Fragment<A> {
                 it.containsAtom(atom2)
             }
             .singleOrNull()
-
-    /**
-     *  Whether this island contains a single atom.
-     *
-     *  Implementation may override this to be a constant function.
-     */
-    fun isSingleAtom(): Boolean =
-        atoms().count() == 1
 
     companion object {
         /**
