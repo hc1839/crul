@@ -169,16 +169,16 @@ fun <A : Atom> MoleculeComplex(
  *  input complex.
  *
  *  @param atomMapper
- *      Atom of a new type given the molecule complex and an atom of the
- *      original type. If it yields an atom that is referentially equal to an
- *      atom that has already been yielded, an exception is raised.
+ *      Atom of a new type given an atom of the original type and the molecule
+ *      complex. If it yields an atom that is referentially equal to an atom
+ *      that has already been yielded, an exception is raised.
  *
  *  @return
  *      New molecule complex with atoms from the result of applying
  *      `atomMapper` to each atom.
  */
 fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
-    atomMapper: (MoleculeComplex<A>, A) -> B
+    atomMapper: (A, MoleculeComplex<A>) -> B
 ): MoleculeComplex<B>
 {
     // From wrapped input atom to output atom.
@@ -187,7 +187,7 @@ fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
             Referential(inputAtom)
         }
         .associateWith { wrappedInputAtom ->
-            atomMapper.invoke(this, wrappedInputAtom.value)
+            atomMapper.invoke(wrappedInputAtom.value, this)
         }
 
     // Check that there are no two referentially equal output atoms.
