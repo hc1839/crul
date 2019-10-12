@@ -104,7 +104,7 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
 
     moleculeNode.setAttribute("xmlns", "http://www.xml-cml.org/schema")
 
-    val moleculeCharge = charge
+    val moleculeCharge = charge()
 
     // Set the charge of the CML molecule.
     moleculeNode.setAttribute(

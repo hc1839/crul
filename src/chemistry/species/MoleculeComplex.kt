@@ -56,8 +56,8 @@ interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
     /**
      *  Charge, which is the sum of the charges of the islands.
      */
-    val charge: Int
-        get() = fold(0) { acc, island ->
+    fun charge(): Int =
+        fold(0) { acc, island ->
             acc + island.charge
         }
 
