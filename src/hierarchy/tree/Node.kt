@@ -24,7 +24,8 @@ import crul.hierarchy.tree.traversal.TreeWalker
 /**
  *  Node in a tree.
  *
- *  Order of child nodes is significant.
+ *  Order of child nodes is significant. When determining the relationship
+ *  between two nodes, referential equality is used.
  *
  *  It is inspired by `org.w3c.dom.Node`.
  */
@@ -104,9 +105,6 @@ interface Node {
     /**
      *  Adds a node to the end of the list of children of this node.
      *
-     *  If an exception is raised, there should be no side effects. If there
-     *  would be side effects, the implementing class should document it.
-     *
      *  @param newChild
      *      Node to be added as a child. If it has a parent, it is first
      *      removed from its tree. If it is this node or an ancestor of this
@@ -119,9 +117,6 @@ interface Node {
 
     /**
      *  Inserts a node as a child before an existing child.
-     *
-     *  If an exception is raised, there should be no side effects. If there
-     *  would be side effects, the implementing class should document it.
      *
      *  @param newChild
      *      Node to be added as a child. If it has a parent, it is first
