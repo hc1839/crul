@@ -16,27 +16,7 @@
 
 package crul.chemistry.species
 
-import java.nio.ByteBuffer
-import org.apache.avro.Schema
-import org.apache.avro.generic.*
-
-import crul.math.coordsys.Vector3D
 import crul.serialize.AvroSimple
-
-private object FragmentAvsc {
-    /**
-     *  Absolute path to the Avro schema file with respect to the JAR.
-     */
-    val path: String =
-        "/crul/chemistry/species/Fragment.avsc"
-
-    /**
-     *  Avro schema for the serialization of [Fragment].
-     */
-    val schema: Schema = Schema.Parser().parse(
-        this::class.java.getResourceAsStream(path)
-    )
-}
 
 /**
  *  Interface for a fragment, which is a non-empty [Complex] of [Atom]
@@ -76,73 +56,6 @@ interface Fragment<A : Atom> : Complex<A> {
         @JvmStatic
         fun <A : Atom> newInstance(atoms: Collection<A>): Fragment<A> =
             Fragment(atoms)
-
-        /**
-         *  Serializes a [Fragment] in Apache Avro.
-         *
-         *  @param obj
-         *      [Fragment] to serialize.
-         *
-         *  @param atomSerializer
-         *      [Atom] serializer.
-         *
-         *  @return
-         *      Avro serialization of `obj`.
-         */
-        @JvmStatic
-        fun <A : Atom> serialize(
-            obj: Fragment<A>,
-            atomSerializer: (A) -> ByteBuffer
-        ): ByteBuffer
-        {
-            val avroRecord = GenericData.Record(
-                FragmentAvsc.schema
-            )
-
-            avroRecord.put(
-                "atoms",
-                obj.atoms().map {
-                    atomSerializer.invoke(it)
-                }
-            )
-
-            return AvroSimple.serializeData<GenericRecord>(
-                FragmentAvsc.schema,
-                listOf(avroRecord)
-            )
-        }
-
-        /**
-         *  Deserializes a [Fragment] in Apache Avro.
-         *
-         *  @param avroData
-         *      Serialized [Fragment] as returned by [serialize].
-         *
-         *  @param atomDeserializer
-         *      [Atom] deserializer
-         *
-         *  @return
-         *      Deserialized [Fragment].
-         */
-        @JvmStatic
-        fun <A : Atom> deserialize(
-            avroData: ByteBuffer,
-            atomDeserializer: (ByteBuffer) -> A
-        ): Fragment<A>
-        {
-            val avroRecord = AvroSimple.deserializeData<GenericRecord>(
-                FragmentAvsc.schema,
-                avroData
-            ).first()
-
-            val atoms = @Suppress("UNCHECKED_CAST") (
-                avroRecord.get("atoms") as List<ByteBuffer>
-            ).map {
-                atomDeserializer.invoke(it)
-            }
-
-            return newInstance(atoms)
-        }
     }
 }
 

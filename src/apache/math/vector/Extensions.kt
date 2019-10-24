@@ -19,6 +19,9 @@
 
 package crul.apache.math.vector
 
+import org.apache.commons.math3.geometry.Vector
+import org.apache.commons.math3.geometry.euclidean.threed.Euclidean3D
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import org.apache.commons.math3.linear.ArrayRealVector
 import org.apache.commons.math3.linear.RealVector
 
@@ -33,3 +36,18 @@ fun List<Double>.toRealVector(): RealVector =
  */
 fun RealVector.toList(): List<Double> =
     toArray().toList()
+
+operator fun Vector3D.plus(v: Vector<Euclidean3D>): Vector3D =
+    add(v)
+
+operator fun Vector3D.unaryMinus(): Vector3D =
+    negate()
+
+operator fun Vector3D.minus(v: Vector<Euclidean3D>): Vector3D =
+    subtract(v)
+
+operator fun Vector3D.times(a: Double): Vector3D =
+    scalarMultiply(a)
+
+operator fun Vector3D.div(a: Double): Vector3D =
+    this * (1.0 / a)

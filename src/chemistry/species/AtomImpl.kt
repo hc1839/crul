@@ -16,7 +16,7 @@
 
 package crul.chemistry.species
 
-import crul.math.coordsys.Vector3D
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 /**
  *  Default implementation of [Atom].

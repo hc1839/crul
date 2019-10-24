@@ -16,8 +16,10 @@
 
 package crul.chemistry.species
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
+
+import crul.apache.math.vector.*
 import crul.distinct.Referential
-import crul.math.coordsys.Vector3D
 
 /**
  *  Interface for a complex, which is a species that is also a collection of
@@ -81,7 +83,7 @@ interface Complex<S : Species> :
 
         return atoms()
             .map {
-                (it.position - centroid).magnitude()
+                (it.position - centroid).norm
             }
             .max()!!
     }

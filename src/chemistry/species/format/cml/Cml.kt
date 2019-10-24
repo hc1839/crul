@@ -28,6 +28,7 @@ import javax.xml.transform.stream.StreamResult
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 import kotlin.math.roundToInt
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import org.w3c.dom.NodeList
 import org.xml.sax.InputSource
 
@@ -40,7 +41,6 @@ import crul.chemistry.species.Molecule
 import crul.chemistry.species.MoleculeComplex
 import crul.distinct.Referential
 import crul.float.Comparison.nearlyEquals
-import crul.math.coordsys.Vector3D
 import crul.measure.Quantity
 import crul.measure.dimension.BaseDimension
 import crul.measure.dimension.Dimension
@@ -135,7 +135,7 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
         atomNode.setAttribute("elementType", atom.element.symbol)
 
         val cmptsByName = listOf("x3", "y3", "z3")
-            .zip(atom.position.components)
+            .zip(atom.position.toArray().toList())
             .toMap()
 
         // Set the position of the atom.

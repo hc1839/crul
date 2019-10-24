@@ -16,12 +16,9 @@
 
 package crul.math.number.quaternion
 
-import java.nio.ByteBuffer
-import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
-import crul.math.coordsys.Vector3D
-import crul.serialize.MessagePackSimple
+import crul.apache.math.vector.*
 
 /**
  *  Quaternion.
@@ -41,44 +38,6 @@ open class Quaternion {
         this.scalar = scalar
         this.vector = vector
     }
-
-    /**
-     *  Initializes from a MessagePack map.
-     *
-     *  @param msgpack
-     *      MessagePack map for the entire inheritance tree.
-     *
-     *  @param unpackedMap
-     *      Unpacked MessagePack map that is specific to this class.
-     */
-    private constructor(
-        @Suppress("UNUSED_PARAMETER")
-        msgpack: ByteArray,
-        unpackedMap: Map<String, Value>,
-        vector3DDeserializer: (ByteBuffer) -> Vector3D
-    ): this(
-        unpackedMap["scalar"]!!.asFloatValue().toDouble(),
-        vector3DDeserializer.invoke(
-            ByteBuffer.wrap(
-                unpackedMap["vector"]!!.asBinaryValue().asByteArray()
-            )
-        )
-    )
-
-    /**
-     *  Deserialization constructor.
-     */
-    protected constructor(
-        msgpack: ByteArray,
-        vector3DDeserializer: (ByteBuffer) -> Vector3D
-    ): this(
-        msgpack,
-        MessagePackSimple.getInnerMap(
-            msgpack,
-            Quaternion::class.qualifiedName!!
-        ),
-        vector3DDeserializer
-    )
 
     /**
      *  Conjugate.
@@ -127,7 +86,7 @@ open class Quaternion {
 
     open operator fun times(other: Quaternion) =
         other * scalar + vector
-            .components
+            .toArray()
             .mapIndexed { idx, cmpt ->
                 when (idx) {
                     0 -> I * other * cmpt
@@ -139,112 +98,6 @@ open class Quaternion {
                 }
             }
             .reduce { acc, item -> acc + item }
-
-    companion object {
-        /**
-         *  Serializes a [Quaternion] in MessagePack.
-         *
-         *  @param obj
-         *      [Quaternion] to serialize.
-         *
-         *  @param vector3DSerializer
-         *      [Vector3D] serializer.
-         *
-         *  @return
-         *      MessagePack serialization of `obj`.
-         */
-        @JvmStatic
-        fun serialize(
-            obj: Quaternion,
-            vector3DSerializer: (Vector3D) -> ByteBuffer
-        ): ByteBuffer {
-            val packer = MessagePack.newDefaultBufferPacker()
-
-            packer.packMapHeader(1)
-
-            packer
-                .packString(obj::class.qualifiedName)
-                .packMapHeader(2)
-
-            packer
-                .packString("scalar")
-                .packDouble(obj.scalar)
-
-            val vectorAsByteBuffer = vector3DSerializer
-                .invoke(obj.vector)
-
-            val vectorAsBytes = ByteArray(
-                vectorAsByteBuffer.limit() -
-                vectorAsByteBuffer.position()
-            ) {
-                vectorAsByteBuffer.get()
-            }
-
-            packer
-                .packString("vector")
-                .packBinaryHeader(vectorAsBytes.count())
-
-            packer.writePayload(vectorAsBytes)
-
-            packer.close()
-
-            return ByteBuffer.wrap(packer.toByteArray())
-        }
-
-        /**
-         *  Serializes a [Quaternion] in MessagePack using the default
-         *  [Vector3D] serializer.
-         *
-         *  @param obj
-         *      [Quaternion] to serialize.
-         *
-         *  @return
-         *      MessagePack serialization of `obj`.
-         */
-        @JvmStatic
-        fun serialize(obj: Quaternion): ByteBuffer =
-            serialize(obj, Vector3D.Companion::serialize)
-
-        /**
-         *  Deserializes a [Quaternion] in MessagePack.
-         *
-         *  @param msgpack
-         *      Serialized [Quaternion] as returned by [serialize].
-         *
-         *  @param vector3DDeserializer
-         *      [Vector3D] deserializer.
-         *
-         *  @return
-         *      Deserialized [Quaternion].
-         */
-        @JvmStatic
-        fun deserialize(
-            msgpack: ByteBuffer,
-            vector3DDeserializer: (ByteBuffer) -> Vector3D
-        ): Quaternion {
-            val msgpackByteArray = ByteArray(
-                msgpack.limit() - msgpack.position()
-            ) {
-                msgpack.get()
-            }
-
-            return Quaternion(msgpackByteArray, vector3DDeserializer)
-        }
-
-        /**
-         *  Deserializes a [Quaternion] in MessagePack using the default
-         *  [Vector3D] deserializer.
-         *
-         *  @param msgpack
-         *      Serialized [Quaternion] as returned by [serialize].
-         *
-         *  @return
-         *      Deserialized [Quaternion].
-         */
-        @JvmStatic
-        fun deserialize(msgpack: ByteBuffer): Quaternion =
-            deserialize(msgpack, Vector3D.Companion::deserialize)
-    }
 }
 
 /**
@@ -252,11 +105,11 @@ open class Quaternion {
  */
 private object I {
     operator fun times(other: Quaternion) = Quaternion(
-        -other.vector[0],
+        -other.vector.x,
         Vector3D(
             other.scalar,
-            -other.vector[2],
-            other.vector[1]
+            -other.vector.z,
+            other.vector.y
         )
     )
 }
@@ -266,11 +119,11 @@ private object I {
  */
 private object J {
     operator fun times(other: Quaternion) = Quaternion(
-        -other.vector[1],
+        -other.vector.y,
         Vector3D(
-            other.vector[2],
+            other.vector.z,
             other.scalar,
-            -other.vector[0]
+            -other.vector.x
         )
     )
 }
@@ -280,10 +133,10 @@ private object J {
  */
 private object K {
     operator fun times(other: Quaternion) = Quaternion(
-        -other.vector[2],
+        -other.vector.z,
         Vector3D(
-            -other.vector[1],
-            other.vector[0],
+            -other.vector.y,
+            other.vector.x,
             other.scalar
         )
     )

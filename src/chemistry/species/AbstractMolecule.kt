@@ -16,27 +16,7 @@
 
 package crul.chemistry.species
 
-import java.nio.ByteBuffer
-import org.apache.avro.Schema
-import org.apache.avro.generic.*
-
 import crul.distinct.Referential
-import crul.serialize.AvroSimple
-
-private object AbstractMoleculeAvsc {
-    /**
-     *  Absolute path to the Avro schema file with respect to the JAR.
-     */
-    val path: String =
-        "/crul/chemistry/species/AbstractMolecule.avsc"
-
-    /**
-     *  Avro schema for the serialization of [AbstractMolecule].
-     */
-    val schema: Schema = Schema.Parser().parse(
-        this::class.java.getResourceAsStream(path)
-    )
-}
 
 /**
  *  Skeletal implementation of a molecule, which is an [Island] with at least
@@ -144,53 +124,6 @@ abstract class AbstractMolecule<A : Atom> :
         return bondList.toList()
     }
 
-    /**
-     *  Delegated deserialization constructor.
-     */
-    private constructor(
-        avroRecord: GenericRecord,
-        atomDeserializer: (ByteBuffer) -> A
-    ): super(
-        @Suppress("UNCHECKED_CAST") (
-            avroRecord.get("atoms") as List<ByteBuffer>
-        )
-        .map { atomDeserializer.invoke(it) }
-    ) {
-        // Deserialize the bonds from Avro records.
-        val bonds =
-            @Suppress("UNCHECKED_CAST") (
-                avroRecord.get("bonds") as List<GenericRecord>
-            )
-            .map { bondRecord ->
-                val atom1Index = bondRecord.get("atom1_index") as Int
-                val atom2Index = bondRecord.get("atom2_index") as Int
-                val bondOrder = bondRecord.get("bond_order").toString()
-
-                Bond(
-                    subspecies[atom1Index],
-                    subspecies[atom2Index],
-                    bondOrder
-                )
-            }
-
-        this.charge = avroRecord.get("charge") as Int
-        this.bondListsByAtom = bondIndexing(bonds)
-    }
-
-    /**
-     *  Deserialization constructor.
-     */
-    protected constructor(
-        avroData: ByteBuffer,
-        atomDeserializer: (ByteBuffer) -> A
-    ): this(
-        AvroSimple.deserializeData<GenericRecord>(
-            AbstractMoleculeAvsc.schema,
-            avroData
-        ).first(),
-        atomDeserializer
-    )
-
     override fun getBond(atom1: A, atom2: A): Bond<A>? {
         val wrappedAtom1 = Referential(atom1)
         val wrappedAtom2 = Referential(atom2)
@@ -223,23 +156,6 @@ abstract class AbstractMolecule<A : Atom> :
     }
 
     companion object {
-        /**
-         *  Avro schema of a record that is the serialization of a bond.
-         */
-        private val bondRecordSchema: Schema = Schema.Parser().parse(
-            """
-           |{
-           |    "type": "record",
-           |    "name": "bond",
-           |    "fields": [
-           |        { "type": "int", "name": "atom1_index" },
-           |        { "type": "int", "name": "atom2_index" },
-           |        { "type": "string", "name": "bond_order" }
-           |    ]
-           |}
-            """.trimMargin()
-        )
-
         /**
          *  Indexing of the bonds from a collection of bonds.
          *
@@ -292,66 +208,6 @@ abstract class AbstractMolecule<A : Atom> :
             return bondListsByAtom.mapValues { (_, bondList) ->
                 bondList.toList()
             }
-        }
-
-        /**
-         *  Serializes an [AbstractMolecule] in Apache Avro.
-         *
-         *  @param obj
-         *      [AbstractMolecule] to serialize.
-         *
-         *  @param atomSerializer
-         *      [Atom] serializer.
-         *
-         *  @return
-         *      Avro serialization of `obj`.
-         */
-        @JvmStatic
-        fun <A : Atom> serialize(
-            obj: AbstractMolecule<A>,
-            atomSerializer: (A) -> ByteBuffer
-        ): ByteBuffer
-        {
-            val avroRecord = GenericData.Record(
-                AbstractMoleculeAvsc.schema
-            )
-
-            avroRecord.put("charge", obj.charge)
-
-            val atoms = obj.atoms()
-
-            avroRecord.put(
-                "atoms",
-                atoms.map {
-                    atomSerializer.invoke(it)
-                }
-            )
-
-            // Serialize the bonds to Avro records.
-            val bondsArray = obj.bonds().map { bond ->
-                val bondRecord = GenericData.Record(
-                    bondRecordSchema
-                )
-
-                val atomIndices = bond.toAtomPair().toList().map { bondAtom ->
-                    atoms.indexOfFirst { objAtom ->
-                        objAtom === bondAtom
-                    }
-                }
-
-                bondRecord.put("atom1_index", atomIndices[0])
-                bondRecord.put("atom2_index", atomIndices[1])
-                bondRecord.put("bond_order", bond.order)
-
-                bondRecord
-            }
-
-            avroRecord.put("bonds", bondsArray)
-
-            return AvroSimple.serializeData<GenericRecord>(
-                AbstractMoleculeAvsc.schema,
-                listOf(avroRecord)
-            )
         }
     }
 }

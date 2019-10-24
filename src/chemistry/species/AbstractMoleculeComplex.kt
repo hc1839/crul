@@ -16,27 +16,7 @@
 
 package crul.chemistry.species
 
-import java.nio.ByteBuffer
-import org.apache.avro.Schema
-import org.apache.avro.generic.*
-
 import crul.distinct.Referential
-import crul.serialize.AvroSimple
-
-private object AbstractMoleculeComplexAvsc {
-    /**
-     *  Absolute path to the Avro schema file with respect to the JAR.
-     */
-    val path: String =
-        "/crul/chemistry/species/AbstractMoleculeComplex.avsc"
-
-    /**
-     *  Avro schema for the serialization of [AbstractMoleculeComplex].
-     */
-    val schema: Schema = Schema.Parser().parse(
-        this::class.java.getResourceAsStream(path)
-    )
-}
 
 /**
  *  Skeletal implementation of [MoleculeComplex].
@@ -83,72 +63,8 @@ abstract class AbstractMoleculeComplex<A : Atom> :
      */
     constructor(other: AbstractMoleculeComplex<A>): super(other)
 
-    /**
-     *  Delegated deserialization constructor.
-     */
-    @Suppress("UNCHECKED_CAST")
-    private constructor(
-        avroRecord: GenericRecord,
-        atomDeserializer: (ByteBuffer) -> A
-    ): this(
-        (avroRecord.get("islands") as List<ByteBuffer>).map {
-            Island.deserialize(it, atomDeserializer)
-        }
-    )
-
-    /**
-     *  Deserialization constructor.
-     */
-    protected constructor(
-        avroData: ByteBuffer,
-        atomDeserializer: (ByteBuffer) -> A
-    ): this(
-        AvroSimple.deserializeData<GenericRecord>(
-            AbstractMoleculeComplexAvsc.schema,
-            avroData
-        ).first(),
-        atomDeserializer
-    )
-
     override fun getIslandWithAtom(atom: A): Island<A>? =
         toList()
             .filter { island -> island.containsAtom(atom) }
             .singleOrNull()
-
-    companion object {
-        /**
-         *  Serializes a [AbstractMoleculeComplex] in Apache Avro.
-         *
-         *  @param obj
-         *      [AbstractMoleculeComplex] to serialize.
-         *
-         *  @param atomSerializer
-         *      [Atom] serializer.
-         *
-         *  @return
-         *      Avro serialization of `obj`.
-         */
-        @JvmStatic
-        fun <A : Atom> serialize(
-            obj: AbstractMoleculeComplex<A>,
-            atomSerializer: (A) -> ByteBuffer
-        ): ByteBuffer
-        {
-            val avroRecord = GenericData.Record(
-                AbstractMoleculeComplexAvsc.schema
-            )
-
-            avroRecord.put(
-                "islands",
-                obj.map {
-                    Island.serialize(it, atomSerializer)
-                }
-            )
-
-            return AvroSimple.serializeData<GenericRecord>(
-                AbstractMoleculeComplexAvsc.schema,
-                listOf(avroRecord)
-            )
-        }
-    }
 }

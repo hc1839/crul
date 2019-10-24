@@ -16,7 +16,9 @@
 
 package crul.chemistry.species
 
-import crul.math.coordsys.Vector3D
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
+
+import crul.apache.math.vector.*
 
 /**
  *  Chemical species.

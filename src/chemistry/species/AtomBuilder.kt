@@ -16,8 +16,9 @@
 
 package crul.chemistry.species
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
+
 import crul.chemistry.species.Element
-import crul.math.coordsys.Vector3D
 
 /**
  *  Mutable builder for [Atom].

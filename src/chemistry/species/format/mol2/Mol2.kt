@@ -22,6 +22,7 @@ package crul.chemistry.species.format.mol2
 import java.io.Reader
 import java.io.Writer
 import kotlin.math.roundToInt
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 import crul.chemistry.species.Atom
 import crul.chemistry.species.Bond
@@ -31,7 +32,6 @@ import crul.chemistry.species.Island
 import crul.chemistry.species.Molecule
 import crul.chemistry.species.MoleculeComplex
 import crul.distinct.Referential
-import crul.math.coordsys.Vector3D
 import crul.measure.Quantity
 import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
@@ -148,7 +148,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
         val triposAtomDataList = atoms
             .map { atom ->
                 // Components of the atom position in Angstroms.
-                val atomPosCmptsAo = atom.position.components.map {
+                val atomPosCmptsAo = atom.position.toArray().map {
                     Quantity.convertUnit(it, atomPosUnit, angstromUnit)
                 }
 
@@ -369,7 +369,7 @@ fun MoleculeComplex.Companion.parseMol2(
                         triposAtomData.z
                     ).map {
                         Quantity.convertUnit(it, angstromUnit, atomPosUnit)
-                    }
+                    }.toDoubleArray()
                 )
 
                 val charge = triposAtomData.charge

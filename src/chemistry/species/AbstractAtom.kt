@@ -16,28 +16,10 @@
 
 package crul.chemistry.species
 
-import java.nio.ByteBuffer
-import org.apache.avro.Schema
-import org.apache.avro.generic.*
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 import crul.chemistry.species.Element
-import crul.math.coordsys.Vector3D
 import crul.serialize.AvroSimple
-
-private object AbstractAtomAvsc {
-    /**
-     *  Absolute path to the Avro schema file with respect to the JAR.
-     */
-    val path: String =
-        "/crul/chemistry/species/AbstractAtom.avsc"
-
-    /**
-     *  Avro schema for the serialization of [AbstractAtom].
-     */
-    val schema: Schema = Schema.Parser().parse(
-        this::class.java.getResourceAsStream(path)
-    )
-}
 
 /**
  *  Skeletal implementation of [Atom].
@@ -90,30 +72,6 @@ abstract class AbstractAtom : Atom {
         this.tag = tag
     }
 
-    /**
-     *  Delegated deserialization constructor.
-     */
-    private constructor(avroRecord: GenericRecord): this(
-        Element.deserialize(
-            avroRecord.get("element") as ByteBuffer
-        ),
-        Vector3D.deserialize(
-            avroRecord.get("position") as ByteBuffer
-        ),
-        avroRecord.get("charge") as Double?,
-        avroRecord.get("tag") as Int
-    )
-
-    /**
-     *  Deserialization constructor.
-     */
-    protected constructor(avroData: ByteBuffer): this(
-        AvroSimple.deserializeData<GenericRecord>(
-            AbstractAtomAvsc.schema,
-            avroData
-        ).first()
-    )
-
     override fun <A : Atom> getIsland(islandCharge: Int): Island<A> {
         if (_island == null) {
             _island = AtomIsland(islandCharge, this)
@@ -123,33 +81,5 @@ abstract class AbstractAtom : Atom {
 
         @Suppress("UNCHECKED_CAST")
         return _island!! as Island<A>
-    }
-
-    companion object {
-        /**
-         *  Serializes an [AbstractAtom] in Apache Avro.
-         *
-         *  @param obj
-         *      [AbstractAtom] to serialize.
-         *
-         *  @return
-         *      Avro serialization of `obj`.
-         */
-        @JvmStatic
-        fun serialize(obj: AbstractAtom): ByteBuffer {
-            val avroRecord = GenericData.Record(
-                AbstractAtomAvsc.schema
-            )
-
-            avroRecord.put("element", Element.serialize(obj.element))
-            avroRecord.put("position", Vector3D.serialize(obj.position))
-            avroRecord.put("charge", obj.charge)
-            avroRecord.put("tag", obj.tag)
-
-            return AvroSimple.serializeData<GenericRecord>(
-                AbstractAtomAvsc.schema,
-                listOf(avroRecord)
-            )
-        }
     }
 }

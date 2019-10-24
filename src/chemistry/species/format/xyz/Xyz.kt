@@ -93,7 +93,7 @@ fun <A : Atom> MoleculeComplex<A>.exportXyz(
             xyzBuilder += atom.element.symbol + separator
             xyzBuilder += atom
                 .position
-                .components
+                .toArray()
                 .map {
                     Quantity
                         .convertUnit(it, fromLengthUnit, toLengthUnit)

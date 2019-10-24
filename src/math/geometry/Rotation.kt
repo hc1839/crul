@@ -17,11 +17,13 @@
 @file:JvmName("Rotation")
 @file:JvmMultifileClass
 
-package crul.math.coordsys.transform
+package crul.math.geometry
 
-import crul.math.coordsys.Cartesian
-import crul.math.coordsys.Position3D
-import crul.math.coordsys.Vector3D
+import kotlin.math.cos
+import kotlin.math.sin
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
+
+import crul.apache.math.vector.*
 import crul.math.number.quaternion.Quaternion
 
 /**
@@ -31,10 +33,8 @@ import crul.math.number.quaternion.Quaternion
 fun Vector3D.rotate(axis: Vector3D, angle: Double): Vector3D {
     val origPos = Quaternion(0.0, this)
 
-    val rotation =
-        Quaternion(0.0, axis / axis.magnitude()) *
-            kotlin.math.sin(angle / 2.0) +
-            kotlin.math.cos(angle / 2.0)
+    val rotation = Quaternion(0.0, axis / axis.norm) * sin(angle / 2.0) +
+        cos(angle / 2.0)
 
     return (rotation * origPos * rotation.conjugate()).vector
 }
