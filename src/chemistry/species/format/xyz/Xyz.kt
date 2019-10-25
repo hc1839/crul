@@ -22,22 +22,22 @@ package crul.chemistry.species.format.xyz
 import java.io.Writer
 
 import crul.chemistry.species.Atom
-import crul.chemistry.species.Molecule
-import crul.chemistry.species.MoleculeComplex
+import crul.chemistry.species.Fragment
 import crul.measure.Quantity
 import crul.measure.dimension.BaseDimension
 import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
 
 /**
- *  Serializes this complex to XYZ.
+ *  Serializes this fragment to XYZ.
  *
- *  Molecules are outputted in the order as returned by
- *  [MoleculeComplex.molecules]. For each molecule, atoms are outputted in the
- *  order as returned by [Molecule.atoms].
+ *  Atoms are outputted in the order as returned by [Fragment.atoms].
  *
  *  @param writer
  *      Writer of XYZ with a trailing newline.
+ *
+ *  @param label
+ *      Non-empty string to use as the complex label in the XYZ output.
  *
  *  @param fromLengthUnit
  *      The unit of length that the coordinates are in.
@@ -45,14 +45,11 @@ import crul.measure.unit.UnitOfMeasure
  *  @param toLengthUnit
  *      The unit of length that the coordinates in the XYZ output are in.
  *
- *  @param label
- *      Non-empty string to use as the complex label in the XYZ output.
- *
  *  @param separator
  *      Separator to use between columns in the output.
  */
 @JvmOverloads
-fun <A : Atom> MoleculeComplex<A>.exportXyz(
+fun <A : Atom> Fragment<A>.exportXyz(
     writer: Writer,
     label: String,
     fromLengthUnit: UnitOfMeasure,
@@ -83,25 +80,18 @@ fun <A : Atom> MoleculeComplex<A>.exportXyz(
     xyzBuilder += atoms().count().toString() + "\n"
     xyzBuilder += label + "\n"
 
-    for (
-        molecule in mapNotNull {
-            @Suppress("UNCHECKED_CAST")
-            it as? Molecule<A>
-        }
-    ) {
-        for (atom in molecule.atoms()) {
-            xyzBuilder += atom.element.symbol + separator
-            xyzBuilder += atom
-                .position
-                .toArray()
-                .map {
-                    Quantity
-                        .convertUnit(it, fromLengthUnit, toLengthUnit)
-                        .toString()
-                }
-                .joinToString(separator)
-            xyzBuilder += "\n"
-        }
+    for (atom in atoms()) {
+        xyzBuilder += atom.element.symbol + separator
+        xyzBuilder += atom
+            .position
+            .toArray()
+            .map {
+                Quantity
+                    .convertUnit(it, fromLengthUnit, toLengthUnit)
+                    .toString()
+            }
+            .joinToString(separator)
+        xyzBuilder += "\n"
     }
 
     writer.write(xyzBuilder.trim() + "\n")
