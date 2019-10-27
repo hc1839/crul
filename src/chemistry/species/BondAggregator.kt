@@ -96,9 +96,10 @@ object BondAggregator {
      *  Aggregates bonds into bond lists, each of which corresponds an island.
      *
      *  @param bonds
-     *      Collection of bonds. Order is not important, and referentially
-     *      equivalent bonds are removed. Exception is raised if two bonds have
-     *      referentially equal atoms but unequal orders.
+     *      Collection of bonds. Order is not important, and bonds with equal
+     *      orders and referentially equal atoms are removed. Exception is
+     *      raised if two bonds have referentially equal atoms but unequal
+     *      orders.
      *
      *  @return
      *      List of bond lists such that different bond lists correspond to
@@ -110,22 +111,24 @@ object BondAggregator {
             return listOf()
         }
 
-        // Bonds that are referentially distinct.
-        val distinctBonds = bonds.distinctBy {
-            Referential(it)
+        // Bonds that are distinct by atoms and bond order.
+        val distinctBonds = bonds.distinctBy { bond ->
+            val wrappedAtoms = bond
+                .toAtomPair()
+                .toList()
+                .map { atom -> Referential(atom) }
+                .toSet()
+
+            wrappedAtoms + setOf(bond.order)
         }
 
         if (
             distinctBonds.count() !=
-            distinctBonds
-                .distinctBy { bond ->
-                    // Make the distinction of a bond depend only on the atoms
-                    // and not on the bond order.
-                    bond.atoms().map { atom ->
-                        Referential(atom)
-                    }.toSet()
-                }
-                .count()
+            distinctBonds.distinctBy { bond ->
+                // Make the distinction of a bond depend only on the atoms and
+                // not on the bond order.
+                bond.atoms().map { atom -> Referential(atom) }.toSet()
+            }.count()
         ) {
             throw IllegalArgumentException(
                 "Two bonds have equal atoms but unequal bond orders."
