@@ -25,22 +25,16 @@ package crul.chemistry.species
  *
  *  @constructor
  *
- *  @param charge
- *      Charge to assign to the island. It is independent of the charge
- *      associated with `atom`.
- *
  *  @param atom
  *      Atom that the island represents.
  */
-internal class AtomIsland<A : Atom>(
-    override var charge: Int,
-    atom: A
-) : AbstractFragment<A>(listOf(atom)),
+internal class AtomIsland<A : Atom>(atom: A) :
+    AbstractFragment<A>(listOf(atom)),
     Island<A>
 {
     override fun bonds(): Collection<Bond<A>> =
         listOf()
 
     override fun clone(): Island<A> =
-        atoms().single().clone().getIsland<A>(charge)
+        atoms().single().clone().getIsland<A>()
 }

@@ -34,17 +34,12 @@ abstract class AbstractMolecule<A : Atom> :
     AbstractFragment<A>,
     Island<A>
 {
-    override var charge: Int
-
     /**
      *  Lists of bonds associated by the participating atom.
      */
     private val bondListsByAtom: Map<Referential<A>, List<Bond<A>>>
 
     /**
-     *  @param charge
-     *      Charge of the molecule.
-     *
      *  @param bonds
      *      Non-empty collection of bonds of the molecule. Order is not
      *      important, and referentially equivalent bonds are removed.
@@ -52,7 +47,7 @@ abstract class AbstractMolecule<A : Atom> :
      *      but unequal orders or (2) collection of bonds represents more than
      *      one molecule.
      */
-    constructor(charge: Int, bonds: Collection<Bond<A>>): super(
+    constructor(bonds: Collection<Bond<A>>): super(
         if (!bonds.isEmpty()) {
             bonds
                 .flatMap { it.atoms() }
@@ -61,7 +56,6 @@ abstract class AbstractMolecule<A : Atom> :
             throw IllegalArgumentException("Collection of bonds is empty.")
         }
     ) {
-        this.charge = charge
         this.bondListsByAtom = bondIndexing(bonds)
     }
 
@@ -69,7 +63,6 @@ abstract class AbstractMolecule<A : Atom> :
      *  Copy constructor.
      */
     constructor(other: AbstractMolecule<A>): this(
-        other.charge,
         {
             val clonedAtomsByOtherAtom = other
                 .atoms()

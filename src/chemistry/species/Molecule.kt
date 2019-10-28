@@ -24,13 +24,10 @@ package crul.chemistry.species
  */
 class Molecule<A : Atom> : AbstractMolecule<A> {
     /**
-     *  @param charge
-     *      Charge of the molecule.
-     *
      *  @param bonds
      *      Bonds of the molecule.
      */
-    constructor(charge: Int, bonds: Collection<Bond<A>>): super(charge, bonds)
+    constructor(bonds: Collection<Bond<A>>): super(bonds)
 
     /**
      *  Copy constructor.

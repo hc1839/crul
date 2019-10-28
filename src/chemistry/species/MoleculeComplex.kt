@@ -34,11 +34,16 @@ interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
     abstract override fun clone(): MoleculeComplex<A>
 
     /**
-     *  Charge, which is the sum of the charges of the islands.
+     *  Sum of the charges of the islands, or `null` if any of the island
+     *  charges is `null`.
      */
-    fun charge(): Int =
-        fold(0) { acc, island ->
-            acc + island.charge
+    fun charge(): Int? =
+        map { island -> island.charge() }.reduce { acc, islandCharge ->
+            if (acc != null && islandCharge != null) {
+                acc + islandCharge
+            } else {
+                null
+            }
         }
 
     /**
@@ -127,9 +132,7 @@ fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
 
             // Convert input atom island to output atom island.
             outputIslands.add(
-                atomCorrespondence[wrappedInputAtom]!!.getIsland<B>(
-                    inputIsland.charge
-                )
+                atomCorrespondence[wrappedInputAtom]!!.getIsland<B>()
             )
         } else {
             val outputBonds = mutableListOf<Bond<B>>()
@@ -156,10 +159,7 @@ fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
 
             // Add the output molecule.
             outputIslands.add(
-                Molecule(
-                    inputIsland.charge,
-                    outputBonds.toList()
-                )
+                Molecule(outputBonds.toList())
             )
         }
     }

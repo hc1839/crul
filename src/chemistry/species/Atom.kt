@@ -68,14 +68,10 @@ interface Atom : Species {
      *  @param A
      *      Type of this atom that the returned island is representing.
      *
-     *  @param islandCharge
-     *      Charge to assign to the island. It is independent of the charge
-     *      associated with this atom.
-     *
      *  @return
      *      Island representing this atom.
      */
-    fun <A : Atom> getIsland(islandCharge: Int): Island<A>
+    fun <A : Atom> getIsland(): Island<A>
 
     companion object {
         /**

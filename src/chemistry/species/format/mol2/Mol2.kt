@@ -212,10 +212,6 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
  *  atom name is considered if the Tripos atom type does not contain the
  *  element.
  *
- *  The charge of an island is the sum of the assigned atomic charges, with the
- *  sum rounded to the nearest integer. If an atom in an island does not have
- *  an assigned charge, the charge of the island is `0`.
- *
  *  Atom tags are populated with the atom identifiers in Mol2.
  *
  *  @param reader
@@ -425,29 +421,11 @@ fun MoleculeComplex.Companion.parseMol2(
                 Referential(atom) !in wrappedBondedAtoms
             }
         ) {
-            val islandCharge = unbondedAtom.charge?.roundToInt() ?: 0
-
-            atomIslands.add(unbondedAtom.getIsland<Atom>(islandCharge))
+            atomIslands.add(unbondedAtom.getIsland<Atom>())
         }
 
         val molecules = BondAggregator.aggregate(bonds).map { bondGroup ->
-            val bondedAtoms = bondGroup
-                .flatMap { bond ->  bond.atoms() }
-                .distinctBy { atom -> Referential(atom) }
-
-            val islandCharge = if (
-                bondedAtoms.any { bondedAtom -> bondedAtom.charge == null }
-            ) {
-                0
-            } else {
-                bondedAtoms
-                    .fold(0.0) { acc, bondedAtom ->
-                        acc + bondedAtom.charge!!
-                    }
-                    .roundToInt()
-            }
-
-            Molecule(islandCharge, bondGroup)
+            Molecule(bondGroup)
         }
 
         MoleculeComplex(

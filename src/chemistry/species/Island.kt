@@ -16,6 +16,8 @@
 
 package crul.chemistry.species
 
+import kotlin.math.roundToInt
+
 /**
  *  Group containing atoms of a molecule or a single atom.
  *
@@ -37,11 +39,17 @@ interface Island<A : Atom> : Fragment<A> {
         get() = atoms().count() == 1
 
     /**
-     *  Charge of the molecule or atom represented by this island.
-     *
-     *  It is independent of the charges associated with the individual atoms.
+     *  Rounded sum of the charges of the atoms in this island, or `null` if
+     *  any of the atomic charges are `null`.
      */
-    var charge: Int
+    fun charge(): Int? =
+        atoms().map { it.charge }.reduce { acc, charge ->
+            if (acc != null && charge != null) {
+                acc + charge
+            } else {
+                null
+            }
+        }?.roundToInt()
 
     /**
      *  Bonds in this island, or an empty collection if the island contains a

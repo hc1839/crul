@@ -72,12 +72,10 @@ abstract class AbstractAtom : Atom {
         this.tag = tag
     }
 
-    override fun <A : Atom> getIsland(islandCharge: Int): Island<A> {
+    override fun <A : Atom> getIsland(): Island<A> {
         if (_island == null) {
-            _island = AtomIsland(islandCharge, this)
+            _island = AtomIsland(this)
         }
-
-        _island!!.charge = islandCharge
 
         @Suppress("UNCHECKED_CAST")
         return _island!! as Island<A>

@@ -189,12 +189,6 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
 /**
  *  Parses CML format.
  *
- *  The charge of an island is the sum of the assigned atomic charges, with the
- *  sum rounded to the nearest integer. If an atom in an island does not have
- *  an assigned charge, the charge of the island is `0`. The charge of the CML
- *  molecule, which corresponds to a complex and not an individual molecule, is
- *  ignored.
- *
  *  The `id` attribute of the root element, `molecule`, is ignored.
  *
  *  @param reader
@@ -364,27 +358,11 @@ fun MoleculeComplex.Companion.parseCml(
             Referential(atom) !in wrappedBondedAtoms
         }
     ) {
-        val islandCharge = unbondedAtom.charge?.roundToInt() ?: 0
-
-        atomIslands.add(unbondedAtom.getIsland<Atom>(islandCharge))
+        atomIslands.add(unbondedAtom.getIsland<Atom>())
     }
 
     val molecules = BondAggregator.aggregate(bonds).map { bondGroup ->
-        val bondedAtoms = bondGroup.flatMap { bond ->  bond.atoms() }
-
-        val islandCharge = if (
-            bondedAtoms.any { bondedAtom -> bondedAtom.charge == null }
-        ) {
-            0
-        } else {
-            bondedAtoms
-                .fold(0.0) { acc, bondedAtom ->
-                    acc + bondedAtom.charge!!
-                }
-                .roundToInt()
-        }
-
-        Molecule(islandCharge, bondGroup)
+        Molecule(bondGroup)
     }
 
     return MoleculeComplex(molecules + atomIslands)
