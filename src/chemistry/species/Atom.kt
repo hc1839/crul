@@ -35,9 +35,9 @@ interface Atom : Species {
     abstract override fun clone(): Atom
 
     /**
-     *  Singleton collection containing itself.
+     *  Singleton list containing itself.
      */
-    override fun atoms(): Collection<Atom> =
+    override fun atoms(): List<Atom> =
         listOf(this)
 
     var position: Vector3D

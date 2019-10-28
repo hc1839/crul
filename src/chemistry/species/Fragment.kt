@@ -34,9 +34,9 @@ interface Fragment<A : Atom> : Complex<A> {
     fun containsAtom(atom: A): Boolean =
         atoms().any { it === atom }
 
-    override fun atoms(): Collection<A> =
+    override fun atoms(): List<A> =
         @Suppress("UNCHECKED_CAST") (
-            super.atoms() as Collection<A>
+            super.atoms() as List<A>
         )
 
     override fun getAtomsByTag(tag: Int): List<A> =

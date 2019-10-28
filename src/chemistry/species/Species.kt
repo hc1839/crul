@@ -27,14 +27,13 @@ import crul.apache.math.vector.*
  */
 interface Species : Cloneable {
     /**
-     *  All atoms in this species, or itself if [Atom].
+     *  List of all atoms in this species, or singleton list of itself if
+     *  [Atom].
      *
-     *  Collection may be empty. Atoms are unique and are in the same order
-     *  between iterations. Atoms in the collection are not guaranteed to be in
-     *  any particular order. A subinterface or an implementation, however, is
-     *  allowed to make specified guarantees.
+     *  Atoms are unique and are in the same order between calls. Atoms in the
+     *  list are not guaranteed to be in any particular order.
      */
-    fun atoms(): Collection<Atom>
+    fun atoms(): List<Atom>
 
     /**
      *  Translates atoms in this species by a given displacement.

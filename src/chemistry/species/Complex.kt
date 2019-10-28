@@ -48,7 +48,7 @@ interface Complex<S : Species> :
     override fun isEmpty(): Boolean =
         iterator().asSequence().count() == 0
 
-    override fun atoms(): Collection<Atom> =
+    override fun atoms(): List<Atom> =
         iterator()
             .asSequence()
             .toList()

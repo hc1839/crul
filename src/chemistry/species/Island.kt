@@ -56,7 +56,7 @@ interface Island<A : Atom> : Fragment<A> {
      *  single atom.
      *
      *  Bonds are unique. Bonds are not necessarily in the same order between
-     *  calls and are not guaranteed to be in any particular order.
+     *  calls.
      */
     fun bonds(): Collection<Bond<A>>
 

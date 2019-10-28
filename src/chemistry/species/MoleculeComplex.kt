@@ -25,7 +25,7 @@ import crul.distinct.Referential
  *      Type of atoms.
  */
 interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
-    override fun atoms(): Collection<A> =
+    override fun atoms(): List<A> =
         super.atoms().map {
             @Suppress("UNCHECKED_CAST")
             it as A
