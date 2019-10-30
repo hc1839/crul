@@ -48,13 +48,6 @@ interface Species : Cloneable {
     }
 
     /**
-     *  Gets a list of atoms by tag, or an empty list if there are no such
-     *  atoms.
-     */
-    fun getAtomsByTag(tag: Int): List<Atom> =
-        atoms().filter { it.tag == tag }
-
-    /**
      *  Clones this species and all subspecies.
      *
      *  @return

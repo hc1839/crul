@@ -27,6 +27,8 @@ import crul.serialize.MessagePackSimple
  *  Default implementation of [Bond].
  */
 internal class BondImpl<A : Atom> : Bond<A> {
+    override val subspecies: List<A>
+
     /**
      *  Pair of the atoms in the bond.
      */
@@ -40,17 +42,14 @@ internal class BondImpl<A : Atom> : Bond<A> {
     /**
      *  See [Bond.newInstance] for the description.
      */
-    constructor(
-        atom1: A,
-        atom2: A,
-        order: String
-    ) {
+    constructor(atom1: A, atom2: A, order: String) {
         if (atom1 === atom2) {
             throw IllegalArgumentException(
                 "Atoms are referentially equal."
             )
         }
 
+        this.subspecies = listOf(atom1, atom2)
         this.atomPair = Pair(atom1, atom2)
         this.order = order
     }
@@ -82,12 +81,6 @@ internal class BondImpl<A : Atom> : Bond<A> {
                     .toSet() &&
             order == other.order
         )
-
-    override fun iterator(): Iterator<A> =
-        atomPair.toList().iterator()
-
-    override fun containsAtom(atom: A): Boolean =
-        atomPair.toList().any { it === atom }
 
     override fun toAtomPair(): Pair<A, A> =
         atomPair

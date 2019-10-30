@@ -28,20 +28,9 @@ import crul.serialize.AvroSimple
  *      Type of atoms in this fragment.
  */
 interface Fragment<A : Atom> : Complex<A> {
-    /**
-     *  Whether an atom exists in this fragment.
-     */
-    fun containsAtom(atom: A): Boolean =
-        atoms().any { it === atom }
-
     override fun atoms(): List<A> =
         @Suppress("UNCHECKED_CAST") (
             super.atoms() as List<A>
-        )
-
-    override fun getAtomsByTag(tag: Int): List<A> =
-        @Suppress("UNCHECKED_CAST") (
-            super.getAtomsByTag(tag) as List<A>
         )
 
     abstract override fun clone(): Fragment<A>
@@ -54,7 +43,7 @@ interface Fragment<A : Atom> : Complex<A> {
          *      Atoms of the fragment.
          */
         @JvmStatic
-        fun <A : Atom> newInstance(atoms: Collection<A>): Fragment<A> =
+        fun <A : Atom> newInstance(atoms: List<A>): Fragment<A> =
             Fragment(atoms)
     }
 }
@@ -64,5 +53,5 @@ interface Fragment<A : Atom> : Complex<A> {
  *
  *  See [Fragment.newInstance] for description.
  */
-fun <A : Atom> Fragment(atoms: Collection<A>): Fragment<A> =
+fun <A : Atom> Fragment(atoms: List<A>): Fragment<A> =
     FragmentImpl(atoms)

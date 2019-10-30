@@ -23,7 +23,7 @@ package crul.chemistry.species
  *      Type of subspecies in this complex.
  */
 internal class ComplexImpl<S : Species> : AbstractComplex<S> {
-    constructor(species: Collection<S>): super(species)
+    constructor(subspecies: List<S>): super(subspecies)
 
     /**
      *  Copy constructor.

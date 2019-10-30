@@ -155,7 +155,7 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
 
     // Create and append a node for each bond.
     for (
-        bond in mapNotNull {
+        bond in subspecies.mapNotNull {
             @Suppress("UNCHECKED_CAST")
             (it as? Molecule<A>)?.bonds()
         }.flatten()

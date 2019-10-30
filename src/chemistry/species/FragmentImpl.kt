@@ -27,7 +27,7 @@ internal class FragmentImpl<A : Atom> : AbstractFragment<A> {
      *  @param atoms
      *      Atoms of the fragment.
      */
-    constructor(atoms: Collection<A>): super(atoms)
+    constructor(atoms: List<A>): super(atoms)
 
     /**
      *  Copy constructor.

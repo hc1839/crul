@@ -27,10 +27,10 @@ abstract class AbstractFragment<A : Atom> :
      *  @param atoms
      *      Atoms of the fragment.
      */
-    constructor(atoms: Collection<A>): super(atoms) {
+    constructor(atoms: List<A>): super(atoms.toList()) {
         if (atoms.isEmpty()) {
             throw IllegalArgumentException(
-                "Fragment must have at least one atom."
+                "List of atoms given to construct a fragment is empty."
             )
         }
     }
@@ -42,7 +42,4 @@ abstract class AbstractFragment<A : Atom> :
      *      Fragment to copy.
      */
     constructor(other: AbstractFragment<A>): super(other)
-
-    override fun containsAtom(atom: A): Boolean =
-        atoms().contains(atom)
 }

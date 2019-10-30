@@ -49,11 +49,11 @@ abstract class AbstractMolecule<A : Atom> :
      */
     constructor(bonds: Collection<Bond<A>>): super(
         if (!bonds.isEmpty()) {
-            bonds
-                .flatMap { it.atoms() }
-                .distinctBy { Referential(it) }
+            bonds.flatMap { it.atoms() }.distinctBy { Referential(it) }
         } else {
-            throw IllegalArgumentException("Collection of bonds is empty.")
+            throw IllegalArgumentException(
+                "Collection of bonds given to construct a molecule is empty."
+            )
         }
     ) {
         this.bondListsByAtom = bondIndexing(bonds)

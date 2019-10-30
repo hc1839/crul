@@ -22,40 +22,49 @@ import crul.apache.math.vector.*
 import crul.distinct.Referential
 
 /**
- *  Interface for a complex, which is a species that is also a collection of
- *  subspecies.
- *
- *  Subspecies are unique and are in the same order between iterations.
+ *  Interface for a complex, which is a species that is composed of
+ *  referentially unique subspecies.
  *
  *  @param S
  *      Type of subspecies in this complex.
  */
-interface Complex<S : Species> :
-    Species,
-    Collection<S>
-{
-    override val size: Int
-        get() = iterator().asSequence().count()
-
-    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
-    override fun contains(species: S): Boolean =
-        iterator().asSequence().any { it === species }
-
-    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
-    override fun containsAll(speciesCollection: Collection<S>): Boolean =
-        speciesCollection.all { contains(it) }
-
-    override fun isEmpty(): Boolean =
-        iterator().asSequence().count() == 0
-
+interface Complex<S : Species> : Species {
     override fun atoms(): List<Atom> =
-        iterator()
-            .asSequence()
-            .toList()
+        subspecies
             .flatMap { it.atoms() }
             .distinctBy { Referential(it) }
 
     abstract override fun clone(): Complex<S>
+
+    /**
+     *  Subspecies in this complex.
+     */
+    val subspecies: List<S>
+
+    /**
+     *  Whether a given species is a subspecies in this complex.
+     *
+     *  Comparison is referential.
+     */
+    fun contains(species: S): Boolean =
+        subspecies.any { it === species }
+
+    /**
+     *  Whether all species in a given collection are subspecies in this
+     *  complex.
+     *
+     *  Comparison is referential.
+     */
+    fun containsAll(speciesCollection: Collection<S>): Boolean =
+        speciesCollection.all { contains(it) }
+
+    /**
+     *  Whether an atom exists in this complex.
+     *
+     *  Comparison is referential.
+     */
+    fun containsAtom(atom: Atom): Boolean =
+        atoms().any { it === atom }
 
     /**
      *  Centroid of [atoms].

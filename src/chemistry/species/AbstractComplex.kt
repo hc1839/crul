@@ -27,28 +27,24 @@ import crul.distinct.Referential
  *      Type of subspecies in this complex.
  */
 abstract class AbstractComplex<S : Species> : Complex<S> {
-    /**
-     *  Subspecies in this complex in the order that is given to the
-     *  constructor.
-     */
-    protected val subspecies: MutableList<S>
+    override val subspecies: List<S>
 
     /**
      *  @param subspecies
      *      Subspecies in this complex.
      */
-    constructor(subspecies: Collection<S>) {
-        val subspeciesList = subspecies
-            .distinctBy { Referential(it) }
-            .toMutableList()
-
-        if (subspeciesList.count() != subspecies.count()) {
+    constructor(subspecies: List<S>) {
+        if (
+            subspecies.distinctBy { Referential(it) }.count() !=
+            subspecies.count()
+        ) {
             throw IllegalArgumentException(
-                "Subspecies in the collection are not unique."
+                "Subspecies in the given list to construct a complex " +
+                "are not unique."
             )
         }
 
-        this.subspecies = subspeciesList
+        this.subspecies = subspecies.toList()
     }
 
     /**
@@ -57,16 +53,10 @@ abstract class AbstractComplex<S : Species> : Complex<S> {
      *  @param other
      *      Complex and subspecies to copy.
      */
-    constructor(other: AbstractComplex<S>) {
-        this.subspecies = other
-            .subspecies
-            .map {
-                @Suppress("UNCHECKED_CAST")
-                it.clone() as S
-            }
-            .toMutableList()
-    }
-
-    override fun iterator(): Iterator<S> =
-        subspecies.iterator()
+    constructor(other: AbstractComplex<S>): this(
+        other.subspecies.map {
+            @Suppress("UNCHECKED_CAST")
+            it.clone() as S
+        }
+    )
 }

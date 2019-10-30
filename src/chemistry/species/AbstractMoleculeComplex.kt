@@ -32,7 +32,7 @@ abstract class AbstractMoleculeComplex<A : Atom> :
      *  @param islands
      *      Molecules and atoms of the complex.
      */
-    constructor(islands: Collection<Island<A>>): super(islands) {
+    constructor(islands: List<Island<A>>): super(islands) {
         // Referentially distinct atoms from all islands.
         val wrappedAtomSets = islands.map { island ->
             island.atoms().map { atom ->
@@ -48,9 +48,9 @@ abstract class AbstractMoleculeComplex<A : Atom> :
 
         if (
             numDistinctAtoms !=
-                wrappedAtomSets.fold(0) { acc, item ->
-                    acc + item.count()
-                }
+            wrappedAtomSets.fold(0) { acc, item ->
+                acc + item.count()
+            }
         ) {
             throw IllegalArgumentException(
                 "At least one atom exists in more than one island."
@@ -64,7 +64,7 @@ abstract class AbstractMoleculeComplex<A : Atom> :
     constructor(other: AbstractMoleculeComplex<A>): super(other)
 
     override fun getIslandWithAtom(atom: A): Island<A>? =
-        toList()
+        subspecies
             .filter { island -> island.containsAtom(atom) }
             .singleOrNull()
 }

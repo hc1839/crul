@@ -38,7 +38,9 @@ interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
      *  charges is `null`.
      */
     fun charge(): Int? =
-        map { island -> island.charge() }.reduce { acc, islandCharge ->
+        subspecies.map { island -> island.charge() }.reduce {
+            acc, islandCharge ->
+
             if (acc != null && islandCharge != null) {
                 acc + islandCharge
             } else {
@@ -61,7 +63,7 @@ interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
          */
         @JvmStatic
         fun <A : Atom> newInstance(
-            islands: Collection<Island<A>>
+            islands: List<Island<A>>
         ): MoleculeComplex<A> =
             MoleculeComplex(islands)
     }
@@ -73,7 +75,7 @@ interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
  *  See [MoleculeComplex.newInstance] for description.
  */
 fun <A : Atom> MoleculeComplex(
-    islands: Collection<Island<A>>
+    islands: List<Island<A>>
 ): MoleculeComplex<A> =
     MoleculeComplexImpl(islands)
 
@@ -124,7 +126,7 @@ fun <A : Atom, B : Atom> MoleculeComplex<A>.mapAtoms(
     val outputIslands = mutableListOf<Island<B>>()
 
     // Convert each input island to output island.
-    for (inputIsland in this) {
+    for (inputIsland in subspecies) {
         if (inputIsland.isSingleAtom) {
             val wrappedInputAtom = Referential(
                 inputIsland.atoms().single()

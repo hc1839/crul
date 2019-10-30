@@ -115,15 +115,13 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
             TriposMolecule(
                 molName = complexNames[complexIndex],
                 numAtoms = atoms.count(),
-                numBonds = complex
-                    .map {
-                        if (it is Molecule<*>) {
-                            it.bonds().count()
-                        } else {
-                            0
-                        }
+                numBonds = complex.subspecies.map {
+                    if (it is Molecule<*>) {
+                        it.bonds().count()
+                    } else {
+                        0
                     }
-                    .sum()
+                }.sum()
             ).exportMol2()
         )
         writer.write("\n")
@@ -173,7 +171,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
             writer.write("\n")
         }
 
-        val bonds = complex.flatMap { island ->
+        val bonds = complex.subspecies.flatMap { island ->
             island.bonds()
         }
 
@@ -428,9 +426,7 @@ fun MoleculeComplex.Companion.parseMol2(
             Molecule(bondGroup)
         }
 
-        MoleculeComplex(
-            molecules + atomIslands
-        )
+        MoleculeComplex(molecules + atomIslands)
     }
 
     // Return the complexes in the same order as in Mol2.
