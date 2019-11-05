@@ -19,14 +19,14 @@
 package crul.uuid
 
 /**
- *  Generator for UUIDs.
+ *  Generator of UUIDs.
  */
-object Generator {
+object UuidGenerator {
     /**
      *  Generates a Version 4 UUID that conforms to the XML NCName production.
      */
     @JvmStatic
-    fun inNCName(): String {
+    fun asNCName(): String {
         var id: String
 
         do {

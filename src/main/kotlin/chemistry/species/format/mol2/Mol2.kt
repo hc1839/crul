@@ -35,6 +35,7 @@ import crul.distinct.Referential
 import crul.measure.Quantity
 import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
+import crul.uuid.UuidGenerator
 
 /**
  *  Exports a list of molecule complexes in Mol2 format.
@@ -94,7 +95,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
             var uuid: String
 
             do {
-                uuid = crul.uuid.Generator.inNCName()
+                uuid = crul.uuid.UuidGenerator.asNCName()
             } while (complexNames.contains(uuid))
 
             complexNames.add(uuid)
@@ -271,7 +272,7 @@ fun MoleculeComplex.Companion.parseMol2(
                         )
 
                         val currComplexId = triposMoleculeData.molName ?:
-                                crul.uuid.Generator.inNCName()
+                                crul.uuid.UuidGenerator.asNCName()
 
                         complexIds.add(currComplexId)
 
