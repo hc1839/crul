@@ -18,6 +18,9 @@ package crul.chemistry.species
 
 import kotlin.math.roundToInt
 
+import crul.chemistry.species.travel.Neighbor
+import crul.chemistry.species.travel.Neighborhood
+
 /**
  *  Group containing atoms of a molecule or a single atom.
  *
@@ -66,37 +69,51 @@ interface Island<A : Atom> : Fragment<A> {
      *  By default, [bonds] is used. An implementation may override this for a
      *  more efficient method.
      *
-     *  @param atom
-     *      Atom whose bonds is to be retrieved.
+     *  @param sourceAtom
+     *      Source atom whose bonds is to be retrieved. If it does not exist in
+     *      this island, an exception is thrown.
      *
      *  @return
-     *      Bonds that `atom` is participating in. If `atom` does not exist in
-     *      this island, an empty list is returned.
+     *      Bonds that `sourceAtom` is participating in.
      */
-    fun getBondsByAtom(atom: A): List<Bond<A>> =
-        bonds().filter { it.containsAtom(atom) }
+    fun getBondsByAtom(sourceAtom: A): List<Bond<A>> {
+        if (!containsAtom(sourceAtom)) {
+            throw IllegalArgumentException(
+                "Island does not contain the given source atom."
+            )
+        }
+
+        return bonds().filter { it.containsAtom(sourceAtom) }
+    }
 
     /**
      *  Gets the atoms that are bonded to a given atom.
      *
-     *  @param atom
-     *      Atom whose bonded atoms are to be retrieved.
+     *  @param sourceAtom
+     *      Source atom whose bonded atoms are to be retrieved. If it does not
+     *      exist in this island, an exception is thrown.
      *
      *  @return
-     *      Atoms bonded to `atom`. If `atom` does not exist in this island, an
-     *      empty list is returned.
+     *      Atoms bonded to `sourceAtom`.
      */
-    fun getAtomsBondedTo(atom: A): List<A> =
-        getBondsByAtom(atom)
-            .flatMap { bond ->
-                bond.toAtomPair().toList()
+    fun getAtomsBondedTo(sourceAtom: A): Collection<A> {
+        if (!containsAtom(sourceAtom)) {
+            throw IllegalArgumentException(
+                "Island does not contain the given source atom."
+            )
+        }
+
+        return getBondsByAtom(sourceAtom).map { bond ->
+            bond.atoms().single { atom ->
+                atom !== sourceAtom
             }
-            .filter {
-                it !== atom
-            }
+        }
+    }
 
     /**
      *  Gets the bond between two atoms.
+     *
+     *  If a given atom does not exist in this island, an exception is thrown.
      *
      *  By default, [bonds] is used. An implementation may override this for a
      *  more efficient method.
@@ -109,14 +126,52 @@ interface Island<A : Atom> : Fragment<A> {
      *
      *  @return
      *      Bond that the given atoms are participating in, or `null` if there
-     *      is no bond between the two atoms. If a given atom does not exist in
-     *      this island, `null` is returned.
+     *      is no bond between the two atoms.
      */
-    fun getBond(atom1: A, atom2: A): Bond<A>? =
-        bonds()
-            .filter {
-                it.containsAtom(atom1) &&
-                it.containsAtom(atom2)
+    fun getBond(atom1: A, atom2: A): Bond<A>? {
+        if (!containsAtom(atom1) || !containsAtom(atom2)) {
+            throw IllegalArgumentException(
+                "Island does not contain both of the given atoms."
+            )
+        }
+
+        return bonds().filter {
+            it.containsAtom(atom1) &&
+            it.containsAtom(atom2)
+        }.singleOrNull()
+    }
+
+    /**
+     *  Gets the neighborhood of `sourceAtom`.
+     *
+     *  If `sourceAtom` does not exist in this island, an exception is thrown.
+     */
+    fun getNeighborhood(sourceAtom: A): Neighborhood<A> {
+        if (!containsAtom(sourceAtom)) {
+            throw IllegalArgumentException(
+                "Island does not contain the given source atom."
+            )
+        }
+
+        val neighbors = getBondsByAtom(sourceAtom).map { bond ->
+            val bondedAtom = bond.atoms().single { atom ->
+                atom !== sourceAtom
             }
-            .singleOrNull()
+
+            Neighbor(bond.order, bondedAtom)
+        }
+
+        return Neighborhood(
+            sourceAtom = sourceAtom,
+            neighbors = neighbors
+        )
+    }
+
+    /**
+     *  Sequence of neighborhoods in this island.
+     */
+    fun neighborhoods(): Sequence<Neighborhood<A>> =
+        atoms().asSequence().map { atom ->
+            getNeighborhood(atom)
+        }
 }

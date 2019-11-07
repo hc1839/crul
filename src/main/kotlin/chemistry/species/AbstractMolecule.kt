@@ -103,16 +103,16 @@ abstract class AbstractMolecule<A : Atom> :
             Referential(it)
         }
 
-    override fun getBondsByAtom(atom: A): List<Bond<A>> {
-        val wrappedAtom = Referential(atom)
+    override fun getBondsByAtom(sourceAtom: A): List<Bond<A>> {
+        val wrappedSourceAtom = Referential(sourceAtom)
 
-        if (!bondListsByAtom.containsKey(wrappedAtom)) {
+        if (!bondListsByAtom.containsKey(wrappedSourceAtom)) {
             throw IllegalArgumentException(
-                "No such atom."
+                "No such source atom."
             )
         }
 
-        val bondList = bondListsByAtom[wrappedAtom]!!
+        val bondList = bondListsByAtom[wrappedSourceAtom]!!
 
         return bondList.toList()
     }
