@@ -33,9 +33,10 @@ import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
 
 /**
- *  Serializes this fragment to XYZ.
+ *  Serializes this list of fragments to XYZ.
  *
- *  Atoms are outputted in the order as returned by [Fragment.atoms].
+ *  Fragments are outputted in the given order. For each fragment, atoms are
+ *  outputted in the order as returned by [Fragment.atoms].
  *
  *  @param writer
  *      Writer of XYZ with a trailing newline.
@@ -47,7 +48,7 @@ import crul.measure.unit.UnitOfMeasure
  *      Unit of the coordinates that the positions are in. It must be a unit of
  *      `L`.
  */
-fun <A : Atom> Fragment<A>.exportXyz(
+fun <A : Atom> List<Fragment<A>>.exportXyz(
     writer: Writer,
     label: String,
     atomPosUnit: UnitOfMeasure
@@ -67,21 +68,23 @@ fun <A : Atom> Fragment<A>.exportXyz(
 
     var xyzBuilder = ""
 
-    xyzBuilder += atoms().count().toString() + "\n"
+    xyzBuilder += sumBy { it.atoms().count() }.toString() + "\n"
     xyzBuilder += label + "\n"
 
     val angstromUnit = UnitOfMeasure.parse("Ao")
 
-    for (atom in atoms()) {
-        xyzBuilder += atom.element.symbol + " "
+    for (fragment in this) {
+        for (atom in fragment.atoms()) {
+            xyzBuilder += atom.element.symbol + " "
 
-        xyzBuilder += atom.position.toArray().map {
-            Quantity.convertUnit(
-                it,
-                atomPosUnit,
-                angstromUnit
-            ).toString()
-        }.joinToString(" ") + "\n"
+            xyzBuilder += atom.position.toArray().map {
+                Quantity.convertUnit(
+                    it,
+                    atomPosUnit,
+                    angstromUnit
+                ).toString()
+            }.joinToString(" ") + "\n"
+        }
     }
 
     writer.write(xyzBuilder.trim() + "\n")
