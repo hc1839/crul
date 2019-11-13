@@ -30,7 +30,7 @@ import crul.serialize.AvroSimple
  */
 interface Atom : Species {
     /**
-     *  Tag is cloned.
+     *  [tag] and [atomType] are cloned.
      */
     abstract override fun clone(): Atom
 
@@ -58,6 +58,13 @@ interface Atom : Species {
      *  Arbitrary integer tag.
      */
     var tag: Int
+
+    /**
+     *  Atom type.
+     *
+     *  Definitions of atom types depend on the context and implementation.
+     */
+    var atomType: String?
 
     /**
      *  Island that represents this atom.
@@ -88,44 +95,28 @@ interface Atom : Species {
          *
          *  @param tag
          *      Arbitrary integer tag.
+         *
+         *  @param atomType
+         *      Atom type.
+         *
+         *  @return
+         *      New instance of [Atom].
          */
         @JvmStatic
         fun newInstance(
             element: Element,
             position: Vector3D,
             charge: Double?,
-            tag: Int
+            tag: Int = 0,
+            atomType: String? = null
         ): Atom =
             Atom(
                 element,
                 position,
                 charge,
-                tag
+                tag,
+                atomType
             )
-
-        /**
-         *  Constructs an [Atom] with a tag value of `0`.
-         *
-         *  @param element
-         *      Element of the atom.
-         *
-         *  @param position
-         *      Position of the atom.
-         *
-         *  @param charge
-         *      Charge associated with the atom.
-         */
-        @JvmStatic
-        fun newInstance(
-            element: Element,
-            position: Vector3D,
-            charge: Double?
-        ): Atom = newInstance(
-            element,
-            position,
-            charge,
-            0
-        )
     }
 }
 
@@ -134,15 +125,18 @@ interface Atom : Species {
  *
  *  See [Atom.newInstance] for description.
  */
+@JvmOverloads
 fun Atom(
     element: Element,
     position: Vector3D,
     charge: Double?,
-    tag: Int = 0
+    tag: Int = 0,
+    atomType: String? = null
 ): Atom =
     AtomImpl(
         element,
         position,
         charge,
-        tag
+        tag,
+        atomType
     )

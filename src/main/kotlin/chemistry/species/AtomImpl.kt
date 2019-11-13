@@ -23,18 +23,20 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
  */
 internal class AtomImpl : AbstractAtom {
     /**
-     *  See [Atom.newInstance] for the description.
+     *  See [Atom.newInstance] for description.
      */
     constructor(
         element: Element,
         position: Vector3D,
         charge: Double?,
-        tag: Int = 0
+        tag: Int,
+        atomType: String?
     ): super(
         element,
         position,
         charge,
-        tag
+        tag,
+        atomType
     )
 
     /**
@@ -43,8 +45,9 @@ internal class AtomImpl : AbstractAtom {
     @JvmOverloads
     constructor(
         other: AtomImpl,
-        tag: Int = other.tag
-    ): super(other, tag)
+        tag: Int = other.tag,
+        atomType: String? = other.atomType
+    ): super(other, tag, atomType)
 
     override fun clone(): Atom =
         AtomImpl(this)

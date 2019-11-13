@@ -106,7 +106,10 @@ object BondAggregator {
      *      different islands.
      */
     @JvmStatic
-    fun <A : Atom> aggregate(bonds: Collection<Bond<A>>): List<List<Bond<A>>> {
+    fun <A : Atom> aggregate(
+        bonds: Collection<Bond<A>>
+    ): List<List<Bond<A>>>
+    {
         if (bonds.isEmpty()) {
             return listOf()
         }

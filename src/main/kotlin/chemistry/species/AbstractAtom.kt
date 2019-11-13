@@ -24,53 +24,31 @@ import crul.serialize.AvroSimple
 /**
  *  Skeletal implementation of [Atom].
  */
-abstract class AbstractAtom : Atom {
-    override val element: Element
-
-    override var position: Vector3D
-
-    override var charge: Double?
-
-    override var tag: Int
-
+abstract class AbstractAtom constructor(
+    override val element: Element,
+    override var position: Vector3D,
+    override var charge: Double?,
+    override var tag: Int,
+    override var atomType: String?
+) : Atom
+{
     private var _island: Island<*>? = null
-
-    /**
-     *  @param element
-     *      Element of the atom.
-     *
-     *  @param position
-     *      Position of the atom.
-     *
-     *  @param charge
-     *      Charge associated with the atom.
-     *
-     *  @param tag
-     *      Arbitrary integer tag.
-     */
-    @JvmOverloads
-    constructor(
-        element: Element,
-        position: Vector3D,
-        charge: Double?,
-        tag: Int = 0
-    ) {
-        this.element = element
-        this.position = position
-        this.charge = charge
-        this.tag = tag
-    }
 
     /**
      *  Copy constructor.
      */
     @JvmOverloads
-    constructor(other: AbstractAtom, tag: Int = other.tag) {
-        this.element = other.element
-        this.position = other.position
-        this.charge = other.charge
-        this.tag = tag
-    }
+    constructor(
+        other: AbstractAtom,
+        tag: Int = other.tag,
+        atomType: String? = other.atomType
+    ): this(
+        other.element,
+        other.position,
+        other.charge,
+        tag,
+        atomType
+    )
 
     override fun <A : Atom> getIsland(): Island<A> {
         if (_island == null) {

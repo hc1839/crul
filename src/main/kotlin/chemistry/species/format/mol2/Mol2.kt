@@ -40,8 +40,9 @@ import crul.uuid.UuidGenerator
 /**
  *  Exports a list of molecule complexes in Mol2 format.
  *
- *  Since determining the Tripos atom type is not supported, the values of the
- *  Tripos atom-type and atom-name fields are the atom's element.
+ *  [Atom.atomType] is ignored. Since determining the Tripos atom type is not
+ *  yet supported, the values of the Tripos atom-type and atom-name fields are
+ *  the atom's element.
  *
  *  @param writer
  *      Writer of Mol2 with a trailing newline.
@@ -68,8 +69,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
     atomIdMapper: ((A, MoleculeComplex<A>) -> Int)? = null,
     complexNameMapper: ((MoleculeComplex<A>) -> String)? = null,
     triposBondTypeMapper: (String) -> TriposBond.BondType
-)
-{
+) {
     if (!atomPosUnit.isUnitOf(Dimension.parse("L"))) {
         throw IllegalArgumentException(
             "Unit of atom position is not a unit of length."
@@ -211,7 +211,8 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
  *  atom name is considered if the Tripos atom type does not contain the
  *  element.
  *
- *  Atom tags are populated with the atom identifiers in Mol2.
+ *  [Atom.tag] is set to the atom identifier in Mol2. [Atom.atomType] is set to
+ *  `null`, since many vendors set the atom types to arbitrary values.
  *
  *  @param reader
  *      Reader from which Mol2 is to be read.
