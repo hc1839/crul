@@ -40,7 +40,7 @@ import crul.chemistry.species.Island
 import crul.chemistry.species.Molecule
 import crul.chemistry.species.MoleculeComplex
 import crul.distinct.Referential
-import crul.float.Comparison.nearlyEquals
+import crul.float.FloatCompare.nearlyEquals
 import crul.measure.Quantity
 import crul.measure.dimension.BaseDimension
 import crul.measure.dimension.Dimension

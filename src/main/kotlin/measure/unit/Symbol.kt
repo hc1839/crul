@@ -23,6 +23,7 @@ import kotlin.math.pow
 import org.apache.avro.Schema
 import org.apache.avro.generic.*
 
+import crul.float.FloatCompare.nearlyEquals
 import crul.hierarchy.tree.Node
 import crul.measure.dimension.BaseDimension
 import crul.measure.dimension.Dimension
@@ -385,16 +386,13 @@ class UnitOfMeasure {
         listOf(exponents).hashCode()
 
     /**
-     *  Uses [float.Comparison.nearlyEquals] for the magnitude component.
+     *  Uses [nearlyEquals] for the magnitude component.
      */
     override fun equals(other: Any?): Boolean =
         other is UnitOfMeasure &&
         this::class == other::class &&
         (
-            crul.float.Comparison.nearlyEquals(
-                magnitude,
-                other.magnitude
-            ) &&
+            nearlyEquals(magnitude, other.magnitude) &&
             exponents == other.exponents
         )
 

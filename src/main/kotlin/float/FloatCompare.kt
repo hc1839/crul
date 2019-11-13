@@ -21,7 +21,7 @@ package crul.float
 /**
  *  Functions for comparing two floating-point numbers.
  */
-object Comparison {
+object FloatCompare {
     /**
      *  Adapted from `https://floating-point-gui.de/errors/comparison/`.
      */

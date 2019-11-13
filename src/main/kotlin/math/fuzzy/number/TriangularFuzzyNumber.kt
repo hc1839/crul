@@ -20,7 +20,7 @@ import java.nio.ByteBuffer
 import org.apache.avro.Schema
 import org.apache.avro.generic.*
 
-import crul.float.Comparison.nearlyEquals
+import crul.float.FloatCompare.nearlyEquals
 import crul.math.descriptive.EndpointInclusion
 import crul.math.descriptive.IntervalEndpoints
 import crul.math.descriptive.IntervalEndpointsSpec

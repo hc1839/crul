@@ -37,7 +37,7 @@ internal class BondImpl<A : Atom> : Bond<A> {
     /**
      *  Bond order as specified to the constructor.
      */
-    override val order: String
+    override var order: String
 
     /**
      *  See [Bond.newInstance] for the description.

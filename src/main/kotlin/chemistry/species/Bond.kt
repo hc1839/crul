@@ -50,7 +50,7 @@ interface Bond<A : Atom> : Fragment<A> {
     /**
      *  Bond order as an aribtrary string.
      */
-    val order: String
+    var order: String
 
     /**
      *  Atoms as a pair in the given order.

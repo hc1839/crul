@@ -16,7 +16,7 @@
 
 package crul.math.fuzzy.number
 
-import crul.float.Comparison.nearlyEquals
+import crul.float.FloatCompare.nearlyEquals
 import crul.math.fuzzy.Interval
 
 /**

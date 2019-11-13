@@ -21,6 +21,7 @@ import kotlin.math.pow
 import org.apache.avro.Schema
 import org.apache.avro.generic.*
 
+import crul.float.FloatCompare.nearlyEquals
 import crul.measure.dimension.BaseDimension
 import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
@@ -116,16 +117,13 @@ class Quantity : Comparable<Quantity> {
         unit.hashCode()
 
     /**
-     *  Uses [float.Comparison.nearlyEquals] for the value component.
+     *  Uses [nearlyEquals] for the value component.
      */
     override fun equals(other: Any?) =
         other is Quantity &&
         this::class == other::class &&
         (
-            crul.float.Comparison.nearlyEquals(
-                value,
-                other.value(unit)
-            ) &&
+            nearlyEquals(value, other.value(unit)) &&
             unit == other.unit
         )
 
