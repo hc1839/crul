@@ -35,11 +35,9 @@ interface Island<A : Atom> : Fragment<A> {
 
     /**
      *  Whether this island contains a single atom.
-     *
-     *  Implementation may override this to be a constant property.
      */
-    val isSingleAtom: Boolean
-        get() = atoms().count() == 1
+    fun isSingleAtom(): Boolean =
+        atoms().count() == 1
 
     /**
      *  Rounded sum of the charges of the atoms in this island, or `null` if

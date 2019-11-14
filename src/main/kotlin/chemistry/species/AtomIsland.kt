@@ -28,7 +28,7 @@ package crul.chemistry.species
  *  @param atom
  *      Atom that the island represents.
  */
-internal class AtomIsland<A : Atom>(atom: A) :
+class AtomIsland<A : Atom>(atom: A) :
     AbstractFragment<A>(listOf(atom)),
     Island<A>
 {

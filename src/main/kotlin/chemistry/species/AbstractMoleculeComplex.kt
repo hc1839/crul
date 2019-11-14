@@ -79,7 +79,7 @@ abstract class AbstractMoleculeComplex<A : Atom> :
         val wrappedGivenAtoms = atoms.map { Referential(it) }
 
         val filteredBonds = subspecies
-            .filter { island -> !island.isSingleAtom }
+            .filter { island -> !island.isSingleAtom() }
             .flatMap { island -> island.bonds() }
             .filterNot { bond ->
                 bond.atoms().any { atom ->
@@ -92,7 +92,7 @@ abstract class AbstractMoleculeComplex<A : Atom> :
         }
 
         val filteredAtomIslands = subspecies.filter {
-            it.isSingleAtom &&
+            it.isSingleAtom() &&
             Referential(it.atoms().single()) !in wrappedGivenAtoms
         }
 
@@ -103,7 +103,7 @@ abstract class AbstractMoleculeComplex<A : Atom> :
         val wrappedGivenBonds = bonds.map { Referential(it) }
 
         val (atomIslands, origMolecules) = subspecies.partition {
-            it.isSingleAtom
+            it.isSingleAtom()
         }
 
         val filteredBonds = origMolecules

@@ -92,12 +92,6 @@ abstract class AbstractMolecule<A : Atom> :
         }.invoke()
     )
 
-    /**
-     *  Always `false`.
-     */
-    final override val isSingleAtom: Boolean =
-        false
-
     override fun bonds(): Collection<Bond<A>> =
         bondListsByAtom.values.flatten().distinctBy {
             Referential(it)
