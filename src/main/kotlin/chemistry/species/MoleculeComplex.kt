@@ -49,10 +49,11 @@ interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
         }
 
     /**
-     *  Gets the island that contains a given atom by referential equality, or
-     *  `null` if there is no such island.
+     *  Gets the island that contains a given atom by referential equality.
+     *
+     *  If `atom` does not exist in this complex, an exception is thrown.
      */
-    fun getIslandWithAtom(atom: A): Island<A>?
+    fun getIslandWithAtom(atom: A): Island<A>
 
     companion object {
         /**

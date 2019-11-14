@@ -63,8 +63,15 @@ abstract class AbstractMoleculeComplex<A : Atom> :
      */
     constructor(other: AbstractMoleculeComplex<A>): super(other)
 
-    override fun getIslandWithAtom(atom: A): Island<A>? =
-        subspecies
-            .filter { island -> island.containsAtom(atom) }
-            .singleOrNull()
+    override fun getIslandWithAtom(atom: A): Island<A> {
+        if (!containsAtom(atom)) {
+            throw IllegalArgumentException(
+                "Complex does not contain the given atom."
+            )
+        }
+
+        return subspecies.filter { island ->
+            island.containsAtom(atom)
+        }.single()
+    }
 }
