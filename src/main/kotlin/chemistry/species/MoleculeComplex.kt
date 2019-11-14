@@ -55,6 +55,59 @@ interface MoleculeComplex<A : Atom> : Complex<Island<A>> {
      */
     fun getIslandWithAtom(atom: A): Island<A>
 
+    /**
+     *  Returns a complex without the atoms in a given collection.
+     *
+     *  Comparison is referential. If an atom does not exist in this complex,
+     *  an exception is thrown.
+     */
+    fun minusAtoms(atoms: Collection<A>): MoleculeComplex<A>
+
+    /**
+     *  Returns a complex without the given atom and the bonds that it was
+     *  participating in.
+     *
+     *  Comparison is referential. If `atom` does not exist in this complex, an
+     *  exception is thrown.
+     */
+    fun minusAtom(atom: A): MoleculeComplex<A> =
+        minusAtoms(listOf(atom))
+
+    /**
+     *  Returns a complex without the bonds in a given collection.
+     *
+     *  Comparison is referential. If a bond does not exist in this complex, an
+     *  exception is thrown.
+     */
+    fun minusBonds(bonds: Collection<Bond<A>>): MoleculeComplex<A>
+
+    /**
+     *  Returns a complex without the given bond, adding new atom islands that
+     *  result from the bond removals if necessary.
+     *
+     *  Comparison is referential. If `bond` does not exist in this complex, an
+     *  exception is thrown.
+     */
+    fun minusBond(bond: Bond<A>): MoleculeComplex<A> =
+        minusBonds(listOf(bond))
+
+    /**
+     *  Returns a complex without the islands in a given collection.
+     *
+     *  Comparison is referential. If an island does not exist in this complex,
+     *  an exception is thrown.
+     */
+    fun minusIslands(islands: Collection<Island<A>>): MoleculeComplex<A>
+
+    /**
+     *  Returns a complex without the given island.
+     *
+     *  Comparison is referential. If `island` does not exist in this complex,
+     *  an exception is thrown.
+     */
+    fun minusIsland(island: Island<A>): MoleculeComplex<A> =
+        minusIslands(listOf(island))
+
     companion object {
         /**
          *  Constructs a [MoleculeComplex].

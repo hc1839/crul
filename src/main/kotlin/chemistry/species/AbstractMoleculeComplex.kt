@@ -74,4 +74,86 @@ abstract class AbstractMoleculeComplex<A : Atom> :
             island.containsAtom(atom)
         }.single()
     }
+
+    override fun minusAtoms(atoms: Collection<A>): MoleculeComplex<A> {
+        val wrappedGivenAtoms = atoms.map { Referential(it) }
+
+        val filteredBonds = subspecies
+            .filter { island -> !island.isSingleAtom }
+            .flatMap { island -> island.bonds() }
+            .filterNot { bond ->
+                bond.atoms().any { atom ->
+                    Referential(atom) in wrappedGivenAtoms
+                }
+            }
+
+        val newMolecules = BondAggregator.aggregate(filteredBonds).map {
+            Molecule(it)
+        }
+
+        val filteredAtomIslands = subspecies.filter {
+            it.isSingleAtom &&
+            Referential(it.atoms().single()) !in wrappedGivenAtoms
+        }
+
+        return MoleculeComplex(newMolecules + filteredAtomIslands)
+    }
+
+    override fun minusBonds(bonds: Collection<Bond<A>>): MoleculeComplex<A> {
+        val wrappedGivenBonds = bonds.map { Referential(it) }
+
+        val (atomIslands, origMolecules) = subspecies.partition {
+            it.isSingleAtom
+        }
+
+        val filteredBonds = origMolecules
+            .flatMap { molecule -> molecule.bonds() }
+            .filter { bond ->
+                Referential(bond) !in wrappedGivenBonds
+            }
+
+        val newMolecules = BondAggregator.aggregate(filteredBonds).map {
+            Molecule(it)
+        }
+
+        val wrappedAtomsOfNewMolecules = newMolecules.flatMap { molecule ->
+            molecule.atoms().map { atom ->
+                Referential(atom)
+            }
+        }.distinct()
+
+        val newAtomIslands = (
+            atomIslands.map { Referential(it.atoms().single()) } +
+            bonds
+                .flatMap { bond ->
+                    bond.atoms().map { atom ->
+                        Referential(atom)
+                    }
+                }
+                .distinct()
+                .filter { wrappedAtom ->
+                    wrappedAtom !in wrappedAtomsOfNewMolecules
+                }
+        ).distinct().map { it.value.getIsland<A>() }
+
+        return MoleculeComplex(newMolecules + newAtomIslands)
+    }
+
+    override fun minusIslands(
+        islands: Collection<Island<A>>
+    ): MoleculeComplex<A>
+    {
+        val wrappedGivenIslands = islands.map { Referential(it) }
+        val wrappedOrigIslands = subspecies.map { Referential(it) }
+
+        if (wrappedGivenIslands.any { it !in wrappedOrigIslands }) {
+            throw IllegalArgumentException(
+                "A given island does not exist in this complex."
+            )
+        }
+
+        return MoleculeComplex(
+            (wrappedOrigIslands - wrappedGivenIslands).map { it.value }
+        )
+    }
 }
