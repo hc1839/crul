@@ -20,47 +20,11 @@ package crul.permute.variation
  *  Variator over a sequence of elements.
  *
  *  @param E
- *      Type of elements.
+ *      Type of elements being varied over.
  */
-interface Variator<out E> {
+interface Variator<out E> : Iterator<E> {
     /**
-     *  Element that this variator is at.
-     */
-    fun value(): E
-
-    /**
-     *  Whether this variator is at the beginning.
-     */
-    fun isBegin(): Boolean
-
-    /**
-     *  Whether this variator is at the end.
-     */
-    fun isEnd(): Boolean
-
-    /**
-     *  Variator at the beginning.
+     *  New variator positioned at the beginning.
      */
     fun begin(): Variator<E>
-
-    /**
-     *  Variator at the end.
-     */
-    fun end(): Variator<E>
-
-    /**
-     *  Incremented variator.
-     *
-     *  The meaning of incrementation depends on the class implementing this
-     *  interface.
-     */
-    operator fun inc(): Variator<E>
-
-    /**
-     *  Decremented variator.
-     *
-     *  The meaning of decrementation depends on the class implementing this
-     *  interface.
-     */
-    operator fun dec(): Variator<E>
 }

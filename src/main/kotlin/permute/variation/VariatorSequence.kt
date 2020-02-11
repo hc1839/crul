@@ -17,131 +17,96 @@
 package crul.permute.variation
 
 /**
- *  Sequence of variators.
+ *  Variator over a sequence of variators.
  *
- *  Instances of this class are iterable over the individual variators.
+ *  @param E
+ *      Type of values of the individual variators.
  *
- *  @param variators
- *      Variators of the sequence. There must be at least one variator.
- *
- *  @param bigEndian
- *      Whether the incrementation/decrementation occurs fastest at the
- *      rightmost (highest index) variator in the sequence.
- *
- *  @param V
- *      Type of variators in this sequence.
+ *  @property bigEndian
+ *      Whether the incrementation occurs fastest at the highest-indexed
+ *      variator in the sequence.
  *
  *  @constructor
- *      Constructs a variator positioned at the current positions of the
- *      individual variators.
+ *      Constructs a variator with all the individual variators positioned at
+ *      the beginning.
+ *
+ *  @param variators
+ *      Non-empty list of individual variators.
  */
-class VariatorSequence<V : Variator<*>> @JvmOverloads constructor(
-    private val variators: List<V>,
-    val bigEndian: Boolean = true
-) : List<V> by variators,
-    Variator<List<V>>
+class VariatorSequence<E>(
+    variators: List<Variator<E>>,
+    val bigEndian: Boolean
+) : AbstractIterator<List<E>>(),
+    Variator<List<E>>
 {
+    /**
+     *  Individual variators.
+     */
+    private val variators: MutableList<Variator<E>>
+
     init {
-        if (variators.count() < 1) {
+        if (variators.isEmpty()) {
             throw IllegalArgumentException(
-                "Number of variators is less than one."
+                "List of individual variators is empty."
             )
         }
+
+        this.variators = variators.map { it.begin() }.toMutableList()
     }
 
     /**
-     *  Returns the variators as a list.
+     *  Values of the individual variators, or an empty list if iteration has
+     *  not begun.
      */
-    override fun value(): List<V> =
-        variators.toList()
+    private val variatorValues: MutableList<E> =
+        mutableListOf<E>()
 
-    override fun isBegin(): Boolean =
-        variators.all { it.isBegin() }
-
-    override fun isEnd(): Boolean =
-        variators.all { it.isEnd() }
-
-    override fun begin(): VariatorSequence<V> =
-        @Suppress("UNCHECKED_CAST")
+    override fun begin(): VariatorSequence<E> =
         VariatorSequence(
-            variators.map { it.begin() as V },
+            variators.map { it.begin() },
             bigEndian
         )
 
-    override fun end(): VariatorSequence<V> =
-        @Suppress("UNCHECKED_CAST")
-        VariatorSequence(
-            variators.map { it.end() as V },
-            bigEndian
-        )
+    override fun computeNext() {
+        if (variators.all { !it.hasNext() }) {
+            done()
+            return
+        }
 
-    override fun inc(): VariatorSequence<V> {
-        val orderedVariators =
-            if (bigEndian) {
-                variators.reversed().toMutableList()
+        if (variatorValues.isEmpty()) {
+            // Populate with the initial values of the variators. If any of the
+            // variators has no elements, the variator sequence iterates over
+            // no elements.
+            for (variator in variators) {
+                if (variator.hasNext()) {
+                    variatorValues.add(variator.next())
+                } else {
+                    done()
+                    return
+                }
+            }
+        } else {
+            // Sort the indices for incrementation according to endianness.
+            val orderedVariatorIndices = if (bigEndian) {
+                variators.indices.reversed()
             } else {
-                variators.toMutableList()
+                variators.indices
             }
 
-        for (index in orderedVariators.indices) {
-            if (orderedVariators[index].isEnd()) {
-                @Suppress("UNCHECKED_CAST")
-                orderedVariators[index] =
-                    orderedVariators[index].begin() as V
-            } else {
-                @Suppress("UNCHECKED_CAST")
-                orderedVariators[index] =
-                    orderedVariators[index].inc() as V
+            for (variatorIndex in orderedVariatorIndices) {
+                var variator = variators[variatorIndex]
 
-                break
+                if (variator.hasNext()) {
+                    variatorValues[variatorIndex] = variator.next()
+                    break
+                } else {
+                    variator = variator.begin()
+                    variators[variatorIndex] = variator
+                    variatorValues[variatorIndex] = variator.next()
+                }
             }
         }
 
-        val incrementedVariators =
-            if (bigEndian) {
-                orderedVariators.reversed()
-            } else {
-                orderedVariators
-            }
-
-        return VariatorSequence(
-            incrementedVariators,
-            bigEndian
-        )
-    }
-
-    override fun dec(): VariatorSequence<V> {
-        val orderedVariators =
-            if (bigEndian) {
-                variators.reversed().toMutableList()
-            } else {
-                variators.toMutableList()
-            }
-
-        for (index in orderedVariators.indices) {
-            if (orderedVariators[index].isBegin()) {
-                @Suppress("UNCHECKED_CAST")
-                orderedVariators[index] =
-                    orderedVariators[index].end() as V
-            } else {
-                @Suppress("UNCHECKED_CAST")
-                orderedVariators[index] =
-                    orderedVariators[index].dec() as V
-
-                break
-            }
-        }
-
-        val decrementedVariators =
-            if (bigEndian) {
-                orderedVariators.reversed()
-            } else {
-                orderedVariators
-            }
-
-        return VariatorSequence(
-            decrementedVariators,
-            bigEndian
-        )
+        setNext(variatorValues.toList())
     }
 }

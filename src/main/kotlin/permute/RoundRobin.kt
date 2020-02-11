@@ -1,7 +1,5 @@
 package crul.permute
 
-import crul.permute.variation.ListItemVariator
-
 /**
  *  List partitioning by round robin.
  */
@@ -34,10 +32,16 @@ object RoundRobin {
         }
 
         val partitions = (0 until partitionCount).map { mutableListOf<T>() }
-        var partitionIndexVariator = ListItemVariator(partitions.indices)
+        var partitionIndex = 0
 
-        for (item in elements) {
-            partitions[partitionIndexVariator++.value()].add(item)
+        for (element in elements) {
+            partitions[partitionIndex].add(element)
+
+            if (partitionIndex != partitions.count()) {
+                ++partitionIndex
+            } else {
+                partitionIndex = 0
+            }
         }
 
         return partitions.map { it.toList() }
