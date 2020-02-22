@@ -19,7 +19,6 @@ package crul.chemistry.species
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 import crul.chemistry.species.Element
-import crul.serialize.AvroSimple
 
 /**
  *  Skeletal implementation of [Atom].
@@ -27,28 +26,26 @@ import crul.serialize.AvroSimple
 abstract class AbstractAtom constructor(
     override val element: Element,
     override var position: Vector3D,
-    override var charge: Double?,
-    override var tag: Int,
-    override var atomType: String?
+    override var charge: Double?
 ) : Atom
 {
-    private var _island: Island<*>? = null
+    override val userData: MutableMap<String, Any> =
+        mutableMapOf()
 
     /**
      *  Copy constructor.
      */
-    @JvmOverloads
-    constructor(
-        other: AbstractAtom,
-        tag: Int = other.tag,
-        atomType: String? = other.atomType
-    ): this(
+    constructor(other: AbstractAtom): this(
         other.element,
         other.position,
-        other.charge,
-        tag,
-        atomType
-    )
+        other.charge
+    ) {
+        this.userData.putAll(
+            other.userData.toMutableMap()
+        )
+    }
+
+    private var _island: Island<*>? = null
 
     override fun <A : Atom> getIsland(): Island<A> {
         if (_island == null) {

@@ -30,7 +30,7 @@ import crul.serialize.AvroSimple
  */
 interface Atom : Species {
     /**
-     *  [tag] and [atomType] are cloned.
+     *  [userData] is shallow cloned.
      */
     abstract override fun clone(): Atom
 
@@ -55,16 +55,9 @@ interface Atom : Species {
     var charge: Double?
 
     /**
-     *  Arbitrary integer tag.
+     *  Association of objects to keys for this atom.
      */
-    var tag: Int
-
-    /**
-     *  Atom type.
-     *
-     *  Definitions of atom types depend on the context and implementation.
-     */
-    var atomType: String?
+    val userData: MutableMap<String, Any>
 
     /**
      *  Island that represents this atom.
@@ -106,17 +99,9 @@ interface Atom : Species {
         fun newInstance(
             element: Element,
             position: Vector3D,
-            charge: Double?,
-            tag: Int = 0,
-            atomType: String? = null
+            charge: Double?
         ): Atom =
-            Atom(
-                element,
-                position,
-                charge,
-                tag,
-                atomType
-            )
+            Atom(element, position, charge)
     }
 }
 
@@ -125,18 +110,5 @@ interface Atom : Species {
  *
  *  See [Atom.newInstance] for description.
  */
-@JvmOverloads
-fun Atom(
-    element: Element,
-    position: Vector3D,
-    charge: Double?,
-    tag: Int = 0,
-    atomType: String? = null
-): Atom =
-    AtomImpl(
-        element,
-        position,
-        charge,
-        tag,
-        atomType
-    )
+fun Atom(element: Element, position: Vector3D, charge: Double?): Atom =
+    AtomImpl(element, position, charge)

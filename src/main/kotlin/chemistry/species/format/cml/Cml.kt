@@ -200,9 +200,9 @@ fun <A : Atom> MoleculeComplex<A>.exportCml(
  *  @param toLengthUnit
  *      Unit of length that the coordinates in the deserialized complex are in.
  *
- *  @param atomTagMapper
- *      Atom tag given an atom identifier from the CML input. If `null`, atom
- *      tags are not set.
+ *  @param userDataMapper
+ *      User data for [Atom.userData] given an atom identifier from the CML
+ *      input. If `null`, user data are not set.
  *
  *  @return
  *      Deserialized complex from `reader`.
@@ -212,7 +212,7 @@ fun MoleculeComplex.Companion.parseCml(
     reader: Reader,
     fromLengthUnit: UnitOfMeasure,
     toLengthUnit: UnitOfMeasure,
-    atomTagMapper: ((String) -> Int)? = null
+    userDataMapper: ((String) -> Map<String, Any>)? = null
 ): MoleculeComplex<Atom>
 {
     if (!fromLengthUnit.isUnitOf(Dimension(BaseDimension.LENGTH))) {
@@ -287,21 +287,12 @@ fun MoleculeComplex.Companion.parseCml(
             )
         }
 
-        val atomTag = atomTagMapper?.invoke(atomId)
-
         // Construct the atom.
-        val atom: Atom = if (atomTag != null) {
-            Atom(
-                element,
-                position,
-                charge,
-                atomTag
-            )
-        } else {
-            Atom(
-                element,
-                position,
-                charge
+        val atom = Atom(element, position, charge)
+
+        if (userDataMapper != null) {
+            atom.userData.putAll(
+                userDataMapper.invoke(atomId)
             )
         }
 

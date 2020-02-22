@@ -104,9 +104,10 @@ fun <A : Atom> List<Fragment<A>>.exportXyz(
  *      are in. It must be a unit of `L`.
  *
  *  @return
- *      Fragment containing the atoms from the XYZ reader. Atom tags are set to
- *      one-based indices in the same order as the atoms specified in XYZ. All
- *      atoms in the returned fragment have `null` as their charge.
+ *      Fragment containing the atoms from the XYZ reader. The key, `id`, in
+ *      [Atom.userData] is set to the one-based index (as an `Int`) of the
+ *      order that an atom is specified in XYZ. All atoms in the returned
+ *      fragment have `null` as their charge.
  */
 fun Fragment.Companion.parseXyz(
     reader: Reader,
@@ -162,12 +163,15 @@ fun Fragment.Companion.parseXyz(
             }.toDoubleArray()
         )
 
-        Atom(
+        val atom = Atom(
             Element(columns[0]),
             position,
-            null,
-            atomLineIndex + 1
+            null
         )
+
+        atom.userData["id"] = atomLineIndex + 1
+
+        atom
     }
 
     return Fragment(atoms.toList())

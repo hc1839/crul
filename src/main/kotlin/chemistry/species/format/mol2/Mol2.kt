@@ -40,9 +40,10 @@ import crul.uuid.UuidGenerator
 /**
  *  Exports a list of molecule complexes in Mol2 format.
  *
- *  [Atom.atomType] is ignored. Since determining the Tripos atom type is not
- *  yet supported, the values of the Tripos atom-type and atom-name fields are
- *  the atom's element.
+ *  If the keys, `atom_name` and `atom_type`, exists in [Atom.userData], the
+ *  string representations of their values are used as the values of the Tripos
+ *  atom-name and atom-type fields, respectively. If such key does not exist,
+ *  the atom's element is used for the field corresponding to the missing key.
  *
  *  @param writer
  *      Writer of Mol2 with a trailing newline.
@@ -151,13 +152,23 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
                     Quantity.convertUnit(it, atomPosUnit, angstromUnit)
                 }
 
+                val atomName = atom
+                    .userData
+                    .getOrDefault("atom_name", atom.element.symbol)
+                    .toString()
+
+                val atomType = atom
+                    .userData
+                    .getOrDefault("atom_type", atom.element.symbol)
+                    .toString()
+
                 TriposAtom(
                     atomId = atomIdsByAtom[Referential(atom)]!!,
-                    atomName = atom.element.symbol,
+                    atomName = atomName,
                     x = atomPosCmptsAo[0],
                     y = atomPosCmptsAo[1],
                     z = atomPosCmptsAo[2],
-                    atomType = atom.element.symbol,
+                    atomType = atomType,
                     charge = atom.charge
                 )
             }
@@ -211,8 +222,11 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
  *  atom name is considered if the Tripos atom type does not contain the
  *  element.
  *
- *  [Atom.tag] is set to the atom identifier in Mol2. [Atom.atomType] is set to
- *  `null`, since many vendors set the atom types to arbitrary values.
+ *  The key, `id`, in [Atom.userData] is set to the atom identifier from Mol2
+ *  as an `Int`. The keys, `atom_name` and `atom_type`, in [Atom.userData] are
+ *  set to the values of the Tripos atom-name and atom-type fields,
+ *  respectively. If the respective Tripos field of `atom_name` or `atom_type`
+ *  does not contain a value, the corresponding key is not set.
  *
  *  @param reader
  *      Reader from which Mol2 is to be read.
@@ -323,7 +337,8 @@ fun MoleculeComplex.Companion.parseMol2(
                 // Regex to find the symbol of an element.
                 val elementSymbolRegex = Regex("^([A-Z][a-z]?)")
 
-                // Input strings possibly containing an element symbol.
+                // Input strings that possibly contain an element symbol.
+                // Atom-type field is tested first.
                 val elementInputStrings = listOf(
                     triposAtomData.atomType,
                     triposAtomData.atomName
@@ -370,12 +385,23 @@ fun MoleculeComplex.Companion.parseMol2(
 
                 val charge = triposAtomData.charge
 
-                Atom(
+                val atom = Atom(
                     element,
                     position,
-                    charge,
-                    triposAtomData.atomId
+                    charge
                 )
+
+                atom.userData["id"] = triposAtomData.atomId
+
+                if (triposAtomData.atomName != null) {
+                    atom.userData["atom_name"] = triposAtomData.atomName
+                }
+
+                if (triposAtomData.atomType != null) {
+                    atom.userData["atom_type"] = triposAtomData.atomType
+                }
+
+                atom
             }
     }
 
@@ -388,12 +414,9 @@ fun MoleculeComplex.Companion.parseMol2(
 
         // Construct the bonds for this complex.
         triposBondDataList.map { triposBondData ->
-            val originAtom = atomsByTriposId[triposBondData.originAtomId]!!
-            val targetAtom = atomsByTriposId[triposBondData.targetAtomId]!!
-
             Bond(
-                originAtom,
-                targetAtom,
+                atomsByTriposId[triposBondData.originAtomId]!!,
+                atomsByTriposId[triposBondData.targetAtomId]!!,
                 bondOrderMapper(triposBondData.bondType)
             )
         }

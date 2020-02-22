@@ -88,9 +88,5 @@ interface Bond<A : Atom> : Fragment<A> {
  *
  *  See [Bond.newInstance] for description.
  */
-fun <A : Atom> Bond(
-    atom1: A,
-    atom2: A,
-    order: String
-): Bond<A> =
+fun <A : Atom> Bond(atom1: A, atom2: A, order: String): Bond<A> =
     BondImpl(atom1, atom2, order)

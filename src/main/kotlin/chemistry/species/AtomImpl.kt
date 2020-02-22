@@ -28,26 +28,17 @@ internal class AtomImpl : AbstractAtom {
     constructor(
         element: Element,
         position: Vector3D,
-        charge: Double?,
-        tag: Int,
-        atomType: String?
+        charge: Double?
     ): super(
         element,
         position,
-        charge,
-        tag,
-        atomType
+        charge
     )
 
     /**
      *  Copy constructor.
      */
-    @JvmOverloads
-    constructor(
-        other: AtomImpl,
-        tag: Int = other.tag,
-        atomType: String? = other.atomType
-    ): super(other, tag, atomType)
+    constructor(other: AtomImpl): super(other)
 
     override fun clone(): Atom =
         AtomImpl(this)
