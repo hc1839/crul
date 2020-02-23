@@ -75,6 +75,132 @@ data class TriposMolecule @JvmOverloads constructor(
     }
 
     /**
+     *  Builder for [TriposMolecule].
+     */
+    class Builder() : TriposRecord.Builder {
+        private var molName: String? = null
+
+        private var numAtoms: Int? = null
+
+        private var numBonds: Int? = null
+
+        private var numSubst: Int? = null
+
+        private var numFeat: Int? = null
+
+        private var numSets: Int? = null
+
+        private var molType: MolType? = null
+
+        private var chargeType: ChargeType? = null
+
+        private var statusBits: StatusBits? = null
+
+        private var molComment: String? = null
+
+        override fun append(dataLine: String): Boolean {
+            if (molComment != null) {
+                return false
+            }
+
+            // Append comment.
+            if (statusBits != null) {
+                molComment = dataLine.trim()
+                return true
+            }
+
+            // Append status bits.
+            if (chargeType != null) {
+                statusBits = try {
+                    TriposStringField.enumValueOf<StatusBits>(dataLine)
+                } catch (_: Throwable) {
+                    null
+                }
+
+                return statusBits != null
+            }
+
+            // Append charge type.
+            if (molType != null) {
+                chargeType = try {
+                    TriposStringField.enumValueOf<ChargeType>(dataLine)
+                } catch (_: Throwable) {
+                    null
+                }
+
+                return chargeType != null
+            }
+
+            // Append molecule type.
+            if (numAtoms != null) {
+                molType = try {
+                    TriposStringField.enumValueOf<MolType>(dataLine)
+                } catch (_: Throwable) {
+                    null
+                }
+
+                return molType != null
+            }
+
+            // Append the data line containing the number of atoms.
+            if (molName != null) {
+                try {
+                    val fields = dataLine
+                        .trim()
+                        .split(whitespaceDelimRegex)
+                        .map {
+                            if (it != TriposStringField.FOUR_STARS) {
+                                it.toInt()
+                            } else {
+                                null
+                            }
+                        }
+
+                    numAtoms = fields[0]!!
+                    numBonds = fields.getOrNull(1)
+                    numSubst = fields.getOrNull(2)
+                    numFeat = fields.getOrNull(3)
+                    numSets = fields.getOrNull(4)
+
+                    return true
+                } catch (_: Throwable) {
+                    return false
+                }
+            }
+
+            // Append molecule name.
+            molName = dataLine.trim()
+
+            return true
+        }
+
+        override fun build(): TriposMolecule =
+            TriposMolecule(
+                molName = molName,
+                numAtoms = numAtoms!!,
+                numBonds = numBonds,
+                numSubst = numSubst,
+                numFeat = numFeat,
+                numSets = numSets,
+                molType = molType,
+                chargeType = chargeType,
+                statusBits = statusBits,
+                molComment = molComment
+            )
+
+        override fun new(): Builder =
+            Builder()
+
+        companion object {
+            /**
+             *  Regular expression for matching whitespaces as a delimiter.
+             */
+            private val whitespaceDelimRegex =
+                Regex("\\s+")
+        }
+    }
+
+    /**
      *  Molecule type.
      */
     enum class MolType : TriposStringField {
@@ -119,82 +245,5 @@ data class TriposMolecule @JvmOverloads constructor(
         REF_ANGLE;
 
         override val value: String = name
-    }
-
-    companion object {
-        /**
-         *  Parses a `MOLECULE` record.
-         *
-         *  @param input
-         *      Record in Mol2 format without comment and blank lines.
-         *
-         *  @return
-         *      [TriposMolecule].
-         */
-        @JvmStatic
-        fun parseMol2(input: String): TriposMolecule {
-            val dataLines = input.split("\n").map { it.trim() }
-
-            if (
-                dataLines.count() >
-                    TriposRecordType.MOLECULE.numDataLines
-            ) {
-                throw RuntimeException(
-                    "Number of data lines is greater than " +
-                    "${TriposRecordType.MOLECULE.numDataLines}."
-                )
-            }
-
-            val whitespaceDelim = Regex("\\s+")
-
-            val molName = TriposStringField.stringValueOf(dataLines[0])
-
-            val numAtomsFields = whitespaceDelim
-                .split(dataLines[1])
-                .map {
-                    if (it != TriposStringField.FOUR_STARS) {
-                        it.toInt()
-                    } else {
-                        null
-                    }
-                }
-
-            val numAtoms = numAtomsFields[0]!!
-            val numBonds = numAtomsFields.getOrNull(1)
-            val numSubst = numAtomsFields.getOrNull(2)
-            val numFeat = numAtomsFields.getOrNull(3)
-            val numSets = numAtomsFields.getOrNull(4)
-
-            val molType =
-                TriposStringField.enumValueOf<MolType>(dataLines[2])
-
-            val chargeType =
-                TriposStringField.enumValueOf<ChargeType>(dataLines[3])
-
-            val statusBits = if (dataLines.lastIndex >= 4) {
-                TriposStringField.enumValueOf<StatusBits>(dataLines[4])
-            } else {
-                null
-            }
-
-            val molComment = if (dataLines.lastIndex >= 5) {
-                TriposStringField.stringValueOf(dataLines[5])
-            } else {
-                null
-            }
-
-            return TriposMolecule(
-                molName = molName,
-                numAtoms = numAtoms,
-                numBonds = numBonds,
-                numSubst = numSubst,
-                numFeat = numFeat,
-                numSets = numSets,
-                molType = molType,
-                chargeType = chargeType,
-                statusBits = statusBits,
-                molComment = molComment
-            )
-        }
     }
 }

@@ -38,12 +38,35 @@ import crul.measure.unit.UnitOfMeasure
 import crul.uuid.UuidGenerator
 
 /**
+ *  Parses Mol2 format.
+ *
+ *  @param reader
+ *      Reader from which Mol2 is to be read.
+ *
+ *  @param complexBuilder
+ *      Builder of the complexes.
+ *
+ *  @return
+ *      List of deserialized molecule complexes in the same order as from
+ *      `reader`.
+ */
+fun MoleculeComplex.Companion.parseMol2(
+    reader: Reader,
+    complexBuilder: ComplexBuilder = DefaultComplexBuilder()
+): List<MoleculeComplex<Atom>>
+{
+    val mol2Decoder = Mol2Decoder(reader, complexBuilder)
+    mol2Decoder.run()
+    return complexBuilder.build()
+}
+
+/**
  *  Exports a list of molecule complexes in Mol2 format.
  *
- *  If the keys, `atom_name` and `atom_type`, exists in [Atom.userData], the
- *  string representations of their values are used as the values of the Tripos
- *  atom-name and atom-type fields, respectively. If such key does not exist,
- *  the atom's element is used for the field corresponding to the missing key.
+ *  If any of the keys (except `atomId`) specified in
+ *  [DefaultComplexBuilder.build] for atoms exists in [Atom.userData], their
+ *  values are used as the values of the corresponding fields for the Tripos
+ *  record, `ATOM`. The key, `atomId`, is ignored.
  *
  *  @param writer
  *      Writer of Mol2 with a trailing newline.
@@ -60,6 +83,10 @@ import crul.uuid.UuidGenerator
  *      Tripos molecule name given a complex. If `null`, UUID Version 4 is
  *      used.
  *
+ *  @param numSubstMapper
+ *      Number of substructures given a complex. If `null`, nothing is written
+ *      for the Tripos field, 'num_subst`, in the Tripos record, `MOLECULE`.
+ *
  *  @param triposBondTypeMapper
  *      Tripos bond type given a [Bond.order].
  */
@@ -69,6 +96,7 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
     atomPosUnit: UnitOfMeasure,
     atomIdMapper: ((A, MoleculeComplex<A>) -> Int)? = null,
     complexNameMapper: ((MoleculeComplex<A>) -> String)? = null,
+    numSubstMapper: ((MoleculeComplex<A>) -> Int)? = null,
     triposBondTypeMapper: (String) -> TriposBond.BondType
 ) {
     if (!atomPosUnit.isUnitOf(Dimension.parse("L"))) {
@@ -123,7 +151,8 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
                     } else {
                         0
                     }
-                }.sum()
+                }.sum(),
+                numSubst = numSubstMapper?.invoke(complex)
             ).exportMol2()
         )
         writer.write("\n")
@@ -154,13 +183,25 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
 
                 val atomName = atom
                     .userData
-                    .getOrDefault("atom_name", atom.element.symbol)
+                    .getOrDefault("atomName", atom.element.symbol)
                     .toString()
 
                 val atomType = atom
                     .userData
-                    .getOrDefault("atom_type", atom.element.symbol)
+                    .getOrDefault("atomType", atom.element.symbol)
                     .toString()
+
+                val substId = atom
+                    .userData
+                    .getOrDefault("substId", null) as Int?
+
+                val substName = atom
+                    .userData
+                    .getOrDefault("substName", null) as String?
+
+                val statusBit = atom
+                    .userData
+                    .getOrDefault("statusBit", null) as TriposAtom.StatusBit?
 
                 TriposAtom(
                     atomId = atomIdsByAtom[Referential(atom)]!!,
@@ -169,7 +210,10 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
                     y = atomPosCmptsAo[1],
                     z = atomPosCmptsAo[2],
                     atomType = atomType,
-                    charge = atom.charge
+                    substId = substId,
+                    substName = substName,
+                    charge = atom.charge,
+                    statusBit = statusBit
                 )
             }
             .sortedBy { it.atomId }
@@ -211,249 +255,4 @@ fun <A : Atom> List<MoleculeComplex<A>>.exportMol2(
     }
 
     writer.flush()
-}
-
-/**
- *  Parses Mol2 format.
- *
- *  Element of an atom is determined from the leading one or two alphabetical
- *  characters of the Tripos atom type or Tripos atom name, where Tripos atom
- *  type takes priority since it is the technically correct field. The Tripos
- *  atom name is considered if the Tripos atom type does not contain the
- *  element.
- *
- *  The key, `id`, in [Atom.userData] is set to the atom identifier from Mol2
- *  as an `Int`. The keys, `atom_name` and `atom_type`, in [Atom.userData] are
- *  set to the values of the Tripos atom-name and atom-type fields,
- *  respectively. If the respective Tripos field of `atom_name` or `atom_type`
- *  does not contain a value, the corresponding key is not set.
- *
- *  @param reader
- *      Reader from which Mol2 is to be read.
- *
- *  @param atomPosUnit
- *      Unit of the coordinates that the positions of the deserialized atoms
- *      are in. It must be a unit of `L`.
- *
- *  @param bondOrderMapper
- *      Bond order given a Tripos bond type.
- *
- *  @return
- *      List of deserialized molecule complexes in the same order as from
- *      `reader`.
- */
-fun MoleculeComplex.Companion.parseMol2(
-    reader: Reader,
-    atomPosUnit: UnitOfMeasure,
-    bondOrderMapper: (TriposBond.BondType?) -> String
-): List<MoleculeComplex<Atom>>
-{
-    if (!atomPosUnit.isUnitOf(Dimension.parse("L"))) {
-        throw IllegalArgumentException(
-            "Unit of atom position is not a unit of length."
-        )
-    }
-
-    val parser = Mol2Parser.newInstance(reader)
-
-    parser.next()
-
-    var currSectionType = parser.getRecordType()
-
-    // Complex IDs in the same order as in the reader.
-    val complexIds = mutableListOf<String>()
-
-    // Tripos atom data.
-    val atomDataListsByComplexId =
-        mutableMapOf<String, MutableList<TriposAtom>>()
-
-    // Tripos bond data.
-    val bondDataListsByComplexId =
-        mutableMapOf<String, MutableList<TriposBond>>()
-
-    // Parse and add the rest of Mol2 as Tripos data.
-    for (parserEvent in parser) {
-        when (parserEvent) {
-            Mol2Parser.Event.RECORD_TYPE_INDICATOR ->
-                currSectionType = parser.getRecordType()
-
-            Mol2Parser.Event.DATA_LINES_OF_RECORD -> {
-                val dataLines = parser.getDataLinesOfRecord()
-
-                when (currSectionType) {
-                    TriposRecordType.MOLECULE -> {
-                        val triposMoleculeData = TriposMolecule.parseMol2(
-                            dataLines.joinToString("\n")
-                        )
-
-                        val currComplexId = triposMoleculeData.molName ?:
-                                crul.uuid.UuidGenerator.asNCName()
-
-                        complexIds.add(currComplexId)
-
-                        atomDataListsByComplexId[currComplexId] =
-                            mutableListOf()
-
-                        bondDataListsByComplexId[currComplexId] =
-                            mutableListOf()
-                    }
-
-                    TriposRecordType.ATOM -> {
-                        val triposAtomData = TriposAtom.parseMol2(
-                            dataLines.joinToString("\n")
-                        )
-
-                        atomDataListsByComplexId[complexIds.last()]!!.add(
-                            triposAtomData
-                        )
-                    }
-
-                    TriposRecordType.BOND -> {
-                        val triposBondData = TriposBond.parseMol2(
-                            dataLines.joinToString("\n")
-                        )
-
-                        bondDataListsByComplexId[complexIds.last()]!!.add(
-                            triposBondData
-                        )
-                    }
-
-                    else -> {  }
-                }
-            }
-        }
-    }
-
-    val angstromUnit = UnitOfMeasure.parse("Ao")
-
-    // Construct atoms from Tripos atom data for each complex. Atoms in each
-    // complex are associated by Tripos atom ID for bond construction.
-    val atomsByComplexId = atomDataListsByComplexId.mapValues {
-        (_, triposAtomDataList) ->
-
-        triposAtomDataList
-            .associateBy { it.atomId }
-            .mapValues { (_, triposAtomData) ->
-                // Regex to find the symbol of an element.
-                val elementSymbolRegex = Regex("^([A-Z][a-z]?)")
-
-                // Input strings that possibly contain an element symbol.
-                // Atom-type field is tested first.
-                val elementInputStrings = listOf(
-                    triposAtomData.atomType,
-                    triposAtomData.atomName
-                ).filterNotNull()
-
-                val matchResults = elementInputStrings
-                    .map { elementSymbolRegex.find(it) }
-                    .filterNotNull()
-
-                if (matchResults.isEmpty()) {
-                    throw RuntimeException(
-                        "Tripos atom type and atom name do not contain " +
-                        "leading alphabetical characters " +
-                        "of a possible element symbol."
-                    )
-                }
-
-                val possibleElementSymbols = matchResults.map {
-                    it.groupValues[1]
-                }
-
-                val elementSymbol = possibleElementSymbols.find {
-                    Element.isValidSymbol(it)
-                }
-
-                if (elementSymbol == null) {
-                    throw RuntimeException(
-                        "No valid element symbol found " +
-                        "in Tripos atom type or atom name."
-                    )
-                }
-
-                val element = Element(elementSymbol)
-
-                val position = Vector3D(
-                    listOf(
-                        triposAtomData.x,
-                        triposAtomData.y,
-                        triposAtomData.z
-                    ).map {
-                        Quantity.convertUnit(it, angstromUnit, atomPosUnit)
-                    }.toDoubleArray()
-                )
-
-                val charge = triposAtomData.charge
-
-                val atom = Atom(
-                    element,
-                    position,
-                    charge
-                )
-
-                atom.userData["id"] = triposAtomData.atomId
-
-                if (triposAtomData.atomName != null) {
-                    atom.userData["atom_name"] = triposAtomData.atomName
-                }
-
-                if (triposAtomData.atomType != null) {
-                    atom.userData["atom_type"] = triposAtomData.atomType
-                }
-
-                atom
-            }
-    }
-
-    // Construct bonds from Tripos bond data for each complex.
-    val bondsByComplexId = bondDataListsByComplexId.mapValues {
-        (complexId, triposBondDataList) ->
-
-        // Atoms associated by atom ID according to Tripos.
-        val atomsByTriposId = atomsByComplexId[complexId]!!
-
-        // Construct the bonds for this complex.
-        triposBondDataList.map { triposBondData ->
-            Bond(
-                atomsByTriposId[triposBondData.originAtomId]!!,
-                atomsByTriposId[triposBondData.targetAtomId]!!,
-                bondOrderMapper(triposBondData.bondType)
-            )
-        }
-    }
-
-    // Construct the complexes from the bonds.
-    val complexesById = bondsByComplexId.mapValues {
-        (complexId, bonds) ->
-
-        // Atoms in this complex.
-        val atoms = atomsByComplexId[complexId]!!.values
-
-        // Set of wrapped atoms that are participating in a bond.
-        val wrappedBondedAtoms = bonds
-            .flatMap { bond -> bond.atoms() }
-            .map { atom -> Referential(atom) }
-            .toSet()
-
-        val atomIslands = mutableListOf<Island<Atom>>()
-
-        // Add atoms that are not participating in a bond to the builder.
-        for (
-            unbondedAtom in
-            atoms.filter { atom ->
-                Referential(atom) !in wrappedBondedAtoms
-            }
-        ) {
-            atomIslands.add(unbondedAtom.getIsland<Atom>())
-        }
-
-        val molecules = BondAggregator.aggregate(bonds).map { bondGroup ->
-            Molecule(bondGroup)
-        }
-
-        MoleculeComplex(molecules + atomIslands)
-    }
-
-    // Return the complexes in the same order as in Mol2.
-    return complexIds.map { complexesById[it]!! }
 }

@@ -33,6 +33,39 @@ interface TriposRecord {
      */
     fun exportMol2(): String
 
+    /**
+     *  Builder of a Tripos data record by data lines.
+     */
+    interface Builder {
+        /**
+         *  Appends a data line.
+         *
+         *  Instead of returning the builder when invoked, it returns whether a
+         *  data line has been successfully appended. This avoids reparsing the
+         *  same data line after simply determining whether it is appendable.
+         *
+         *  @param dataLine
+         *      Data line to append.
+         *
+         *  @return
+         *      `true` if `dataLine` has been successfully appended. `false` if
+         *      `dataLine` cannot be appended based on previously appended
+         *      ones.
+         */
+        fun append(dataLine: String): Boolean
+
+        /**
+         *  Builds the Tripos data record from the data lines that were
+         *  appended.
+         */
+        fun build(): TriposRecord
+
+        /**
+         *  Creates a new builder for the same [TriposRecord].
+         */
+        fun new(): Builder
+    }
+
     companion object {
         /**
          *  Separator of the fields of a Tripos record exported to Mol2 format.

@@ -50,6 +50,66 @@ data class TriposBond @JvmOverloads constructor(
     }
 
     /**
+     *  Builder for [TriposBond].
+     */
+    class Builder() : TriposRecord.Builder {
+        private var bondId: Int? = null
+
+        private var originAtomId: Int? = null
+
+        private var targetAtomId: Int? = null
+
+        private var bondType: BondType? = null
+
+        private var statusBits: StatusBits? = null
+
+        override fun append(dataLine: String): Boolean {
+            if (bondId != null) {
+                return false
+            }
+
+            val fields = dataLine.trim().split(whitespaceDelimRegex)
+
+            try {
+                bondId = fields[0].toInt()
+                originAtomId = fields[1].toInt()
+                targetAtomId = fields[2].toInt()
+                bondType = TriposStringField.enumValueOf<BondType>(fields[3])
+
+                statusBits = if (fields.lastIndex >= 4) {
+                    TriposStringField.enumValueOf<StatusBits>(fields[4])
+                } else {
+                    null
+                }
+            } catch (_: Throwable) {
+                return false
+            }
+
+            return true
+        }
+
+        override fun build(): TriposBond =
+            TriposBond(
+                bondId = bondId!!,
+                originAtomId = originAtomId!!,
+                targetAtomId = targetAtomId!!,
+                bondType = bondType,
+                statusBits = statusBits
+            )
+
+        override fun new(): Builder =
+            Builder()
+
+        companion object {
+            /**
+             *  Regular expression for matching whitespaces as a delimiter.
+             */
+            private val whitespaceDelimRegex =
+                Regex("\\s+")
+        }
+    }
+
+    /**
      *  Bond type.
      */
     enum class BondType : TriposStringField {
@@ -91,50 +151,5 @@ data class TriposBond @JvmOverloads constructor(
         INTERRES;
 
         override val value: String = name
-    }
-
-    companion object {
-        /**
-         *  Parses a `BOND` record.
-         *
-         *  @param input
-         *      Record in Mol2 format without comment and blank lines.
-         *
-         *  @return
-         *      [TriposBond].
-         */
-        @JvmStatic
-        fun parseMol2(input: String): TriposBond {
-            if (
-                input.split("\n").count() >
-                    TriposRecordType.BOND.numDataLines
-            ) {
-                throw RuntimeException(
-                    "Number of data lines is greater than " +
-                    "${TriposRecordType.BOND.numDataLines}."
-                )
-            }
-
-            val fields = Regex("\\s+").split(input.trim())
-
-            val bondId = fields[0].toInt()
-            val originAtomId = fields[1].toInt()
-            val targetAtomId = fields[2].toInt()
-            val bondType = TriposStringField.enumValueOf<BondType>(fields[3])
-
-            val statusBits = if (fields.lastIndex >= 4) {
-                TriposStringField.enumValueOf<StatusBits>(fields[4])
-            } else {
-                null
-            }
-
-            return TriposBond(
-                bondId = bondId,
-                originAtomId = originAtomId,
-                targetAtomId = targetAtomId,
-                bondType = bondType,
-                statusBits = statusBits
-            )
-        }
     }
 }

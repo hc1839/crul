@@ -24,99 +24,195 @@ package crul.chemistry.species.format.mol2
 enum class TriposRecordType {
     ALT_TYPE {
         override val numDataLines: Int = 2
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     ANCHOR_ATOM {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     ASSOCIATED_ANNOTATION {
         override val numDataLines: Int = 3
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     ATOM {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            TriposAtom.Builder()
     },
     BOND {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            TriposBond.Builder()
     },
     CENTER_OF_MASS {
         override val numDataLines: Int = 2
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     CENTROID {
         override val numDataLines: Int = 2
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     COMMENT {
         override val numDataLines: Int = -1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     CRYSIN {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     DATA_FILE {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     DICT {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     EXTENSION_POINT {
         override val numDataLines: Int = 2
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     FF_PBC {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     FFCON_ANGLE {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     FFCON_DIST {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     FFCON_MULTI {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     FFCON_RANGE {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     FFCON_TORSION {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     LINE {
         override val numDataLines: Int = 2
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     LSPLANE {
         override val numDataLines: Int = 2
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     MOLECULE {
         override val numDataLines: Int = 6
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            TriposMolecule.Builder()
     },
     NORMAL {
         override val numDataLines: Int = 2
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     QSAR_ALIGN_RULE {
         override val numDataLines: Int = 2
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     RING_CLOSURE {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     ROTATABLE_BOND {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     SEARCH_DIST {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     SEARCH_OPTIONS {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     SET {
         override val numDataLines: Int = 2
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     SUBSTRUCTURE {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     U_FEAT {
         override val numDataLines: Int = 1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     UNITY_ATOM_ATTR {
         override val numDataLines: Int = -1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     },
     UNITY_BOND_ATTR {
         override val numDataLines: Int = -1
+
+        override fun createBuilder(): TriposRecord.Builder? =
+            null
     };
 
     /**
@@ -124,6 +220,12 @@ enum class TriposRecordType {
      *  Mol2 format. If a record has variable number of data lines, it is `-1`.
      */
     abstract val numDataLines: Int
+
+    /**
+     *  Creates a new builder for the type of the Tripos record, or `null` if
+     *  the Tripos record is not supported.
+     */
+    abstract fun createBuilder(): TriposRecord.Builder?
 
     /**
      *  Tripos record type as a record type indicator (RTI).

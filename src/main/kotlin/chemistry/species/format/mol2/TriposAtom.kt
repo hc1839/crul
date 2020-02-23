@@ -19,7 +19,7 @@ package crul.chemistry.species.format.mol2
 /**
  *  Tripos `ATOM` record.
  *
- *  Parameter names correspond to those in the Mol2 format. `x`, `y`, and `z`
+ *  Parameter names correspond to those in the Mol2 format. [x], [y], and [z]
  *  are in Angstroms.
  *
  *  @constructor
@@ -64,6 +64,110 @@ data class TriposAtom @JvmOverloads constructor(
     }
 
     /**
+     *  Builder for [TriposAtom].
+     */
+    class Builder() : TriposRecord.Builder {
+        private var atomId: Int? = null
+
+        private var atomName: String? = null
+
+        private var x: Double? = null
+
+        private var y: Double? = null
+
+        private var z: Double? = null
+
+        private var atomType: String? = null
+
+        private var substId: Int? = null
+
+        private var substName: String? = null
+
+        private var charge: Double? = null
+
+        private var statusBit: StatusBit? = null
+
+        override fun append(dataLine: String): Boolean {
+            if (atomId != null) {
+                return false
+            }
+
+            val fields = dataLine.trim().split(whitespaceDelimRegex)
+
+            try {
+                atomId = fields[0].toInt()
+                atomName = TriposStringField.stringValueOf(fields[1])
+                x = fields[2].toDouble()
+                y = fields[3].toDouble()
+                z = fields[4].toDouble()
+                atomType = TriposStringField.stringValueOf(fields[5])
+
+                substId = if (
+                    fields.lastIndex >= 6 &&
+                    fields[6] != TriposStringField.FOUR_STARS
+                ) {
+                    fields[6].toInt()
+                } else {
+                    null
+                }
+
+                substName = if (
+                    fields.lastIndex >= 7 &&
+                    fields[7] != TriposStringField.FOUR_STARS
+                ) {
+                    fields[7]
+                } else {
+                    null
+                }
+
+                charge = if (
+                    fields.lastIndex >= 8 &&
+                    fields[8] != TriposStringField.FOUR_STARS
+                ) {
+                    fields[8].toDouble()
+                } else {
+                    null
+                }
+
+                statusBit = if (fields.lastIndex >= 9) {
+                    TriposStringField.enumValueOf<StatusBit>(fields[9])
+                } else {
+                    null
+                }
+            } catch (_: Throwable) {
+                return false
+            }
+
+            return true
+        }
+
+        override fun build(): TriposAtom =
+            TriposAtom(
+                atomId = atomId!!,
+                atomName = atomName,
+                x = x!!,
+                y = y!!,
+                z = z!!,
+                atomType = atomType,
+                substId = substId,
+                substName = substName,
+                charge = charge,
+                statusBit = statusBit
+            )
+
+        override fun new(): Builder =
+            Builder()
+
+        companion object {
+            /**
+             *  Regular expression for matching whitespaces as a delimiter.
+             */
+            private val whitespaceDelimRegex =
+                Regex("\\s+")
+        }
+    }
+
+    /**
      *  Internal SYBYL status bits associated with the atom.
      */
     enum class StatusBit : TriposStringField {
@@ -77,84 +181,5 @@ data class TriposAtom @JvmOverloads constructor(
         DIRECT;
 
         override val value: String = name
-    }
-
-    companion object {
-        /**
-         *  Parses an `ATOM` record.
-         *
-         *  @param input
-         *      Record in Mol2 format without comment and blank lines.
-         *
-         *  @return
-         *      [TriposAtom].
-         */
-        @JvmStatic
-        fun parseMol2(input: String): TriposAtom {
-            if (
-                input.split("\n").count() >
-                    TriposRecordType.ATOM.numDataLines
-            ) {
-                throw RuntimeException(
-                    "Number of data lines is greater than " +
-                    "${TriposRecordType.ATOM.numDataLines}."
-                )
-            }
-
-            val fields = Regex("\\s+").split(input.trim())
-
-            val atomId = fields[0].toInt()
-            val atomName = TriposStringField.stringValueOf(fields[1])
-            val x = fields[2].toDouble()
-            val y = fields[3].toDouble()
-            val z = fields[4].toDouble()
-            val atomType = TriposStringField.stringValueOf(fields[5])
-
-            val substId = if (
-                fields.lastIndex >= 6 &&
-                fields[6] != TriposStringField.FOUR_STARS
-            ) {
-                fields[6].toInt()
-            } else {
-                null
-            }
-
-            val substName = if (
-                fields.lastIndex >= 7 &&
-                fields[7] != TriposStringField.FOUR_STARS
-            ) {
-                fields[7]
-            } else {
-                null
-            }
-
-            val charge = if (
-                fields.lastIndex >= 8 &&
-                fields[8] != TriposStringField.FOUR_STARS
-            ) {
-                fields[8].toDouble()
-            } else {
-                null
-            }
-
-            val statusBit = if (fields.lastIndex >= 9) {
-                TriposStringField.enumValueOf<StatusBit>(fields[9])
-            } else {
-                null
-            }
-
-            return TriposAtom(
-                atomId = atomId,
-                atomName = atomName,
-                x = x,
-                y = y,
-                z = z,
-                atomType = atomType,
-                substId = substId,
-                substName = substName,
-                charge = charge,
-                statusBit = statusBit
-            )
-        }
     }
 }
