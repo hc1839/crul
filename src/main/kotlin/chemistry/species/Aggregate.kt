@@ -22,27 +22,25 @@ import crul.apache.math.vector.*
 import crul.distinct.Referential
 
 /**
- *  Interface for a complex, which is a species that is composed of
- *  referentially unique subspecies.
+ *  Interface of a species aggregate, which is a species that is composed of
+ *  one or more referentially unique subspecies.
  *
  *  @param S
- *      Type of subspecies in this complex.
+ *      Type of subspecies.
  */
-interface Complex<S : Species> : Species {
+interface Aggregate<S : Species> : Species {
     override fun atoms(): List<Atom> =
         subspecies
             .flatMap { it.atoms() }
             .distinctBy { Referential(it) }
 
-    abstract override fun clone(): Complex<S>
-
     /**
-     *  Subspecies in this complex.
+     *  Subspecies.
      */
     val subspecies: List<S>
 
     /**
-     *  Whether a given species is a subspecies in this complex.
+     *  Whether `species` is a subspecies in the aggregate.
      *
      *  Comparison is referential.
      */
@@ -50,8 +48,8 @@ interface Complex<S : Species> : Species {
         subspecies.any { it === species }
 
     /**
-     *  Whether all species in a given collection are subspecies in this
-     *  complex.
+     *  Whether all species in `speciesCollection` are subspecies in the
+     *  aggregate.
      *
      *  Comparison is referential.
      */
@@ -59,7 +57,7 @@ interface Complex<S : Species> : Species {
         speciesCollection.all { contains(it) }
 
     /**
-     *  Whether an atom exists in this complex.
+     *  Whether an atom exists in the aggregate.
      *
      *  Comparison is referential.
      */
@@ -82,18 +80,36 @@ interface Complex<S : Species> : Species {
     }
 
     /**
-     *  Radius.
-     *
-     *  It is defined as the largest distance between the centroid and any
-     *  atom.
+     *  Largest distance between the centroid and any atom.
      */
     fun radius(): Double {
         val centroid = centroid()
 
         return atoms()
-            .map {
-                (it.position - centroid).norm
-            }
+            .map { (it.position - centroid).getNorm() }
             .max()!!
     }
+
+    companion object {
+        /**
+         *  Constructs an [Aggregate].
+         *
+         *  @param subspecies
+         *      Subspecies in the aggregate.
+         *
+         *  @return
+         *      New instance of [Aggregate].
+         */
+        @JvmStatic
+        fun <S : Species> newInstance(subspecies: List<S>) : Aggregate<S> =
+            AggregateImpl(subspecies)
+    }
 }
+
+/**
+ *  Constructs a new instance of [Aggregate].
+ *
+ *  See [Aggregate.newInstance].
+ */
+fun <S : Species> Aggregate(subspecies: List<S>) : Aggregate<S> =
+    Aggregate.newInstance(subspecies)

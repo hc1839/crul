@@ -16,16 +16,15 @@
 
 package crul.chemistry.species.format.mol2
 
-import crul.chemistry.species.Atom
-import crul.chemistry.species.MoleculeComplex
+import crul.chemistry.species.Supermolecule
 
 /**
- *  [Mol2DecodingListener] as a builder of [MoleculeComplex].
+ *  [Mol2DecodingListener] as a builder of [Supermolecule].
  */
-interface ComplexBuilder : Mol2DecodingListener {
+interface SupermoleculeBuilder : Mol2DecodingListener {
     /**
-     *  Builds a list of molecule complexes from the data received from
+     *  Builds a list of supermolecules from the data received from
      *  [Mol2Decoder].
      */
-    fun build(): List<MoleculeComplex<Atom>>
+    fun build(): List<Supermolecule<TriposAtom>>
 }

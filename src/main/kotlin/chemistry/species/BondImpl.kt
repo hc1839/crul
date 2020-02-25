@@ -54,16 +54,6 @@ internal class BondImpl<A : Atom> : Bond<A> {
         this.order = order
     }
 
-    /**
-     *  Copy constructor.
-     */
-    @Suppress("UNCHECKED_CAST")
-    constructor(other: BondImpl<A>): this(
-        other.toAtomPair().first.clone() as A,
-        other.toAtomPair().second.clone() as A,
-        other.order
-    )
-
     override fun hashCode(): Int =
         atomPair.toList().map { it.hashCode() }.toSet().hashCode()
 
@@ -84,7 +74,4 @@ internal class BondImpl<A : Atom> : Bond<A> {
 
     override fun toAtomPair(): Pair<A, A> =
         atomPair
-
-    override fun clone(): Bond<A> =
-        BondImpl(this)
 }

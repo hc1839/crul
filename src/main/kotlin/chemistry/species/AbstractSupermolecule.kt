@@ -19,20 +19,21 @@ package crul.chemistry.species
 import crul.distinct.Referential
 
 /**
- *  Skeletal implementation of [MoleculeComplex].
+ *  Skeletal implementation of [Supermolecule].
  *
  *  @param A
  *      Type of atoms.
+ *
+ *  @constructor
+ *
+ *  @param islands
+ *      Molecules and atom islands of the supermolecule.
  */
-abstract class AbstractMoleculeComplex<A : Atom> :
-    AbstractComplex<Island<A>>,
-    MoleculeComplex<A>
+abstract class AbstractSupermolecule<A : Atom>(islands: List<Island<A>>) :
+    AbstractAggregate<Island<A>>(islands),
+    Supermolecule<A>
 {
-    /**
-     *  @param islands
-     *      Molecules and atoms of the complex.
-     */
-    constructor(islands: List<Island<A>>): super(islands) {
+    init {
         // Referentially distinct atoms from all islands.
         val wrappedAtomSets = islands.map { island ->
             island.atoms().map { atom ->
@@ -58,11 +59,6 @@ abstract class AbstractMoleculeComplex<A : Atom> :
         }
     }
 
-    /**
-     *  Copy constructor.
-     */
-    constructor(other: AbstractMoleculeComplex<A>): super(other)
-
     override fun getIslandWithAtom(atom: A): Island<A> {
         if (!containsAtom(atom)) {
             throw IllegalArgumentException(
@@ -70,16 +66,16 @@ abstract class AbstractMoleculeComplex<A : Atom> :
             )
         }
 
-        return subspecies.filter { island ->
-            island.containsAtom(atom)
-        }.single()
+        return subspecies
+            .filter { island -> island.containsAtom(atom) }
+            .single()
     }
 
-    override fun minusAtoms(atoms: Collection<A>): MoleculeComplex<A> {
+    override fun minusAtoms(atoms: Collection<A>): Supermolecule<A> {
         val wrappedGivenAtoms = atoms.map { Referential(it) }
 
         val filteredBonds = subspecies
-            .filter { island -> !island.isSingleAtom() }
+            .filter { island -> !island.isAtomic() }
             .flatMap { island -> island.bonds() }
             .filterNot { bond ->
                 bond.atoms().any { atom ->
@@ -92,18 +88,18 @@ abstract class AbstractMoleculeComplex<A : Atom> :
         }
 
         val filteredAtomIslands = subspecies.filter {
-            it.isSingleAtom() &&
+            it.isAtomic() &&
             Referential(it.atoms().single()) !in wrappedGivenAtoms
         }
 
-        return MoleculeComplex(newMolecules + filteredAtomIslands)
+        return Supermolecule(newMolecules + filteredAtomIslands)
     }
 
-    override fun minusBonds(bonds: Collection<Bond<A>>): MoleculeComplex<A> {
+    override fun minusBonds(bonds: Collection<Bond<A>>): Supermolecule<A> {
         val wrappedGivenBonds = bonds.map { Referential(it) }
 
         val (atomIslands, origMolecules) = subspecies.partition {
-            it.isSingleAtom()
+            it.isAtomic()
         }
 
         val filteredBonds = origMolecules
@@ -116,11 +112,13 @@ abstract class AbstractMoleculeComplex<A : Atom> :
             Molecule(it)
         }
 
-        val wrappedAtomsOfNewMolecules = newMolecules.flatMap { molecule ->
-            molecule.atoms().map { atom ->
-                Referential(atom)
+        val wrappedAtomsOfNewMolecules = newMolecules
+            .flatMap { molecule ->
+                molecule.atoms().map { atom ->
+                    Referential(atom)
+                }
             }
-        }.distinct()
+            .distinct()
 
         val newAtomIslands = (
             atomIslands.map { Referential(it.atoms().single()) } +
@@ -136,12 +134,12 @@ abstract class AbstractMoleculeComplex<A : Atom> :
                 }
         ).distinct().map { it.value.getIsland<A>() }
 
-        return MoleculeComplex(newMolecules + newAtomIslands)
+        return Supermolecule<A>(newMolecules + newAtomIslands)
     }
 
     override fun minusIslands(
         islands: Collection<Island<A>>
-    ): MoleculeComplex<A>
+    ): Supermolecule<A>
     {
         val wrappedGivenIslands = islands.map { Referential(it) }
         val wrappedOrigIslands = subspecies.map { Referential(it) }
@@ -152,7 +150,7 @@ abstract class AbstractMoleculeComplex<A : Atom> :
             )
         }
 
-        return MoleculeComplex(
+        return Supermolecule(
             (wrappedOrigIslands - wrappedGivenIslands).map { it.value }
         )
     }

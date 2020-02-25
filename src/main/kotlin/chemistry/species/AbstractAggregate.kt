@@ -19,44 +19,43 @@ package crul.chemistry.species
 import crul.distinct.Referential
 
 /**
- *  Skeletal implementation of [Complex].
+ *  Skeletal implementation of [Aggregate].
  *
- *  Iterating over the subspecies is guaranteed to be in the same order.
+ *  Iterating over the subspecies must be in the same order.
+ *
+ *  @param A
+ *      Type of atoms.
+ *
+ *  @constructor
  *
  *  @param S
- *      Type of subspecies in this complex.
+ *      Type of subspecies.
+ *
+ *  @param subspecies
+ *      Subspecies in the aggregate.
  */
-abstract class AbstractComplex<S : Species> : Complex<S> {
-    override val subspecies: List<S>
+abstract class AbstractAggregate<S : Species>(subspecies: List<S>) :
+    Aggregate<S>
+{
+    override val subspecies: List<S> =
+        subspecies.toList()
 
-    /**
-     *  @param subspecies
-     *      Subspecies in this complex.
-     */
-    constructor(subspecies: List<S>) {
+    init {
+        if (subspecies.isEmpty()) {
+            throw IllegalArgumentException(
+                "List of subspecies to construct an aggregate " +
+                "is empty."
+            )
+        }
+
         if (
             subspecies.distinctBy { Referential(it) }.count() !=
             subspecies.count()
         ) {
             throw IllegalArgumentException(
-                "Subspecies in the given list to construct a complex " +
+                "Subspecies in the given list to construct an aggregate " +
                 "are not unique."
             )
         }
-
-        this.subspecies = subspecies.toList()
     }
-
-    /**
-     *  Copy constructor.
-     *
-     *  @param other
-     *      Complex and subspecies to copy.
-     */
-    constructor(other: AbstractComplex<S>): this(
-        other.subspecies.map {
-            @Suppress("UNCHECKED_CAST")
-            it.clone() as S
-        }
-    )
 }

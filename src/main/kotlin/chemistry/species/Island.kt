@@ -22,35 +22,20 @@ import crul.chemistry.species.travel.Neighbor
 import crul.chemistry.species.travel.Neighborhood
 
 /**
- *  Group containing atoms of a molecule or a single atom.
+ *  Fragment that contains atoms of a molecule or contains a single atom.
  *
  *  To construct an island representing a molecule, instantiate a [Molecule].
  *  For a single atom, use [Atom.island].
  *
  *  @param A
- *      Type of atoms in this island.
+ *      Type of atoms.
  */
 interface Island<A : Atom> : Fragment<A> {
-    abstract override fun clone(): Island<A>
-
     /**
-     *  Whether this island contains a single atom.
+     *  Whether the island is representing a single atom.
      */
-    fun isSingleAtom(): Boolean =
-        atoms().count() == 1
-
-    /**
-     *  Rounded sum of the charges of the atoms in this island, or `null` if
-     *  any of the atomic charges are `null`.
-     */
-    fun charge(): Int? =
-        atoms().map { it.charge }.reduce { acc, charge ->
-            if (acc != null && charge != null) {
-                acc + charge
-            } else {
-                null
-            }
-        }?.roundToInt()
+    fun isAtomic(): Boolean =
+        atoms().singleOrNull() != null
 
     /**
      *  Bonds in this island, or an empty collection if the island contains a
@@ -172,4 +157,10 @@ interface Island<A : Atom> : Fragment<A> {
         atoms().asSequence().map { atom ->
             getNeighborhood(atom)
         }
+
+    /**
+     *  Returns a new island with atoms from the application of `transform` to
+     *  each atom in this island.
+     */
+    fun <R : Atom> map(transform: (A) -> R): Island<R>
 }

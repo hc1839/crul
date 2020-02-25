@@ -19,21 +19,18 @@ package crul.chemistry.species
 import crul.serialize.AvroSimple
 
 /**
- *  Interface for a fragment, which is a non-empty [Complex] of [Atom]
- *  instances.
+ *  Interface of a fragment, which is an aggregate of atoms.
  *
  *  Atoms are compared by referentially equality.
  *
  *  @param A
- *      Type of atoms in this fragment.
+ *      Type of atoms.
  */
-interface Fragment<A : Atom> : Complex<A> {
+interface Fragment<A : Atom> : Aggregate<A> {
     override fun atoms(): List<A> =
         @Suppress("UNCHECKED_CAST") (
             super.atoms() as List<A>
         )
-
-    abstract override fun clone(): Fragment<A>
 
     companion object {
         /**
@@ -44,14 +41,14 @@ interface Fragment<A : Atom> : Complex<A> {
          */
         @JvmStatic
         fun <A : Atom> newInstance(atoms: List<A>): Fragment<A> =
-            Fragment(atoms)
+            FragmentImpl(atoms)
     }
 }
 
 /**
  *  Constructs a new instance of [Fragment].
  *
- *  See [Fragment.newInstance] for description.
+ *  See [Fragment.newInstance].
  */
 fun <A : Atom> Fragment(atoms: List<A>): Fragment<A> =
-    FragmentImpl(atoms)
+    Fragment.newInstance(atoms)

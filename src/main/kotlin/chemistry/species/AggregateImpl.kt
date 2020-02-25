@@ -17,23 +17,15 @@
 package crul.chemistry.species
 
 /**
- *  Default implementation of [MoleculeComplex].
+ *  Default implementation of [Aggregate].
  *
- *  @param A
- *      Type of atoms.
+ *  @param S
+ *      Type of subspecies.
+ *
+ *  @constructor
+ *
+ *  @param subspecies
+ *      Subspecies in the aggregate.
  */
-internal class MoleculeComplexImpl<A : Atom> : AbstractMoleculeComplex<A> {
-    /**
-     *  @param subspecies
-     *      Molecules and atoms of the complex.
-     */
-    constructor(subspecies: List<Island<A>>): super(subspecies)
-
-    /**
-     *  Copy constructor.
-     */
-    constructor(other: MoleculeComplexImpl<A>): super(other)
-
-    override fun clone(): MoleculeComplexImpl<A> =
-        MoleculeComplexImpl(this)
-}
+internal class AggregateImpl<S : Species>(subspecies: List<S>) :
+    AbstractAggregate<S>(subspecies)

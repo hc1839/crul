@@ -22,37 +22,22 @@ import crul.chemistry.species.Element
 
 /**
  *  Skeletal implementation of [Atom].
+ *
+ *  @constructor
  */
 abstract class AbstractAtom constructor(
     override val element: Element,
-    override var position: Vector3D,
-    override var charge: Double?
+    override val position: Vector3D
 ) : Atom
 {
-    override val userData: MutableMap<String, Any> =
-        mutableMapOf()
+    private var _island: AtomIsland<*>? = null
 
-    /**
-     *  Copy constructor.
-     */
-    constructor(other: AbstractAtom): this(
-        other.element,
-        other.position,
-        other.charge
-    ) {
-        this.userData.putAll(
-            other.userData.toMutableMap()
-        )
-    }
-
-    private var _island: Island<*>? = null
-
-    override fun <A : Atom> getIsland(): Island<A> {
+    override fun <A : Atom> getIsland(): AtomIsland<A> {
         if (_island == null) {
             _island = AtomIsland(this)
         }
 
         @Suppress("UNCHECKED_CAST")
-        return _island!! as Island<A>
+        return _island!! as AtomIsland<A>
     }
 }

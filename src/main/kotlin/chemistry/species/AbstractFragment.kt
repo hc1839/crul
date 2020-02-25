@@ -18,28 +18,12 @@ package crul.chemistry.species
 
 /**
  *  Skeletal implementation of [Fragment].
+ *
+ *  @constructor
+ *
+ *  @param atoms
+ *      Atoms of the fragment.
  */
-abstract class AbstractFragment<A : Atom> :
-    AbstractComplex<A>,
+abstract class AbstractFragment<A : Atom>(atoms: List<A>) :
+    AbstractAggregate<A>(atoms.toList()),
     Fragment<A>
-{
-    /**
-     *  @param atoms
-     *      Atoms of the fragment.
-     */
-    constructor(atoms: List<A>): super(atoms.toList()) {
-        if (atoms.isEmpty()) {
-            throw IllegalArgumentException(
-                "List of atoms given to construct a fragment is empty."
-            )
-        }
-    }
-
-    /**
-     *  Copy constructor.
-     *
-     *  @param other
-     *      Fragment to copy.
-     */
-    constructor(other: AbstractFragment<A>): super(other)
-}

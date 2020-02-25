@@ -42,15 +42,9 @@ interface Bond<A : Atom> : Fragment<A> {
     abstract override fun equals(other: Any?): Boolean
 
     /**
-     *  Bonds cannot be directly cloned when cloning a molecule, since the
-     *  atoms would be cloned as well.
-     */
-    abstract override fun clone(): Bond<A>
-
-    /**
      *  Bond order as an aribtrary string.
      */
-    var order: String
+    val order: String
 
     /**
      *  Atoms as a pair in the given order.

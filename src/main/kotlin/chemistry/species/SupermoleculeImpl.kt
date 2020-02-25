@@ -17,19 +17,15 @@
 package crul.chemistry.species
 
 /**
- *  Default implementation of [Complex].
+ *  Default implementation of [Supermolecule].
  *
- *  @param S
- *      Type of subspecies in this complex.
+ *  @param A
+ *      Type of atoms.
+ *
+ *  @constructor
+ *
+ *  @param subspecies
+ *      Molecules and atom islands of the supermolecule.
  */
-internal class ComplexImpl<S : Species> : AbstractComplex<S> {
-    constructor(subspecies: List<S>): super(subspecies)
-
-    /**
-     *  Copy constructor.
-     */
-    constructor(other: ComplexImpl<S>): super(other)
-
-    override fun clone(): ComplexImpl<S> =
-        ComplexImpl(this)
-}
+internal class SupermoleculeImpl<A : Atom>(subspecies: List<Island<A>>) :
+    AbstractSupermolecule<A>(subspecies)

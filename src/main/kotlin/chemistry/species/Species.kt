@@ -21,11 +21,11 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import crul.apache.math.vector.*
 
 /**
- *  Chemical species.
+ *  Chemical species with immutable data.
  *
  *  Comparisons of species are referential.
  */
-interface Species : Cloneable {
+interface Species {
     /**
      *  List of all atoms in this species, or singleton list of itself if
      *  [Atom].
@@ -34,24 +34,4 @@ interface Species : Cloneable {
      *  list are not guaranteed to be in any particular order.
      */
     fun atoms(): List<Atom>
-
-    /**
-     *  Translates atoms in this species by a given displacement.
-     *
-     *  @param displacement
-     *      Displacement of the translation.
-     */
-    fun translate(displacement: Vector3D) {
-        for (atom in atoms()) {
-            atom.position += displacement
-        }
-    }
-
-    /**
-     *  Clones this species and all subspecies.
-     *
-     *  @return
-     *      Deep clone of this species.
-     */
-    public abstract override fun clone(): Species
 }

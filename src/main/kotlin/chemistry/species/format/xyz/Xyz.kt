@@ -104,10 +104,7 @@ fun <A : Atom> List<Fragment<A>>.exportXyz(
  *      are in. It must be a unit of `L`.
  *
  *  @return
- *      Fragment containing the atoms from the XYZ reader. The key, `id`, in
- *      [Atom.userData] is set to the one-based index (as an `Int`) of the
- *      order that an atom is specified in XYZ. All atoms in the returned
- *      fragment have `null` as their charge.
+ *      Fragment containing the atoms from the XYZ reader.
  */
 fun Fragment.Companion.parseXyz(
     reader: Reader,
@@ -150,7 +147,7 @@ fun Fragment.Companion.parseXyz(
     val angstromUnit = UnitOfMeasure.parse("Ao")
     val whitespaceRegex = Regex("\\s+")
 
-    val atoms = xyzLines.drop(2).mapIndexed { atomLineIndex, atomLine ->
+    val atoms = xyzLines.drop(2).map { atomLine ->
         val columns = whitespaceRegex.split(atomLine).take(4)
 
         val position = Vector3D(
@@ -163,15 +160,7 @@ fun Fragment.Companion.parseXyz(
             }.toDoubleArray()
         )
 
-        val atom = Atom(
-            Element(columns[0]),
-            position,
-            null
-        )
-
-        atom.userData["id"] = atomLineIndex + 1
-
-        atom
+        Atom(Element(columns[0]), position)
     }
 
     return Fragment(atoms.toList())

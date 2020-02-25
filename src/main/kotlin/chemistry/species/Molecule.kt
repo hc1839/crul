@@ -16,24 +16,67 @@
 
 package crul.chemistry.species
 
+import crul.distinct.Referential
+
 /**
  *  Default implementation of [AbstractMolecule].
  *
  *  @param A
  *      Type of atoms.
+ *
+ *  @constructor
+ *
+ *  @param bonds
+ *      Bonds of the molecule.
  */
-class Molecule<A : Atom> : AbstractMolecule<A> {
-    /**
-     *  @param bonds
-     *      Bonds of the molecule.
-     */
-    constructor(bonds: Collection<Bond<A>>): super(bonds)
+class Molecule<A : Atom>(bonds: Collection<Bond<A>>) :
+    AbstractMolecule<A>(bonds)
+{
+    override fun <R : Atom> map(transform: (A) -> R): Molecule<R> {
+        // From wrapped input atom to output atom.
+        val atomCorrespondence = atoms()
+            .map { inputAtom ->
+                Referential(inputAtom)
+            }
+            .associateWith { wrappedInputAtom ->
+                transform.invoke(wrappedInputAtom.value)
+            }
 
-    /**
-     *  Copy constructor.
-     */
-    constructor(other: Molecule<A>): super(other)
+        // Check that there are no two referentially equal output atoms.
+        if (
+            atomCorrespondence
+                .entries
+                .map { Referential(it.value) }
+                .distinct()
+                .count() != atomCorrespondence.count()
+        ) {
+            throw RuntimeException(
+                "Atom mapper yielded referentially equal atoms."
+            )
+        }
 
-    override fun clone(): Molecule<A> =
-        Molecule(this)
+        val outputBonds = mutableListOf<Bond<R>>()
+
+        // Connect output atoms into output bonds.
+        for (inputBond in bonds()) {
+            val wrappedInputAtoms = atoms().map {
+                Referential(it)
+            }
+
+            val outputAtoms = wrappedInputAtoms.map {
+                atomCorrespondence[it]!!
+            }
+
+            // Add the output bond.
+            outputBonds.add(
+                Bond(
+                    outputAtoms[0],
+                    outputAtoms[1],
+                    inputBond.order
+                )
+            )
+        }
+
+        return Molecule(outputBonds.toList())
+    }
 }

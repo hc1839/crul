@@ -21,22 +21,11 @@ package crul.chemistry.species
  *
  *  @param A
  *      Type of atoms.
+ *
+ *  @constructor
+ *
+ *  @param atoms
+ *      Atoms of the fragment.
  */
-internal class FragmentImpl<A : Atom> : AbstractFragment<A> {
-    /**
-     *  @param atoms
-     *      Atoms of the fragment.
-     */
-    constructor(atoms: List<A>): super(atoms)
-
-    /**
-     *  Copy constructor.
-     *
-     *  @param other
-     *      Fragment to copy.
-     */
-    constructor(other: FragmentImpl<A>): super(other)
-
-    override fun clone(): FragmentImpl<A> =
-        FragmentImpl(this)
-}
+internal class FragmentImpl<A : Atom>(atoms: List<A>) :
+    AbstractFragment<A>(atoms)

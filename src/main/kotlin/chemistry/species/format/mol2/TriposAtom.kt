@@ -16,27 +16,86 @@
 
 package crul.chemistry.species.format.mol2
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
+
+import crul.chemistry.species.Atom
+import crul.chemistry.species.AtomIsland
+import crul.chemistry.species.Element
+
 /**
  *  Tripos `ATOM` record.
  *
- *  Parameter names correspond to those in the Mol2 format. [x], [y], and [z]
- *  are in Angstroms.
+ *  Parameter names correspond to those in the Mol2 format.
+ *
+ *  Element of an atom is determined from the leading one or two alphabetical
+ *  characters of [atomType] or [atomName], where [atomType] takes priority
+ *  since it is the technically correct field. [atomName] is then considered if
+ *  [atomType] does not contain the element.
+ *
+ *  [position] must be in Angstroms.
  *
  *  @constructor
  */
 data class TriposAtom @JvmOverloads constructor(
     val atomId: Int,
     val atomName: String?,
-    val x: Double,
-    val y: Double,
-    val z: Double,
+    override val position: Vector3D,
     val atomType: String? = null,
     val substId: Int? = null,
     val substName: String? = null,
     val charge: Double? = null,
     val statusBit: StatusBit? = null
-) : TriposRecord
+) : TriposRecord,
+    Atom
 {
+    override val element: Element
+
+    init {
+        // Values that might contain an element symbol. Atom type is placed
+        // first in the list, because it is tested first.
+        val elementInputStrings = listOf(atomType, atomName).filterNotNull()
+
+        val matchResults = elementInputStrings
+            .map { elementSymbolRegex.find(it) }
+            .filterNotNull()
+
+        if (matchResults.isEmpty()) {
+            throw RuntimeException(
+                "Atom type and atom name do not " +
+                "contain leading alphabetical characters " +
+                "of a possible element symbol."
+            )
+        }
+
+        val possibleElementSymbols = matchResults.map {
+            it.groupValues[1]
+        }
+
+        val elementSymbol = possibleElementSymbols.find {
+            Element.isValidSymbol(it)
+        }
+
+        if (elementSymbol == null) {
+            throw RuntimeException(
+                "No valid element symbol found " +
+                "in atom type or atom name."
+            )
+        }
+
+        this.element = Element(elementSymbol)
+    }
+
+    private var _island: AtomIsland<TriposAtom>? = null
+
+    override fun <A : Atom> getIsland(): AtomIsland<A> {
+        if (_island == null) {
+            _island = AtomIsland(this)
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        return _island!! as AtomIsland<A>
+    }
+
     override val recordType: TriposRecordType =
         TriposRecordType.ATOM
 
@@ -45,9 +104,9 @@ data class TriposAtom @JvmOverloads constructor(
 
         mol2RecordBuilder += atomId.toString()
         mol2RecordBuilder += atomName ?: TriposStringField.FOUR_STARS
-        mol2RecordBuilder += x.toString()
-        mol2RecordBuilder += y.toString()
-        mol2RecordBuilder += z.toString()
+        mol2RecordBuilder += position.getX().toString()
+        mol2RecordBuilder += position.getY().toString()
+        mol2RecordBuilder += position.getZ().toString()
         mol2RecordBuilder += atomType ?: TriposStringField.FOUR_STARS
 
         mol2RecordBuilder +=
@@ -71,11 +130,7 @@ data class TriposAtom @JvmOverloads constructor(
 
         private var atomName: String? = null
 
-        private var x: Double? = null
-
-        private var y: Double? = null
-
-        private var z: Double? = null
+        private var position: Vector3D? = null
 
         private var atomType: String? = null
 
@@ -97,9 +152,13 @@ data class TriposAtom @JvmOverloads constructor(
             try {
                 atomId = fields[0].toInt()
                 atomName = TriposStringField.stringValueOf(fields[1])
-                x = fields[2].toDouble()
-                y = fields[3].toDouble()
-                z = fields[4].toDouble()
+
+                position = Vector3D(
+                    fields[2].toDouble(),
+                    fields[3].toDouble(),
+                    fields[4].toDouble()
+                )
+
                 atomType = TriposStringField.stringValueOf(fields[5])
 
                 substId = if (
@@ -145,9 +204,7 @@ data class TriposAtom @JvmOverloads constructor(
             TriposAtom(
                 atomId = atomId!!,
                 atomName = atomName,
-                x = x!!,
-                y = y!!,
-                z = z!!,
+                position = position!!,
                 atomType = atomType,
                 substId = substId,
                 substName = substName,
@@ -181,5 +238,14 @@ data class TriposAtom @JvmOverloads constructor(
         DIRECT;
 
         override val value: String = name
+    }
+
+    companion object {
+        /**
+         *  Regular expression for matching the symbol of an element in
+         *  the Tripos atom-type or atom-name field.
+         */
+        private val elementSymbolRegex =
+            Regex("^([A-Z][a-z]?)")
     }
 }

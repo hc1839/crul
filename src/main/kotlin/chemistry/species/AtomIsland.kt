@@ -17,13 +17,16 @@
 package crul.chemistry.species
 
 /**
- *  Island containing one atom.
+ *  Island representing a single atom.
  *
- *  It should be used only by an instance of [Atom] to construct an island only
- *  once such that there is one-to-one correspondence with the atom that the
- *  island is representing.
+ *  It should be used only by an instance of [Atom] to construct an island no
+ *  more than once such that there is one-to-one correspondence with the atom
+ *  that the island is representing.
  *
  *  @constructor
+ *
+ *  @param A
+ *      Type of atom.
  *
  *  @param atom
  *      Atom that the island represents.
@@ -35,6 +38,7 @@ class AtomIsland<A : Atom>(atom: A) :
     override fun bonds(): Collection<Bond<A>> =
         listOf()
 
-    override fun clone(): Island<A> =
-        atoms().single().clone().getIsland<A>()
+    override fun <R : Atom> map(transform: (A) -> R): AtomIsland<R> =
+        // New island must be created by the transform atom.
+        transform.invoke(atoms().single()).getIsland<R>()
 }

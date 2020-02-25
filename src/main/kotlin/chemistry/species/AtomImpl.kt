@@ -20,26 +20,8 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 /**
  *  Default implementation of [Atom].
+ *
+ *  @constructor
  */
-internal class AtomImpl : AbstractAtom {
-    /**
-     *  See [Atom.newInstance] for description.
-     */
-    constructor(
-        element: Element,
-        position: Vector3D,
-        charge: Double?
-    ): super(
-        element,
-        position,
-        charge
-    )
-
-    /**
-     *  Copy constructor.
-     */
-    constructor(other: AtomImpl): super(other)
-
-    override fun clone(): Atom =
-        AtomImpl(this)
-}
+internal class AtomImpl(element: Element, position: Vector3D) :
+    AbstractAtom(element, position)

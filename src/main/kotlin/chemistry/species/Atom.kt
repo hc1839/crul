@@ -22,56 +22,44 @@ import crul.chemistry.species.Element
 import crul.serialize.AvroSimple
 
 /**
- *  Interface for an atom.
+ *  Interface of an atom.
  *
  *  An atom is a singleton [Species].
  *
- *  To construct an instance of this class, use [newInstance].
+ *  To construct an instance of this class, use the factory function of the
+ *  same name or [newInstance].
  */
 interface Atom : Species {
-    /**
-     *  [userData] is shallow cloned.
-     */
-    abstract override fun clone(): Atom
-
     /**
      *  Singleton list containing itself.
      */
     override fun atoms(): List<Atom> =
         listOf(this)
 
-    var position: Vector3D
-
     /**
-     *  Element.
+     *  Element of the atom.
      */
     val element: Element
 
     /**
-     *  Charge associated with this atom.
-     *
-     *  Interpretation depends on the context that the atom is in.
+     *  Position of the atom.
      */
-    var charge: Double?
+    val position: Vector3D
 
     /**
-     *  Association of objects to keys for this atom.
-     */
-    val userData: MutableMap<String, Any>
-
-    /**
-     *  Island that represents this atom.
+     *  Island representing this atom.
      *
-     *  Two islands are referentially equal if and only if the two atoms are
-     *  referentially equal.
+     *  It always returns the same atom island. Two atom islands are
+     *  referentially equal if and only if the two atoms are referentially
+     *  equal.
      *
      *  @param A
-     *      Type of this atom that the returned island is representing.
+     *      Type of this atom represented by the returned island.
      *
      *  @return
      *      Island representing this atom.
      */
-    fun <A : Atom> getIsland(): Island<A>
+    fun <A : Atom> getIsland(): AtomIsland<A>
 
     companion object {
         /**
@@ -83,32 +71,19 @@ interface Atom : Species {
          *  @param position
          *      Position of the atom.
          *
-         *  @param charge
-         *      Charge associated with the atom.
-         *
-         *  @param tag
-         *      Arbitrary integer tag.
-         *
-         *  @param atomType
-         *      Atom type.
-         *
          *  @return
          *      New instance of [Atom].
          */
         @JvmStatic
-        fun newInstance(
-            element: Element,
-            position: Vector3D,
-            charge: Double?
-        ): Atom =
-            Atom(element, position, charge)
+        fun newInstance(element: Element, position: Vector3D): Atom =
+            AtomImpl(element, position)
     }
 }
 
 /**
  *  Constructs a new instance of [Atom].
  *
- *  See [Atom.newInstance] for description.
+ *  See [Atom.newInstance].
  */
-fun Atom(element: Element, position: Vector3D, charge: Double?): Atom =
-    AtomImpl(element, position, charge)
+fun Atom(element: Element, position: Vector3D): Atom =
+    Atom.newInstance(element, position)

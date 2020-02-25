@@ -19,8 +19,8 @@ package crul.chemistry.species
 import crul.distinct.Referential
 
 /**
- *  Skeletal implementation of a molecule, which is an [Island] with at least
- *  two atoms that has every pair of atoms connected by bonds, directly or
+ *  Skeletal implementation of a molecule, which is an [Island] with more than
+ *  one atom that has every pair of atoms connected by bonds, directly or
  *  indirectly.
  *
  *  A molecule is taken in a more general sense to include polyatomic ions.
@@ -29,25 +29,17 @@ import crul.distinct.Referential
  *
  *  @param A
  *      Type of atoms.
+ *
+ *  @constructor
+ *
+ *  @param bonds
+ *      Non-empty collection of bonds of the molecule. Order is not important,
+ *      and referentially equivalent bonds are removed. Exception is raised if
+ *      (1) two bonds have referentially equal atoms but unequal orders or (2)
+ *      collection of bonds represents more than one molecule.
  */
-abstract class AbstractMolecule<A : Atom> :
-    AbstractFragment<A>,
-    Island<A>
-{
-    /**
-     *  Lists of bonds associated by the participating atom.
-     */
-    private val bondListsByAtom: Map<Referential<A>, List<Bond<A>>>
-
-    /**
-     *  @param bonds
-     *      Non-empty collection of bonds of the molecule. Order is not
-     *      important, and referentially equivalent bonds are removed.
-     *      Exception is raised if (1) two bonds have referentially equal atoms
-     *      but unequal orders or (2) collection of bonds represents more than
-     *      one molecule.
-     */
-    constructor(bonds: Collection<Bond<A>>): super(
+abstract class AbstractMolecule<A : Atom>(bonds: Collection<Bond<A>>) :
+    AbstractFragment<A>(
         if (!bonds.isEmpty()) {
             bonds.flatMap { it.atoms() }.distinctBy { Referential(it) }
         } else {
@@ -55,42 +47,15 @@ abstract class AbstractMolecule<A : Atom> :
                 "Collection of bonds given to construct a molecule is empty."
             )
         }
-    ) {
-        this.bondListsByAtom = bondIndexing(bonds)
-    }
-
+    ),
+    Island<A>
+{
     /**
-     *  Copy constructor.
+     *  Lists of bonds associated by the participating atom.
      */
-    constructor(other: AbstractMolecule<A>): this(
-        {
-            val clonedAtomsByOtherAtom = other
-                .atoms()
-                .map { Referential(it) }
-                .associateWith {
-                    @Suppress("UNCHECKED_CAST")
-                    it.value.clone() as A
-                }
+    private val bondListsByAtom: Map<Referential<A>, List<Bond<A>>> =
+        bondIndexing(bonds)
 
-            // Bonds cannot be directly cloned, since the same atom
-            // participating in more than one bond would be cloned.
-            other
-                .bonds()
-                .map { otherBond ->
-                    val (otherAtom1, otherAtom2) = otherBond.toAtomPair()
-
-                    Bond(
-                        clonedAtomsByOtherAtom[
-                            Referential(otherAtom1)
-                        ]!!,
-                        clonedAtomsByOtherAtom[
-                            Referential(otherAtom2)
-                        ]!!,
-                        otherBond.order
-                    )
-                }
-        }.invoke()
-    )
 
     override fun bonds(): Collection<Bond<A>> =
         bondListsByAtom.values.flatten().distinctBy {
@@ -122,9 +87,9 @@ abstract class AbstractMolecule<A : Atom> :
             return null
         }
 
-        val bond = bondListsByAtom[wrappedAtom1]!!.intersect(
-            bondListsByAtom[wrappedAtom2]!!
-        ).singleOrNull()
+        val bond = bondListsByAtom[wrappedAtom1]!!
+            .intersect(bondListsByAtom[wrappedAtom2]!!)
+            .singleOrNull()
 
         return if (bond == null) {
             null
@@ -157,9 +122,8 @@ abstract class AbstractMolecule<A : Atom> :
          *      Map of wrapped atom to list of bonds that the atom is
          *      participating.
          */
-        private fun <A : Atom> bondIndexing(
-            bonds: Collection<Bond<A>>
-        ): Map<Referential<A>, List<Bond<A>>>
+        private fun <A : Atom> bondIndexing(bonds: Collection<Bond<A>>):
+            Map<Referential<A>, List<Bond<A>>>
         {
             if (bonds.isEmpty()) {
                 throw IllegalArgumentException(
