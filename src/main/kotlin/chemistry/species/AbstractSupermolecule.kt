@@ -36,7 +36,7 @@ abstract class AbstractSupermolecule<A : Atom>(islands: List<Island<A>>) :
     init {
         // Referentially distinct atoms from all islands.
         val wrappedAtomSets = islands.map { island ->
-            island.atoms().map { atom ->
+            island.atoms.map { atom ->
                 Referential(atom)
             }.toSet()
         }
@@ -78,7 +78,7 @@ abstract class AbstractSupermolecule<A : Atom>(islands: List<Island<A>>) :
             .filter { island -> !island.isAtomic() }
             .flatMap { island -> island.bonds() }
             .filterNot { bond ->
-                bond.atoms().any { atom ->
+                bond.atoms.any { atom ->
                     Referential(atom) in wrappedGivenAtoms
                 }
             }
@@ -89,7 +89,7 @@ abstract class AbstractSupermolecule<A : Atom>(islands: List<Island<A>>) :
 
         val filteredAtomIslands = subspecies.filter {
             it.isAtomic() &&
-            Referential(it.atoms().single()) !in wrappedGivenAtoms
+            Referential(it.atoms.single()) !in wrappedGivenAtoms
         }
 
         return Supermolecule(newMolecules + filteredAtomIslands)
@@ -114,17 +114,17 @@ abstract class AbstractSupermolecule<A : Atom>(islands: List<Island<A>>) :
 
         val wrappedAtomsOfNewMolecules = newMolecules
             .flatMap { molecule ->
-                molecule.atoms().map { atom ->
+                molecule.atoms.map { atom ->
                     Referential(atom)
                 }
             }
             .distinct()
 
         val newAtomIslands = (
-            atomIslands.map { Referential(it.atoms().single()) } +
+            atomIslands.map { Referential(it.atoms.single()) } +
             bonds
                 .flatMap { bond ->
-                    bond.atoms().map { atom ->
+                    bond.atoms.map { atom ->
                         Referential(atom)
                     }
                 }

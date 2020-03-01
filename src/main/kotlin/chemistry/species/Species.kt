@@ -30,8 +30,9 @@ interface Species {
      *  List of all atoms in this species, or singleton list of itself if
      *  [Atom].
      *
-     *  Atoms are unique and are in the same order between calls. Atoms in the
-     *  list are not guaranteed to be in any particular order.
+     *  Atoms in the list are referentially distinct. Ordering of the atoms in
+     *  the list are the same between evaluations but is
+     *  implementation-specific.
      */
-    fun atoms(): List<Atom>
+    val atoms: List<Atom>
 }

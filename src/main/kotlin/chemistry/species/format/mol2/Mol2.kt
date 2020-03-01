@@ -115,7 +115,7 @@ fun List<Supermolecule<TriposAtom>>.exportMol2(
         writer.write(TriposRecordType.MOLECULE.rti())
         writer.write("\n")
 
-        val atoms = supermol.atoms().toList()
+        val atoms = supermol.atoms
 
         writer.write(
             TriposMolecule(

@@ -117,7 +117,7 @@ open class DefaultSupermoleculeBuilder() : SupermoleculeBuilder {
             // Set of wrapped atoms that are participating in a bond.
             val wrappedBondedAtoms = bondsByTriposId
                 .values
-                .flatMap { bond -> bond.atoms() }
+                .flatMap { bond -> bond.atoms }
                 .map { atom -> Referential(atom) }
                 .toSet()
 

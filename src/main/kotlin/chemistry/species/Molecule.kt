@@ -34,7 +34,7 @@ class Molecule<A : Atom>(bonds: Collection<Bond<A>>) :
 {
     override fun <R : Atom> map(transform: (A) -> R): Molecule<R> {
         // From wrapped input atom to output atom.
-        val atomCorrespondence = atoms()
+        val atomCorrespondence = atoms
             .map { inputAtom ->
                 Referential(inputAtom)
             }
@@ -59,7 +59,7 @@ class Molecule<A : Atom>(bonds: Collection<Bond<A>>) :
 
         // Connect output atoms into output bonds.
         for (inputBond in bonds()) {
-            val wrappedInputAtoms = atoms().map {
+            val wrappedInputAtoms = atoms.map {
                 Referential(it)
             }
 

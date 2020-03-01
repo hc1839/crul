@@ -35,7 +35,7 @@ interface Island<A : Atom> : Fragment<A> {
      *  Whether the island is representing a single atom.
      */
     fun isAtomic(): Boolean =
-        atoms().singleOrNull() != null
+        atoms.singleOrNull() != null
 
     /**
      *  Bonds in this island, or an empty collection if the island contains a
@@ -87,7 +87,7 @@ interface Island<A : Atom> : Fragment<A> {
         }
 
         return getBondsByAtom(sourceAtom).map { bond ->
-            bond.atoms().single { atom ->
+            bond.atoms.single { atom ->
                 atom !== sourceAtom
             }
         }
@@ -137,7 +137,7 @@ interface Island<A : Atom> : Fragment<A> {
         }
 
         val neighbors = getBondsByAtom(sourceAtom).map { bond ->
-            val bondedAtom = bond.atoms().single { atom ->
+            val bondedAtom = bond.atoms.single { atom ->
                 atom !== sourceAtom
             }
 
@@ -154,7 +154,7 @@ interface Island<A : Atom> : Fragment<A> {
      *  Sequence of neighborhoods in this island.
      */
     fun neighborhoods(): Sequence<Neighborhood<A>> =
-        atoms().asSequence().map { atom ->
+        atoms.asSequence().map { atom ->
             getNeighborhood(atom)
         }
 

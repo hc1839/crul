@@ -27,9 +27,9 @@ import crul.serialize.AvroSimple
  *      Type of atoms.
  */
 interface Fragment<A : Atom> : Aggregate<A> {
-    override fun atoms(): List<A> =
-        @Suppress("UNCHECKED_CAST") (
-            super.atoms() as List<A>
+    override val atoms: List<A>
+        get() = @Suppress("UNCHECKED_CAST") (
+            super.atoms as List<A>
         )
 
     companion object {

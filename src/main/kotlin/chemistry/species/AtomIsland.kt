@@ -40,5 +40,5 @@ class AtomIsland<A : Atom>(atom: A) :
 
     override fun <R : Atom> map(transform: (A) -> R): AtomIsland<R> =
         // New island must be created by the transform atom.
-        transform.invoke(atoms().single()).getIsland<R>()
+        transform.invoke(atoms.single()).getIsland<R>()
 }

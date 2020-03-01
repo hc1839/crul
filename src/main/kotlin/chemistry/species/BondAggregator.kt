@@ -130,7 +130,7 @@ object BondAggregator {
             distinctBonds.distinctBy { bond ->
                 // Make the distinction of a bond depend only on the atoms and
                 // not on the bond order.
-                bond.atoms().map { atom -> Referential(atom) }.toSet()
+                bond.atoms.map { atom -> Referential(atom) }.toSet()
             }.count()
         ) {
             throw IllegalArgumentException(
@@ -139,7 +139,7 @@ object BondAggregator {
         }
 
         val wrappedAtoms = distinctBonds
-            .flatMap { bond -> bond.atoms() }
+            .flatMap { bond -> bond.atoms }
             .map { atom -> Referential(atom) }
 
         // Sets of atoms that are bonded to the key of the map.

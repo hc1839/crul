@@ -29,9 +29,9 @@ import crul.distinct.Referential
  *      Type of subspecies.
  */
 interface Aggregate<S : Species> : Species {
-    override fun atoms(): List<Atom> =
-        subspecies
-            .flatMap { it.atoms() }
+    override val atoms: List<Atom>
+        get() = subspecies
+            .flatMap { it.atoms }
             .distinctBy { Referential(it) }
 
     /**
@@ -62,7 +62,7 @@ interface Aggregate<S : Species> : Species {
      *  Comparison is referential.
      */
     fun containsAtom(atom: Atom): Boolean =
-        atoms().any { it === atom }
+        atoms.any { it === atom }
 
     /**
      *  Centroid of [atoms].
@@ -71,7 +71,7 @@ interface Aggregate<S : Species> : Species {
         var positionSum = Vector3D(0.0, 0.0, 0.0)
         var atomCount = 0
 
-        for (atom in atoms()) {
+        for (atom in atoms) {
             positionSum += atom.position
             ++atomCount
         }
@@ -85,7 +85,7 @@ interface Aggregate<S : Species> : Species {
     fun radius(): Double {
         val centroid = centroid()
 
-        return atoms()
+        return atoms
             .map { (it.position - centroid).getNorm() }
             .max()!!
     }

@@ -41,7 +41,7 @@ import crul.distinct.Referential
 abstract class AbstractMolecule<A : Atom>(bonds: Collection<Bond<A>>) :
     AbstractFragment<A>(
         if (!bonds.isEmpty()) {
-            bonds.flatMap { it.atoms() }.distinctBy { Referential(it) }
+            bonds.flatMap { it.atoms }.distinctBy { Referential(it) }
         } else {
             throw IllegalArgumentException(
                 "Collection of bonds given to construct a molecule is empty."
@@ -95,7 +95,7 @@ abstract class AbstractMolecule<A : Atom>(bonds: Collection<Bond<A>>) :
             null
         } else {
             val wrappedBondAtoms = bond
-                .atoms()
+                .atoms
                 .map { Referential(it) }
                 .toSet()
 
@@ -145,7 +145,7 @@ abstract class AbstractMolecule<A : Atom>(bonds: Collection<Bond<A>>) :
                 mutableMapOf<Referential<A>, MutableList<Bond<A>>>()
 
             for (bond in bondAggregate) {
-                for (atom in bond.atoms()) {
+                for (atom in bond.atoms) {
                     val wrappedAtom = Referential(atom)
 
                     if (!bondListsByAtom.containsKey(wrappedAtom)) {

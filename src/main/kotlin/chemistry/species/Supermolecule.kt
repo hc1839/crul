@@ -23,8 +23,8 @@ package crul.chemistry.species
  *      Type of atoms.
  */
 interface Supermolecule<A : Atom> : Aggregate<Island<A>> {
-    override fun atoms(): List<A> =
-        super.atoms().map {
+    override val atoms: List<A>
+        get() = super.atoms.map {
             @Suppress("UNCHECKED_CAST")
             it as A
         }

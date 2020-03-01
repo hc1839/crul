@@ -33,8 +33,8 @@ interface Atom : Species {
     /**
      *  Singleton list containing itself.
      */
-    override fun atoms(): List<Atom> =
-        listOf(this)
+    override val atoms: List<Atom>
+        get() = listOf(this)
 
     /**
      *  Element of the atom.

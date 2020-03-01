@@ -68,13 +68,13 @@ fun <A : Atom> List<Fragment<A>>.exportXyz(
 
     var xyzBuilder = ""
 
-    xyzBuilder += sumBy { it.atoms().count() }.toString() + "\n"
+    xyzBuilder += sumBy { it.atoms.count() }.toString() + "\n"
     xyzBuilder += label + "\n"
 
     val angstromUnit = UnitOfMeasure.parse("Ao")
 
     for (fragment in this) {
-        for (atom in fragment.atoms()) {
+        for (atom in fragment.atoms) {
             xyzBuilder += atom.element.symbol + " "
 
             xyzBuilder += atom.position.toArray().map {
