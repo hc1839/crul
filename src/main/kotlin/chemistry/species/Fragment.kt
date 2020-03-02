@@ -28,6 +28,16 @@ interface Fragment<A : Atom> : Aggregate<A> {
             super.atoms as List<A>
         )
 
+    /**
+     *  Returns a new fragment with atoms from the application of `transform`
+     *  to each atom in this fragment.
+     *
+     *  [atoms] of the returned fragment have the same order as that of this
+     *  fragment.
+     */
+    fun <R : Atom> map(transform: (A) -> R): Fragment<R> =
+        Fragment(atoms.map(transform))
+
     companion object {
         /**
          *  Constructs a [Fragment].

@@ -158,8 +158,8 @@ interface Island<A : Atom> : Fragment<A> {
         }
 
     /**
-     *  Returns a new island with atoms from the application of `transform` to
-     *  each atom in this island.
+     *  Bonds are recreated between mapped atoms, and [bonds] of the returned
+     *  island have the same ordering as that of this island.
      */
-    fun <R : Atom> map(transform: (A) -> R): Island<R>
+    abstract override fun <R : Atom> map(transform: (A) -> R): Island<R>
 }

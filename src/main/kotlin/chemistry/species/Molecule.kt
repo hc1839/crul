@@ -33,50 +33,35 @@ class Molecule<A : Atom>(bonds: List<Bond<A>>) :
     AbstractMolecule<A>(bonds)
 {
     override fun <R : Atom> map(transform: (A) -> R): Molecule<R> {
-        // From wrapped input atom to output atom.
-        val atomCorrespondence = atoms
-            .map { inputAtom ->
-                Referential(inputAtom)
-            }
-            .associateWith { wrappedInputAtom ->
-                transform.invoke(wrappedInputAtom.value)
-            }
+        val outputAtoms = atoms.map { transform.invoke(it) }
 
         // Check that there are no two referentially equal output atoms.
-        if (
-            atomCorrespondence
-                .entries
-                .map { Referential(it.value) }
-                .distinct()
-                .count() != atomCorrespondence.count()
+        if (outputAtoms.distinctBy(::Referential).count() !=
+            outputAtoms.count()
         ) {
             throw RuntimeException(
                 "Atom mapper yielded referentially equal atoms."
             )
         }
 
-        val outputBonds = mutableListOf<Bond<R>>()
+        // From wrapped input atom to output atom.
+        val atomCorrespondence = atoms.zip(outputAtoms) {
+            inputAtom, outputAtom ->
 
-        // Connect output atoms into output bonds.
-        for (inputBond in bonds) {
-            val wrappedInputAtoms = atoms.map {
-                Referential(it)
-            }
+            Pair(Referential(inputAtom), outputAtom)
+        }.toMap()
 
-            val outputAtoms = wrappedInputAtoms.map {
-                atomCorrespondence[it]!!
-            }
+        // Recreate bonds with output atoms.
+        val outputBonds = bonds.map { inputBond ->
+            val (atom1, atom2) = inputBond.toAtomPair()
 
-            // Add the output bond.
-            outputBonds.add(
-                Bond(
-                    outputAtoms[0],
-                    outputAtoms[1],
-                    inputBond.bondType
-                )
+            Bond(
+                atomCorrespondence[Referential(atom1)]!!,
+                atomCorrespondence[Referential(atom2)]!!,
+                inputBond.bondType
             )
         }
 
-        return Molecule(outputBonds.toList())
+        return Molecule(outputBonds)
     }
 }
