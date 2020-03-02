@@ -23,16 +23,17 @@ import crul.distinct.Referential
  */
 object BondAggregator {
     /**
-     *  Aggregates atoms into atom lists, each of which corresponds an island.
+     *  Aggregates atoms into atom lists, each of which corresponds to an
+     *  island.
      *
-     *  It uses breadth-first search.
+     *  Breadth-first search is used.
      *
      *  @param partners
-     *      Map of atom to set of atoms that are bonded to the key. Atoms
-     *      appearing as values must also exist as a key.
+     *      Map of atom to set of atoms that are bonded to it. Atoms appearing
+     *      as values must also exist as a key.
      *
      *  @return
-     *      Atoms aggregated into molecules.
+     *      Atoms aggregated into corresponding molecules.
      */
     private fun <A : Atom> aggregateAtoms(
         partners: Map<Referential<A>, Set<Referential<A>>>
@@ -93,17 +94,16 @@ object BondAggregator {
     }
 
     /**
-     *  Aggregates bonds into bond lists, each of which corresponds an island.
+     *  Aggregates bonds into bond lists, each of which corresponds to an
+     *  island.
      *
      *  @param bonds
-     *      Collection of bonds. Order is not important, and bonds with equal
-     *      orders and referentially equal atoms are removed. Exception is
-     *      raised if two bonds have referentially equal atoms but unequal
-     *      orders.
+     *      Collection of referentially distinct bonds. No two bonds can have
+     *      referentially equal atoms.
      *
      *  @return
-     *      List of bond lists such that different bond lists correspond to
-     *      different islands.
+     *      List of bond lists such that each bond list corresponds to an
+     *      island. If `bonds` is empty, an empty list is returned.
      */
     @JvmStatic
     fun <A : Atom> aggregate(
@@ -114,31 +114,26 @@ object BondAggregator {
             return listOf()
         }
 
-        // Bonds that are distinct by atoms and bond order.
-        val distinctBonds = bonds.distinctBy { bond ->
-            val wrappedAtoms = bond
-                .toAtomPair()
-                .toList()
-                .map { atom -> Referential(atom) }
-                .toSet()
+        val distinctBonds = bonds.distinctBy { Referential(it) }
 
-            wrappedAtoms + setOf(bond.order)
-        }
-
-        if (
-            distinctBonds.count() !=
-            distinctBonds.distinctBy { bond ->
-                // Make the distinction of a bond depend only on the atoms and
-                // not on the bond order.
-                bond.atoms.map { atom -> Referential(atom) }.toSet()
-            }.count()
-        ) {
+        if (distinctBonds.count() != bonds.count()) {
             throw IllegalArgumentException(
-                "Two bonds have equal atoms but unequal bond orders."
+                "Bonds are not referentially distinct."
             )
         }
 
-        val wrappedAtoms = distinctBonds
+        // Check that no two bonds have referentially equal atoms.
+        val bondsDistinctByRefEqualAtoms = bonds.distinctBy { bond ->
+            bond.atoms.map(::Referential).toSet()
+        }
+
+        if (bondsDistinctByRefEqualAtoms.count() != bonds.count()) {
+            throw IllegalArgumentException(
+                "At least two bonds have referentially equal atoms."
+            )
+        }
+
+        val wrappedAtoms = bonds
             .flatMap { bond -> bond.atoms }
             .map { atom -> Referential(atom) }
 
@@ -153,7 +148,7 @@ object BondAggregator {
         }
 
         // Index the partners and bonds.
-        for (bond in distinctBonds) {
+        for (bond in bonds) {
             val (atom1, atom2) = bond.toAtomPair()
 
             val wrappedAtom1 = Referential(atom1)

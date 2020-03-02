@@ -23,10 +23,10 @@ package crul.chemistry.species
  *  more than once such that there is one-to-one correspondence with the atom
  *  that the island is representing.
  *
- *  @constructor
- *
  *  @param A
  *      Type of atom.
+ *
+ *  @constructor
  *
  *  @param atom
  *      Atom that the island represents.
@@ -35,7 +35,7 @@ class AtomIsland<A : Atom>(atom: A) :
     AbstractFragment<A>(listOf(atom)),
     Island<A>
 {
-    override fun bonds(): Collection<Bond<A>> =
+    override val bonds: List<Bond<A>> =
         listOf()
 
     override fun <R : Atom> map(transform: (A) -> R): AtomIsland<R> =

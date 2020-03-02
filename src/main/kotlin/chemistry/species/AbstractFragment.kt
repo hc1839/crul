@@ -25,5 +25,5 @@ package crul.chemistry.species
  *      Atoms of the fragment.
  */
 abstract class AbstractFragment<A : Atom>(atoms: List<A>) :
-    AbstractAggregate<A>(atoms.toList()),
+    AbstractAggregate<A>(atoms),
     Fragment<A>

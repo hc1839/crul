@@ -123,7 +123,7 @@ fun List<Supermolecule<TriposAtom>>.exportMol2(
                 numAtoms = atoms.count(),
                 numBonds = supermol.subspecies.map {
                     if (it is Molecule<*>) {
-                        it.bonds().count()
+                        it.bonds.count()
                     } else {
                         0
                     }
@@ -160,7 +160,7 @@ fun List<Supermolecule<TriposAtom>>.exportMol2(
         }
 
         val bonds = supermol.subspecies.flatMap { island ->
-            island.bonds()
+            island.bonds
         }
 
         // Construct Tripos bond data.

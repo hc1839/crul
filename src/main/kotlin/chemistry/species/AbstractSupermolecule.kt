@@ -72,62 +72,50 @@ abstract class AbstractSupermolecule<A : Atom>(islands: List<Island<A>>) :
     }
 
     override fun minusAtoms(atoms: Collection<A>): Supermolecule<A> {
-        val wrappedGivenAtoms = atoms.map { Referential(it) }
+        val wrappedSubtrahendAtoms = atoms.map { Referential(it) }.distinct()
 
         val filteredBonds = subspecies
-            .filter { island -> !island.isAtomic() }
-            .flatMap { island -> island.bonds() }
+            .flatMap { island -> island.bonds }
             .filterNot { bond ->
                 bond.atoms.any { atom ->
-                    Referential(atom) in wrappedGivenAtoms
+                    Referential(atom) in wrappedSubtrahendAtoms
                 }
             }
 
-        val newMolecules = BondAggregator.aggregate(filteredBonds).map {
-            Molecule(it)
-        }
+        val newMolecules = BondAggregator
+            .aggregate(filteredBonds)
+            .map { Molecule(it) }
 
         val filteredAtomIslands = subspecies.filter {
             it.isAtomic() &&
-            Referential(it.atoms.single()) !in wrappedGivenAtoms
+            Referential(it.atoms.single()) !in wrappedSubtrahendAtoms
         }
 
         return Supermolecule(newMolecules + filteredAtomIslands)
     }
 
     override fun minusBonds(bonds: Collection<Bond<A>>): Supermolecule<A> {
-        val wrappedGivenBonds = bonds.map { Referential(it) }
+        val wrappedSubtrahendBonds = bonds.map { Referential(it) }.distinct()
 
-        val (atomIslands, origMolecules) = subspecies.partition {
-            it.isAtomic()
-        }
+        val filteredBonds = subspecies
+            .flatMap { island -> island.bonds }
+            .filter { bond -> Referential(bond) !in wrappedSubtrahendBonds }
 
-        val filteredBonds = origMolecules
-            .flatMap { molecule -> molecule.bonds() }
-            .filter { bond ->
-                Referential(bond) !in wrappedGivenBonds
-            }
-
-        val newMolecules = BondAggregator.aggregate(filteredBonds).map {
-            Molecule(it)
-        }
+        val newMolecules = BondAggregator
+            .aggregate(filteredBonds)
+            .map { Molecule(it) }
 
         val wrappedAtomsOfNewMolecules = newMolecules
-            .flatMap { molecule ->
-                molecule.atoms.map { atom ->
-                    Referential(atom)
-                }
-            }
+            .flatMap { molecule -> molecule.atoms.map(::Referential) }
             .distinct()
 
+        val wrappedUnbondedAtoms = subspecies
+            .filter { it.isAtomic() }
+            .map { Referential(it.atoms.single()) }
+
         val newAtomIslands = (
-            atomIslands.map { Referential(it.atoms.single()) } +
-            bonds
-                .flatMap { bond ->
-                    bond.atoms.map { atom ->
-                        Referential(atom)
-                    }
-                }
+            wrappedUnbondedAtoms + bonds
+                .flatMap { bond -> bond.atoms.map(::Referential) }
                 .distinct()
                 .filter { wrappedAtom ->
                     wrappedAtom !in wrappedAtomsOfNewMolecules
@@ -141,17 +129,17 @@ abstract class AbstractSupermolecule<A : Atom>(islands: List<Island<A>>) :
         islands: Collection<Island<A>>
     ): Supermolecule<A>
     {
-        val wrappedGivenIslands = islands.map { Referential(it) }
-        val wrappedOrigIslands = subspecies.map { Referential(it) }
+        val wrappedSubtrahendIslands = islands.map(::Referential)
+        val wrappedOrigIslands = subspecies.map(::Referential)
 
-        if (wrappedGivenIslands.any { it !in wrappedOrigIslands }) {
+        if (wrappedSubtrahendIslands.any { it !in wrappedOrigIslands }) {
             throw IllegalArgumentException(
                 "A given island does not exist in this complex."
             )
         }
 
         return Supermolecule(
-            (wrappedOrigIslands - wrappedGivenIslands).map { it.value }
+            (wrappedOrigIslands - wrappedSubtrahendIslands).map { it.value }
         )
     }
 }

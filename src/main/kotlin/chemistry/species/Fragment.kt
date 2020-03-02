@@ -16,12 +16,8 @@
 
 package crul.chemistry.species
 
-import crul.serialize.AvroSimple
-
 /**
  *  Interface of a fragment, which is an aggregate of atoms.
- *
- *  Atoms are compared by referentially equality.
  *
  *  @param A
  *      Type of atoms.

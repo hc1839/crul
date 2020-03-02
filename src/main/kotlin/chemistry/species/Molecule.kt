@@ -29,7 +29,7 @@ import crul.distinct.Referential
  *  @param bonds
  *      Bonds of the molecule.
  */
-class Molecule<A : Atom>(bonds: Collection<Bond<A>>) :
+class Molecule<A : Atom>(bonds: List<Bond<A>>) :
     AbstractMolecule<A>(bonds)
 {
     override fun <R : Atom> map(transform: (A) -> R): Molecule<R> {
@@ -58,7 +58,7 @@ class Molecule<A : Atom>(bonds: Collection<Bond<A>>) :
         val outputBonds = mutableListOf<Bond<R>>()
 
         // Connect output atoms into output bonds.
-        for (inputBond in bonds()) {
+        for (inputBond in bonds) {
             val wrappedInputAtoms = atoms.map {
                 Referential(it)
             }

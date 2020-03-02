@@ -21,27 +21,17 @@ import crul.distinct.Referential
 /**
  *  Skeletal implementation of [Aggregate].
  *
- *  Iterating over the subspecies must be in the same order.
- *
- *  @param A
- *      Type of atoms.
- *
- *  @constructor
- *
  *  @param S
  *      Type of subspecies.
  *
- *  @param subspecies
- *      Subspecies in the aggregate.
+ *  @constructor
  */
-abstract class AbstractAggregate<S : Species>(subspecies: List<S>) :
-    Aggregate<S>
+abstract class AbstractAggregate<S : Species>(
+    override val subspecies: List<S>
+) : Aggregate<S>
 {
-    override val subspecies: List<S> =
-        subspecies.toList()
-
     init {
-        if (subspecies.isEmpty()) {
+        if (this.subspecies.isEmpty()) {
             throw IllegalArgumentException(
                 "List of subspecies to construct an aggregate " +
                 "is empty."
@@ -49,8 +39,8 @@ abstract class AbstractAggregate<S : Species>(subspecies: List<S>) :
         }
 
         if (
-            subspecies.distinctBy { Referential(it) }.count() !=
-            subspecies.count()
+            this.subspecies.distinctBy { Referential(it) }.count() !=
+            this.subspecies.count()
         ) {
             throw IllegalArgumentException(
                 "Subspecies in the given list to construct an aggregate " +

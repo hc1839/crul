@@ -30,7 +30,7 @@ interface Supermolecule<A : Atom> : Aggregate<Island<A>> {
         }
 
     /**
-     *  Gets the island that contains a given atom by referential equality.
+     *  Gets the island that contains `atom`.
      *
      *  If `atom` does not exist, an exception is thrown.
      */
@@ -39,52 +39,58 @@ interface Supermolecule<A : Atom> : Aggregate<Island<A>> {
     /**
      *  Returns a new supermolecule without the atoms in a given collection.
      *
-     *  Comparison is referential. If an atom does not exist, an exception is
-     *  thrown.
+     *  If an atom does not exist, an exception is thrown.
      */
     fun minusAtoms(atoms: Collection<A>): Supermolecule<A>
 
     /**
-     *  Returns a new supermolecule without the given atom and the bonds that
-     *  it was participating in.
+     *  Returns a new supermolecule without `atom` and the bonds that it was
+     *  participating in.
      *
-     *  Comparison is referential. If `atom` does not exist, an exception is
-     *  thrown.
+     *  If `atom` does not exist, an exception is thrown.
      */
     fun minusAtom(atom: A): Supermolecule<A> =
         minusAtoms(listOf(atom))
 
     /**
-     *  Returns a new supermolecule without the bonds in a given collection.
+     *  Returns a new supermolecule without `bonds`.
      *
-     *  Comparison is referential. If a bond does not exist, an exception is
-     *  thrown.
+     *  Order of the atoms and any subspecies in the returned supermolecule is
+     *  implementation-specific.
+     *
+     *  If a bond does not exist, an exception is thrown.
      */
     fun minusBonds(bonds: Collection<Bond<A>>): Supermolecule<A>
 
     /**
-     *  Returns a new supermolecule without the given bond, adding new atom
-     *  islands that result from the bond removals if necessary.
+     *  Returns a new supermolecule without `bond`, adding new atom islands
+     *  that result from the bond removals if necessary.
      *
-     *  Comparison is referential. If `bond` does not exist, an exception is
-     *  thrown.
+     *  Order of the atoms and any subspecies in the returned supermolecule is
+     *  implementation-specific.
+     *
+     *  If `bond` does not exist, an exception is thrown.
      */
     fun minusBond(bond: Bond<A>): Supermolecule<A> =
         minusBonds(listOf(bond))
 
     /**
-     *  Returns a new supermolecule without the islands in a given collection.
+     *  Returns a new supermolecule without `islands`.
      *
-     *  Comparison is referential. If an island does not exist, an exception is
-     *  thrown.
+     *  Order of the atoms and any subspecies in the returned supermolecule is
+     *  implementation-specific.
+     *
+     *  If an island does not exist, an exception is thrown.
      */
     fun minusIslands(islands: Collection<Island<A>>): Supermolecule<A>
 
     /**
-     *  Returns a new supermolecule without the given island.
+     *  Returns a new supermolecule without `island`.
      *
-     *  Comparison is referential. If `island` does not exist, an exception is
-     *  thrown.
+     *  Order of the atoms and any subspecies in the returned supermolecule is
+     *  implementation-specific.
+     *
+     *  If `island` does not exist, an exception is thrown.
      */
     fun minusIsland(island: Island<A>): Supermolecule<A> =
         minusIslands(listOf(island))

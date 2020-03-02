@@ -25,28 +25,20 @@ import crul.distinct.Referential
  *
  *  A molecule is taken in a more general sense to include polyatomic ions.
  *
- *  Atoms are referentially distinct.
- *
  *  @param A
  *      Type of atoms.
  *
  *  @constructor
  *
  *  @param bonds
- *      Non-empty collection of bonds of the molecule. Order is not important,
- *      and referentially equivalent bonds are removed. Exception is raised if
- *      (1) two bonds have referentially equal atoms but unequal orders or (2)
- *      collection of bonds represents more than one molecule.
+ *      Non-empty list of referentially distinct bonds of the molecule. No two
+ *      bonds can have referentially equal atoms. List of bonds must represent
+ *      exactly one molecule. Ordering of the atoms is determined by the
+ *      ordering of the bonds.
  */
-abstract class AbstractMolecule<A : Atom>(bonds: Collection<Bond<A>>) :
+abstract class AbstractMolecule<A : Atom>(override val bonds: List<Bond<A>>) :
     AbstractFragment<A>(
-        if (!bonds.isEmpty()) {
-            bonds.flatMap { it.atoms }.distinctBy { Referential(it) }
-        } else {
-            throw IllegalArgumentException(
-                "Collection of bonds given to construct a molecule is empty."
-            )
-        }
+        bonds.flatMap { it.atoms }.distinctBy { Referential(it) }
     ),
     Island<A>
 {
@@ -54,13 +46,7 @@ abstract class AbstractMolecule<A : Atom>(bonds: Collection<Bond<A>>) :
      *  Lists of bonds associated by the participating atom.
      */
     private val bondListsByAtom: Map<Referential<A>, List<Bond<A>>> =
-        bondIndexing(bonds)
-
-
-    override fun bonds(): Collection<Bond<A>> =
-        bondListsByAtom.values.flatten().distinctBy {
-            Referential(it)
-        }
+        bondIndexing(this.bonds)
 
     override fun getBondsByAtom(sourceAtom: A): List<Bond<A>> {
         val wrappedSourceAtom = Referential(sourceAtom)
@@ -112,11 +98,9 @@ abstract class AbstractMolecule<A : Atom>(bonds: Collection<Bond<A>>) :
          *  Indexing of the bonds from a collection of bonds.
          *
          *  @param bonds
-         *      Non-empty collection of bonds of the molecule. Order is not
-         *      important, and referentially equivalent bonds are removed.
-         *      Exception is raised if (1) two bonds have referentially equal
-         *      atoms but unequal orders or (2) collection of bonds represents
-         *      more than one molecule.
+         *      Non-empty collection of referentially distinct bonds of the
+         *      molecule. No two bonds can have referentially equal atoms.
+         *      Collection of bonds must represent exactly one molecule.
          *
          *  @return
          *      Map of wrapped atom to list of bonds that the atom is
@@ -131,15 +115,15 @@ abstract class AbstractMolecule<A : Atom>(bonds: Collection<Bond<A>>) :
                 )
             }
 
-            val bondAggregates = BondAggregator.aggregate(bonds)
+            val bondAggregate = BondAggregator
+                .aggregate(bonds)
+                .singleOrNull()
 
-            if (bondAggregates.count() != 1) {
+            if (bondAggregate == null) {
                 throw IllegalArgumentException(
                     "Collection of bonds represents more than one molecule."
                 )
             }
-
-            val bondAggregate = bondAggregates.single()
 
             val bondListsByAtom =
                 mutableMapOf<Referential<A>, MutableList<Bond<A>>>()

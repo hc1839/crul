@@ -23,9 +23,7 @@ package crul.chemistry.species
  *      Type of atoms.
  *
  *  @constructor
- *
- *  @param atoms
- *      Atoms of the fragment.
+ *      See [Fragment.newInstance].
  */
 internal class FragmentImpl<A : Atom>(atoms: List<A>) :
     AbstractFragment<A>(atoms)

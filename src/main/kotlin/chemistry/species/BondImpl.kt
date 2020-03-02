@@ -17,32 +17,24 @@
 package crul.chemistry.species
 
 import java.nio.ByteBuffer
-import org.msgpack.core.MessagePack
-import org.msgpack.value.Value
 
 import crul.distinct.Referential
-import crul.serialize.MessagePackSimple
 
 /**
  *  Default implementation of [Bond].
+ *
+ *  @constructor
+ *      See [Bond.newInstance].
  */
-internal class BondImpl<A : Atom> : Bond<A> {
+internal class BondImpl<A : Atom>(
+    atom1: A,
+    atom2: A,
+    override val order: String
+) : Bond<A>
+{
     override val subspecies: List<A>
 
-    /**
-     *  Pair of the atoms in the bond.
-     */
-    private val atomPair: Pair<A, A>
-
-    /**
-     *  Bond order as specified to the constructor.
-     */
-    override var order: String
-
-    /**
-     *  See [Bond.newInstance] for the description.
-     */
-    constructor(atom1: A, atom2: A, order: String) {
+    init {
         if (atom1 === atom2) {
             throw IllegalArgumentException(
                 "Atoms are referentially equal."
@@ -50,28 +42,8 @@ internal class BondImpl<A : Atom> : Bond<A> {
         }
 
         this.subspecies = listOf(atom1, atom2)
-        this.atomPair = Pair(atom1, atom2)
-        this.order = order
     }
 
-    override fun hashCode(): Int =
-        atomPair.toList().map { it.hashCode() }.toSet().hashCode()
-
-    override fun equals(other: Any?): Boolean =
-        other is BondImpl<*> &&
-        this::class == other::class &&
-        (
-            atomPair
-                .toList()
-                .map { Referential(it) }
-                .toSet() == other
-                    .atomPair
-                    .toList()
-                    .map { Referential(it) }
-                    .toSet() &&
-            order == other.order
-        )
-
     override fun toAtomPair(): Pair<A, A> =
-        atomPair
+        Pair(subspecies[0], subspecies[1])
 }

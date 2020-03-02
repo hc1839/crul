@@ -33,14 +33,6 @@ import crul.serialize.AvroSimple
  *      Type of atoms.
  */
 interface Bond<A : Atom> : Fragment<A> {
-    abstract override fun hashCode(): Int
-
-    /**
-     *  Bonds are equal if and only if the atoms (without regards to their
-     *  order) are referentially equal and bond orders are structurally equal.
-     */
-    abstract override fun equals(other: Any?): Boolean
-
     /**
      *  Bond order as an aribtrary string.
      */

@@ -25,26 +25,26 @@ import crul.chemistry.species.travel.Neighborhood
  *  Fragment that contains atoms of a molecule or contains a single atom.
  *
  *  To construct an island representing a molecule, instantiate a [Molecule].
- *  For a single atom, use [Atom.island].
+ *  For a single atom, use [Atom.getIsland].
  *
  *  @param A
  *      Type of atoms.
  */
 interface Island<A : Atom> : Fragment<A> {
     /**
+     *  Bonds in the island, or an empty list if the island contains a single
+     *  atom.
+     *
+     *  Bonds are referentially distinct. Ordering of the bonds is maintained
+     *  between evaluations but is implementation-specific.
+     */
+    val bonds: List<Bond<A>>
+
+    /**
      *  Whether the island is representing a single atom.
      */
     fun isAtomic(): Boolean =
         atoms.singleOrNull() != null
-
-    /**
-     *  Bonds in this island, or an empty collection if the island contains a
-     *  single atom.
-     *
-     *  Bonds are unique. Bonds are not necessarily in the same order between
-     *  calls.
-     */
-    fun bonds(): Collection<Bond<A>>
 
     /**
      *  Gets the bonds that an atom is participating in.
@@ -66,7 +66,7 @@ interface Island<A : Atom> : Fragment<A> {
             )
         }
 
-        return bonds().filter { it.containsAtom(sourceAtom) }
+        return bonds.filter { it.containsAtom(sourceAtom) }
     }
 
     /**
@@ -118,10 +118,9 @@ interface Island<A : Atom> : Fragment<A> {
             )
         }
 
-        return bonds().filter {
-            it.containsAtom(atom1) &&
-            it.containsAtom(atom2)
-        }.singleOrNull()
+        return bonds
+            .filter { it.containsAtom(atom1) && it.containsAtom(atom2) }
+            .singleOrNull()
     }
 
     /**

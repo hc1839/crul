@@ -23,9 +23,7 @@ package crul.chemistry.species
  *      Type of subspecies.
  *
  *  @constructor
- *
- *  @param subspecies
- *      Subspecies in the aggregate.
+ *      See [Aggregate.newInstance].
  */
 internal class AggregateImpl<S : Species>(subspecies: List<S>) :
     AbstractAggregate<S>(subspecies)

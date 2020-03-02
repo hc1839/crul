@@ -27,12 +27,11 @@ import crul.apache.math.vector.*
  */
 interface Species {
     /**
-     *  List of all atoms in this species, or singleton list of itself if
+     *  List of all atoms in the species, or singleton list of itself if
      *  [Atom].
      *
-     *  Atoms in the list are referentially distinct. Ordering of the atoms in
-     *  the list are the same between evaluations but is
-     *  implementation-specific.
+     *  Atoms are referentially distinct. Order of the atoms is maintained
+     *  between evaluations but is implementation-specific.
      */
     val atoms: List<Atom>
 }

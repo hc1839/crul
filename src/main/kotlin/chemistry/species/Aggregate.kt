@@ -23,7 +23,7 @@ import crul.distinct.Referential
 
 /**
  *  Interface of a species aggregate, which is a species that is composed of
- *  one or more referentially unique subspecies.
+ *  one or more referentially distinct subspecies.
  *
  *  @param S
  *      Type of subspecies.
@@ -35,14 +35,15 @@ interface Aggregate<S : Species> : Species {
             .distinctBy { Referential(it) }
 
     /**
-     *  Subspecies.
+     *  List of subspecies in the aggregate.
+     *
+     *  Subspecies are referentially distinct. Order of the subspecies is
+     *  maintained between evaluations but is implementation-specific.
      */
     val subspecies: List<S>
 
     /**
      *  Whether `species` is a subspecies in the aggregate.
-     *
-     *  Comparison is referential.
      */
     fun contains(species: S): Boolean =
         subspecies.any { it === species }
@@ -50,16 +51,12 @@ interface Aggregate<S : Species> : Species {
     /**
      *  Whether all species in `speciesCollection` are subspecies in the
      *  aggregate.
-     *
-     *  Comparison is referential.
      */
     fun containsAll(speciesCollection: Collection<S>): Boolean =
         speciesCollection.all { contains(it) }
 
     /**
      *  Whether an atom exists in the aggregate.
-     *
-     *  Comparison is referential.
      */
     fun containsAtom(atom: Atom): Boolean =
         atoms.any { it === atom }
