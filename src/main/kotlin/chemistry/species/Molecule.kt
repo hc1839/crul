@@ -29,7 +29,7 @@ import crul.distinct.Referential
  *  @param bonds
  *      Bonds of the molecule.
  */
-class Molecule<A : Atom>(bonds: List<Bond<A>>) :
+open class Molecule<A : Atom>(bonds: List<Bond<A>>) :
     AbstractMolecule<A>(bonds)
 {
     override fun <R : Atom> map(transform: (A) -> R): Molecule<R> {
