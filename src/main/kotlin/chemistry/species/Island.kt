@@ -140,7 +140,7 @@ interface Island<A : Atom> : Fragment<A> {
                 atom !== sourceAtom
             }
 
-            Neighbor(bond.order, bondedAtom)
+            Neighbor(bond.bondType, bondedAtom)
         }
 
         return Neighborhood(

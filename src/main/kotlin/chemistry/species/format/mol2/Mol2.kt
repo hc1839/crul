@@ -75,7 +75,7 @@ fun Supermolecule.Companion.parseMol2(
  *      `MOLECULE`.
  *
  *  @param triposBondTypeMapper
- *      Tripos bond type given a [Bond.order].
+ *      Tripos bond type given a [Bond.bondType].
  */
 @JvmOverloads
 fun List<Supermolecule<TriposAtom>>.exportMol2(
@@ -172,7 +172,7 @@ fun List<Supermolecule<TriposAtom>>.exportMol2(
                 bondId = bondId,
                 originAtomId = atomIdsByAtom[Referential(originAtom)]!!,
                 targetAtomId = atomIdsByAtom[Referential(targetAtom)]!!,
-                bondType = triposBondTypeMapper.invoke(bond.order)
+                bondType = triposBondTypeMapper.invoke(bond.bondType)
             )
         }
 

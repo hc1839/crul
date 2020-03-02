@@ -34,9 +34,9 @@ import crul.serialize.AvroSimple
  */
 interface Bond<A : Atom> : Fragment<A> {
     /**
-     *  Bond order as an aribtrary string.
+     *  Bond type as an aribtrary string.
      */
-    val order: String
+    val bondType: String
 
     /**
      *  Atoms as a pair in the given order.
@@ -56,16 +56,16 @@ interface Bond<A : Atom> : Fragment<A> {
          *  @param atom2
          *      Second atom.
          *
-         *  @param order
-         *      Bond order as an arbitrary string.
+         *  @param bondType
+         *      Bond type as an arbitrary string.
          */
         @JvmStatic
         fun <A : Atom> newInstance(
             atom1: A,
             atom2: A,
-            order: String
+            bondType: String
         ): Bond<A> =
-            Bond(atom1, atom2, order)
+            Bond(atom1, atom2, bondType)
     }
 }
 
@@ -74,5 +74,5 @@ interface Bond<A : Atom> : Fragment<A> {
  *
  *  See [Bond.newInstance] for description.
  */
-fun <A : Atom> Bond(atom1: A, atom2: A, order: String): Bond<A> =
-    BondImpl(atom1, atom2, order)
+fun <A : Atom> Bond(atom1: A, atom2: A, bondType: String): Bond<A> =
+    BondImpl(atom1, atom2, bondType)

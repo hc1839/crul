@@ -72,7 +72,7 @@ class Molecule<A : Atom>(bonds: List<Bond<A>>) :
                 Bond(
                     outputAtoms[0],
                     outputAtoms[1],
-                    inputBond.order
+                    inputBond.bondType
                 )
             )
         }

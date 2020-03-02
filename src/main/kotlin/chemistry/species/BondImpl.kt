@@ -29,7 +29,7 @@ import crul.distinct.Referential
 internal class BondImpl<A : Atom>(
     atom1: A,
     atom2: A,
-    override val order: String
+    override val bondType: String
 ) : Bond<A>
 {
     override val subspecies: List<A>
