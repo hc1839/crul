@@ -18,6 +18,7 @@ package crul.chemistry.species.format.mol2
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
+import crul.chemistry.species.AtomIsland
 import crul.chemistry.species.Bond
 import crul.chemistry.species.BondAggregator
 import crul.chemistry.species.Element
@@ -127,11 +128,10 @@ open class DefaultSupermoleculeBuilder() : SupermoleculeBuilder {
                 .filter { atom -> Referential(atom) !in wrappedBondedAtoms }
                 .toSet()
 
-            val atomIslands = mutableListOf<Island<TriposAtom>>()
-
             // Add atoms that are not participating in a bond.
-            for (unbondedAtom in unbondedAtoms) {
-                atomIslands.add(unbondedAtom.getIsland())
+            val atomIslands = unbondedAtoms.map {
+                @Suppress("UNCHECKED_CAST")
+                it.island as AtomIsland<TriposAtom>
             }
 
             val molecules = BondAggregator
@@ -139,7 +139,7 @@ open class DefaultSupermoleculeBuilder() : SupermoleculeBuilder {
                 .map { Molecule(it) }
 
             supermols.add(
-                Supermolecule(atomIslands + molecules)
+                Supermolecule<TriposAtom>(atomIslands + molecules)
             )
         }
 

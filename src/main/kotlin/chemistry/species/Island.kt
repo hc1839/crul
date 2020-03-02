@@ -25,7 +25,7 @@ import crul.chemistry.species.travel.Neighborhood
  *  Fragment that contains atoms of a molecule or contains a single atom.
  *
  *  To construct an island representing a molecule, instantiate a [Molecule].
- *  For a single atom, use [Atom.getIsland].
+ *  For a single atom, use [Atom.island].
  *
  *  @param A
  *      Type of atoms.

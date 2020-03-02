@@ -85,16 +85,8 @@ data class TriposAtom @JvmOverloads constructor(
         this.element = Element(elementSymbol)
     }
 
-    private var _island: AtomIsland<TriposAtom>? = null
-
-    override fun <A : Atom> getIsland(): AtomIsland<A> {
-        if (_island == null) {
-            _island = AtomIsland(this)
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        return _island!! as AtomIsland<A>
-    }
+    override val island: AtomIsland<Atom> =
+        AtomIsland(this)
 
     override val recordType: TriposRecordType =
         TriposRecordType.ATOM

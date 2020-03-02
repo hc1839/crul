@@ -19,7 +19,6 @@ package crul.chemistry.species
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 import crul.chemistry.species.Element
-import crul.serialize.AvroSimple
 
 /**
  *  Interface of an atom.
@@ -52,14 +51,8 @@ interface Atom : Species {
      *  It always returns the same atom island. Two atom islands are
      *  referentially equal if and only if the two atoms are referentially
      *  equal.
-     *
-     *  @param A
-     *      Type of this atom represented by the returned island.
-     *
-     *  @return
-     *      Island representing this atom.
      */
-    fun <A : Atom> getIsland(): AtomIsland<A>
+    val island: AtomIsland<Atom>
 
     companion object {
         /**

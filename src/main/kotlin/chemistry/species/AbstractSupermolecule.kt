@@ -109,18 +109,21 @@ abstract class AbstractSupermolecule<A : Atom>(islands: List<Island<A>>) :
             .flatMap { molecule -> molecule.atoms.map(::Referential) }
             .distinct()
 
-        val wrappedUnbondedAtoms = subspecies
+        val wrappedUnbondedAtomsOfOld = subspecies
             .filter { it.isAtomic() }
             .map { Referential(it.atoms.single()) }
 
-        val newAtomIslands = (
-            wrappedUnbondedAtoms + bonds
-                .flatMap { bond -> bond.atoms.map(::Referential) }
-                .distinct()
-                .filter { wrappedAtom ->
-                    wrappedAtom !in wrappedAtomsOfNewMolecules
-                }
-        ).distinct().map { it.value.getIsland<A>() }
+        val wrappedUnbondedAtomsOfNew = wrappedUnbondedAtomsOfOld + bonds
+            .flatMap { bond -> bond.atoms.map(::Referential) }
+            .distinct()
+            .filter { wrappedAtom ->
+                wrappedAtom !in wrappedAtomsOfNewMolecules
+            }
+
+        val newAtomIslands = wrappedUnbondedAtomsOfNew.distinct().map {
+            @Suppress("UNCHECKED_CAST")
+            it.value.island as AtomIsland<A>
+        }
 
         return Supermolecule<A>(newMolecules + newAtomIslands)
     }

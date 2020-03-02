@@ -30,14 +30,6 @@ abstract class AbstractAtom constructor(
     override val position: Vector3D
 ) : Atom
 {
-    private var _island: AtomIsland<*>? = null
-
-    override fun <A : Atom> getIsland(): AtomIsland<A> {
-        if (_island == null) {
-            _island = AtomIsland(this)
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        return _island!! as AtomIsland<A>
-    }
+    override val island: AtomIsland<Atom> =
+        AtomIsland(this)
 }

@@ -39,6 +39,8 @@ class AtomIsland<A : Atom>(atom: A) :
         listOf()
 
     override fun <R : Atom> map(transform: (A) -> R): AtomIsland<R> =
-        // New island must be created by the transform atom.
-        transform.invoke(atoms.single()).getIsland<R>()
+        // New island must be retrieved from the mapped atom.
+        @Suppress("UNCHECKED_CAST") (
+            transform.invoke(atoms.single()).island as AtomIsland<R>
+        )
 }
