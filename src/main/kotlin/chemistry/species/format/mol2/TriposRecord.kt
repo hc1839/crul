@@ -16,6 +16,8 @@
 
 package crul.chemistry.species.format.mol2
 
+import java.io.Writer
+
 /**
  *  Data record associated with a record type indicator (RTI) in Mol2 format.
  */
@@ -26,12 +28,12 @@ interface TriposRecord {
     val recordType: TriposRecordType
 
     /**
-     *  Exports the record to Mol2 format.
+     *  Writes the Tripos record in Mol2 format without the record type
+     *  indicator.
      *
-     *  It does not include the record type indicator and does not have a
-     *  trailing newline.
+     *  It does not write a trailing newline.
      */
-    fun exportMol2(): String
+    fun exportMol2(writer: Writer)
 
     /**
      *  Builder of a Tripos data record by data lines.

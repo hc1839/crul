@@ -16,6 +16,7 @@
 
 package crul.chemistry.species.format.mol2
 
+import java.io.Writer
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 import crul.chemistry.species.Atom
@@ -91,7 +92,7 @@ data class TriposAtom @JvmOverloads constructor(
     override val recordType: TriposRecordType =
         TriposRecordType.ATOM
 
-    override fun exportMol2(): String {
+    override fun exportMol2(writer: Writer) {
         var mol2RecordBuilder = listOf<String>()
 
         mol2RecordBuilder += atomId.toString()
@@ -111,7 +112,9 @@ data class TriposAtom @JvmOverloads constructor(
             .dropLastWhile { it == null }
             .map { it?.toString() ?: TriposStringField.FOUR_STARS }
 
-        return mol2RecordBuilder.joinToString(TriposRecord.FIELD_SEPARATOR)
+        writer.write(
+            mol2RecordBuilder.joinToString(TriposRecord.FIELD_SEPARATOR)
+        )
     }
 
     /**

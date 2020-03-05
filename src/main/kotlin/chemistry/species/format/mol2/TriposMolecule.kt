@@ -16,6 +16,8 @@
 
 package crul.chemistry.species.format.mol2
 
+import java.io.Writer
+
 /**
  *  Tripos `MOLECULE` record.
  *
@@ -39,7 +41,7 @@ data class TriposMolecule @JvmOverloads constructor(
     override val recordType: TriposRecordType =
         TriposRecordType.MOLECULE
 
-    override fun exportMol2(): String {
+    override fun exportMol2(writer: Writer) {
         val mol2RecordBuilder = mutableListOf<String>()
 
         mol2RecordBuilder.add(molName ?: TriposStringField.FOUR_STARS)
@@ -71,7 +73,9 @@ data class TriposMolecule @JvmOverloads constructor(
             molComment ?: TriposStringField.FOUR_STARS
         )
 
-        return mol2RecordBuilder.joinToString("\n")
+        writer.write(
+            mol2RecordBuilder.joinToString("\n")
+        )
     }
 
     /**

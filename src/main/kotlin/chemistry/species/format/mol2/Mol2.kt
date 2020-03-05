@@ -62,100 +62,73 @@ fun Supermolecule.Companion.parseMol2(
 /**
  *  Exports a list of supermolecules in Mol2 format.
  *
+ *  Atom identifiers must be unique within each supermolecule.
+ *
  *  @param writer
  *      Writer of Mol2 with a trailing newline.
  *
- *  @param supermolNameMapper
- *      Tripos molecule name given a supermolecule. If `null`, UUID Version 4
- *      is used.
- *
- *  @param numSubstMapper
- *      Number of substructures given a supermolecule. If `null`, nothing is
- *      written for the Tripos field, 'num_subst`, in the Tripos record,
- *      `MOLECULE`.
- *
- *  @param triposBondTypeMapper
- *      Tripos bond type given a [Bond.bondType].
+ *  @param triposRecordMapper
+ *      Mapper of supported Tripos records.
  */
 @JvmOverloads
 fun List<Supermolecule<TriposAtom>>.exportMol2(
     writer: Writer,
-    supermolNameMapper: ((Supermolecule<TriposAtom>) -> String)? = null,
-    numSubstMapper: ((Supermolecule<TriposAtom>) -> Int)? = null,
-    triposBondTypeMapper: (String) -> TriposBond.BondType
+    triposRecordMapper: TriposRecordMapper = DefaultTriposRecordMapper()
 ) {
-    // Tripos molecule names.
+    // Tripos molecule names that have been used. It is for checking
+    // uniqueness.
     val supermolNames = mutableListOf<String>()
 
-    // Add or create Tripos molecule names.
-    for (supermol in this) {
-        val supermolName = supermolNameMapper?.invoke(supermol)
-
-        if (supermolName != null) {
-            if (supermolNames.contains(supermolName)) {
-                throw RuntimeException(
-                    "Tripos molecule name is not unique: $supermolName"
-                )
-            }
-
-            supermolNames.add(supermolName)
-        } else {
-            var uuid: String
-
-            do {
-                uuid = crul.uuid.UuidGenerator.asNCName()
-            } while (supermolNames.contains(uuid))
-
-            supermolNames.add(uuid)
-        }
-    }
-
     // Serialize each supermolecule.
-    for ((supermolIndex, supermol) in withIndex()) {
-        writer.write(TriposRecordType.MOLECULE.rti())
-        writer.write("\n")
+    for (supermol in this) {
+        var uuid: String
+
+        do {
+            uuid = crul.uuid.UuidGenerator.asNCName()
+        } while (supermolNames.contains(uuid))
 
         val atoms = supermol.atoms
 
-        writer.write(
-            TriposMolecule(
-                molName = supermolNames[supermolIndex],
-                numAtoms = atoms.count(),
-                numBonds = supermol.subspecies.map {
-                    if (it is Molecule<*>) {
-                        it.bonds.count()
-                    } else {
-                        0
-                    }
-                }.sum(),
-                numSubst = numSubstMapper?.invoke(supermol)
-            ).exportMol2()
+        val inputMoleculeRecord = TriposMolecule(
+            molName = uuid,
+            numAtoms = atoms.count(),
+            numBonds = supermol.subspecies.map { it.bonds.count() }.sum()
         )
-        writer.write("\n")
 
-        // Tripos atom IDs associated by wrapped atom.
-        val atomIdsByAtom = mutableMapOf<Referential<TriposAtom>, Int>()
+        val outputMoleculeRecord = triposRecordMapper.onMolecule(
+            supermol,
+            inputMoleculeRecord
+        )
 
-        // Add or create Tripos atom IDs.
-        for (atom in atoms) {
-            if (atomIdsByAtom.containsValue(atom.atomId)) {
-                throw RuntimeException(
-                    "Tripos atom identifier is not unique: ${atom.atomId}"
-                )
-            }
+        val outputMolName = outputMoleculeRecord.molName ?:
+            throw RuntimeException(
+                "Tripos molecule name is null."
+            )
 
-            atomIdsByAtom[Referential(atom)] = atom.atomId
+        if (!supermolNames.contains(outputMolName)) {
+            supermolNames.add(outputMolName)
+        } else {
+            throw RuntimeException(
+                "Tripos molecule name is not unique: $outputMolName"
+            )
         }
 
-        // Construct Tripos atom data.
-        val triposAtomDataList = atoms.sortedBy { it.atomId }
-
-        writer.write(TriposRecordType.ATOM.rti())
+        writer.write(TriposRecordType.MOLECULE.rti() + "\n")
+        outputMoleculeRecord.exportMol2(writer)
         writer.write("\n")
 
+        if (atoms.distinctBy { it.atomId }.count() != atoms.count()) {
+            throw RuntimeException(
+                "Tripos atom identifiers are not unique for Tripos " +
+                "molecule, ${outputMoleculeRecord.molName}"
+            )
+        }
+
+        writer.write(TriposRecordType.ATOM.rti() + "\n")
+
         // Serialize each atom.
-        for (triposAtomData in triposAtomDataList) {
-            writer.write(triposAtomData.exportMol2())
+        for (atom in atoms.sortedBy { it.atomId }) {
+            atom.exportMol2(writer)
             writer.write("\n")
         }
 
@@ -163,26 +136,62 @@ fun List<Supermolecule<TriposAtom>>.exportMol2(
             island.bonds
         }
 
-        // Construct Tripos bond data.
-        val triposBondDataList = bonds.mapIndexed { index, bond ->
-            val bondId = index + 1
+        writer.write(TriposRecordType.BOND.rti() + "\n")
+
+        // Serialize each bond.
+        for ((bondIndex, bond) in bonds.withIndex()) {
+            val bondId = bondIndex + 1
             val (originAtom, targetAtom) = bond.toAtomPair()
 
-            TriposBond(
+            val inputBondRecord = TriposBond(
                 bondId = bondId,
-                originAtomId = atomIdsByAtom[Referential(originAtom)]!!,
-                targetAtomId = atomIdsByAtom[Referential(targetAtom)]!!,
-                bondType = triposBondTypeMapper.invoke(bond.bondType)
+                originAtomId = originAtom.atomId,
+                targetAtomId = targetAtom.atomId,
+                bondType = triposRecordMapper.triposBondTypeOf(
+                    supermol,
+                    bond,
+                    bond.bondType
+                )
+            )
+
+            triposRecordMapper
+                .onBond(supermol, bond, inputBondRecord)
+                .exportMol2(writer)
+
+            writer.write("\n")
+        }
+
+        val additionalRecords = triposRecordMapper.onOther(supermol)
+
+        // Check that there are no supported Tripos record types in the
+        // returned additional records.
+        val containsSupportedType = additionalRecords.any {
+            it.recordType in TriposRecordMapper.supportedTypes
+        }
+
+        if (containsSupportedType) {
+            throw RuntimeException(
+                "At least one additional Tripos record is a Tripos record " +
+                "type that has already been mapped."
             )
         }
 
-        writer.write(TriposRecordType.BOND.rti())
-        writer.write("\n")
+        if (!additionalRecords.isEmpty()) {
+            // For writing a contiguous list of records of the same type.
+            var currRecordType = additionalRecords.first().recordType
 
-        // Serialize each bond.
-        for (triposBondData in triposBondDataList) {
-            writer.write(triposBondData.exportMol2())
-            writer.write("\n")
+            writer.write(currRecordType.rti() + "\n")
+
+            // Write the additional Tripos records for this supermolecule.
+            for (triposRecord in additionalRecords) {
+                if (triposRecord.recordType != currRecordType) {
+                    currRecordType = triposRecord.recordType
+                    writer.write(currRecordType.rti() + "\n")
+                }
+
+                triposRecord.exportMol2(writer)
+                writer.write("\n")
+            }
         }
     }
 
