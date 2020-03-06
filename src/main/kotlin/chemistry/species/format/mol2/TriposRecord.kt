@@ -31,7 +31,7 @@ interface TriposRecord {
      *  Writes the Tripos record in Mol2 format without the record type
      *  indicator.
      *
-     *  It does not write a trailing newline.
+     *  A trailing newline is written.
      */
     fun exportMol2(writer: Writer)
 

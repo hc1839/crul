@@ -34,7 +34,7 @@ data class TriposMolecule @JvmOverloads constructor(
     val numSets: Int? = null,
     val molType: MolType? = null,
     val chargeType: ChargeType? = null,
-    val statusBits: StatusBits? = null,
+    val statusBits: Set<StatusBit> = setOf(),
     val molComment: String? = null
 ) : TriposRecord
 {
@@ -42,6 +42,13 @@ data class TriposMolecule @JvmOverloads constructor(
         TriposRecordType.MOLECULE
 
     override fun exportMol2(writer: Writer) {
+        // Treat an empty set of status bits as being omitted.
+        val statusBitsOpt = if (!statusBits.isEmpty()) {
+            statusBits
+        } else {
+            null
+        }
+
         val mol2RecordBuilder = mutableListOf<String>()
 
         mol2RecordBuilder.add(molName ?: TriposStringField.FOUR_STARS)
@@ -67,7 +74,8 @@ data class TriposMolecule @JvmOverloads constructor(
             chargeType?.value ?: TriposStringField.FOUR_STARS
         )
         mol2RecordBuilder.add(
-            statusBits?.value ?: TriposStringField.FOUR_STARS
+            statusBitsOpt?.map { it.value }?.joinToString("|") ?:
+            TriposStringField.FOUR_STARS
         )
         mol2RecordBuilder.add(
             molComment ?: TriposStringField.FOUR_STARS
@@ -76,6 +84,8 @@ data class TriposMolecule @JvmOverloads constructor(
         writer.write(
             mol2RecordBuilder.joinToString("\n")
         )
+
+        writer.write("\n")
     }
 
     /**
@@ -98,7 +108,7 @@ data class TriposMolecule @JvmOverloads constructor(
 
         private var chargeType: ChargeType? = null
 
-        private var statusBits: StatusBits? = null
+        private var statusBits: Set<StatusBit>? = null
 
         private var molComment: String? = null
 
@@ -115,13 +125,25 @@ data class TriposMolecule @JvmOverloads constructor(
 
             // Append status bits.
             if (chargeType != null) {
-                statusBits = try {
-                    TriposStringField.enumValueOf<StatusBits>(dataLine)
+                try {
+                    statusBits =
+                        if (dataLine.trim() != TriposStringField.FOUR_STARS) {
+                            dataLine
+                                .trim()
+                                .split("|")
+                                .map {
+                                    TriposStringField
+                                        .enumValueOf<StatusBit>(it)!!
+                                }
+                                .toSet()
+                        } else {
+                            setOf()
+                        }
                 } catch (_: Throwable) {
-                    null
+                    return false
                 }
 
-                return statusBits != null
+                return true
             }
 
             // Append charge type.
@@ -188,7 +210,7 @@ data class TriposMolecule @JvmOverloads constructor(
                 numSets = numSets,
                 molType = molType,
                 chargeType = chargeType,
-                statusBits = statusBits,
+                statusBits = statusBits ?: setOf(),
                 molComment = molComment
             )
 
@@ -240,7 +262,7 @@ data class TriposMolecule @JvmOverloads constructor(
     /**
      *  Internal SYBYL status bits associated with the molecule.
      */
-    enum class StatusBits : TriposStringField {
+    enum class StatusBit : TriposStringField {
         SYSTEM,
         INVALID_CHARGES,
         ANALYZED,

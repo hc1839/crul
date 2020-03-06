@@ -30,13 +30,20 @@ data class TriposBond @JvmOverloads constructor(
     val originAtomId: Int,
     val targetAtomId: Int,
     val bondType: BondType? = null,
-    val statusBits: StatusBits? = null
+    val statusBits: Set<StatusBit> = setOf()
 ) : TriposRecord
 {
     override val recordType: TriposRecordType =
         TriposRecordType.BOND
 
     override fun exportMol2(writer: Writer) {
+        // Treat an empty set of status bits as being omitted.
+        val statusBitsOpt = if (!statusBits.isEmpty()) {
+            statusBits
+        } else {
+            null
+        }
+
         var mol2RecordBuilder = listOf<String>()
 
         mol2RecordBuilder += bondId.toString()
@@ -44,13 +51,17 @@ data class TriposBond @JvmOverloads constructor(
         mol2RecordBuilder += targetAtomId.toString()
         mol2RecordBuilder += bondType?.value ?: TriposStringField.FOUR_STARS
 
-        if (statusBits != null) {
-            mol2RecordBuilder += statusBits.value
+        if (statusBitsOpt != null) {
+            mol2RecordBuilder += statusBitsOpt
+                .map { it.value }
+                .joinToString("|")
         }
 
         writer.write(
             mol2RecordBuilder.joinToString(TriposRecord.FIELD_SEPARATOR)
         )
+
+        writer.write("\n")
     }
 
     /**
@@ -65,7 +76,7 @@ data class TriposBond @JvmOverloads constructor(
 
         private var bondType: BondType? = null
 
-        private var statusBits: StatusBits? = null
+        private var statusBits: Set<StatusBit>? = null
 
         override fun append(dataLine: String): Boolean {
             if (bondId != null) {
@@ -81,9 +92,14 @@ data class TriposBond @JvmOverloads constructor(
                 bondType = TriposStringField.enumValueOf<BondType>(fields[3])
 
                 statusBits = if (fields.lastIndex >= 4) {
-                    TriposStringField.enumValueOf<StatusBits>(fields[4])
+                    fields[4]
+                        .split("|")
+                        .map {
+                            TriposStringField.enumValueOf<StatusBit>(it)!!
+                        }
+                        .toSet()
                 } else {
-                    null
+                    setOf()
                 }
             } catch (_: Throwable) {
                 return false
@@ -98,7 +114,7 @@ data class TriposBond @JvmOverloads constructor(
                 originAtomId = originAtomId!!,
                 targetAtomId = targetAtomId!!,
                 bondType = bondType,
-                statusBits = statusBits
+                statusBits = statusBits!!
             )
 
         override fun new(): Builder =
@@ -146,7 +162,7 @@ data class TriposBond @JvmOverloads constructor(
     /**
      *  Internal SYBYL status bits associated with the bond.
      */
-    enum class StatusBits : TriposStringField {
+    enum class StatusBit : TriposStringField {
         TYPECOL,
         GROUP,
         CAP,

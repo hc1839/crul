@@ -115,7 +115,6 @@ fun List<Supermolecule<TriposAtom>>.exportMol2(
 
         writer.write(TriposRecordType.MOLECULE.rti() + "\n")
         outputMoleculeRecord.exportMol2(writer)
-        writer.write("\n")
 
         if (atoms.distinctBy { it.atomId }.count() != atoms.count()) {
             throw RuntimeException(
@@ -129,7 +128,6 @@ fun List<Supermolecule<TriposAtom>>.exportMol2(
         // Serialize each atom.
         for (atom in atoms.sortedBy { it.atomId }) {
             atom.exportMol2(writer)
-            writer.write("\n")
         }
 
         val bonds = supermol.subspecies.flatMap { island ->
@@ -157,8 +155,6 @@ fun List<Supermolecule<TriposAtom>>.exportMol2(
             triposRecordMapper
                 .onBond(supermol, bond, inputBondRecord)
                 .exportMol2(writer)
-
-            writer.write("\n")
         }
 
         val additionalRecords = triposRecordMapper.onOther(supermol)
@@ -190,7 +186,6 @@ fun List<Supermolecule<TriposAtom>>.exportMol2(
                 }
 
                 triposRecord.exportMol2(writer)
-                writer.write("\n")
             }
         }
     }

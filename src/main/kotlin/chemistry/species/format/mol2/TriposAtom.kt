@@ -45,7 +45,7 @@ data class TriposAtom @JvmOverloads constructor(
     val substId: Int? = null,
     val substName: String? = null,
     val charge: Double? = null,
-    val statusBit: StatusBit? = null
+    val statusBit: Set<StatusBit> = setOf()
 ) : TriposRecord,
     Atom
 {
@@ -93,6 +93,13 @@ data class TriposAtom @JvmOverloads constructor(
         TriposRecordType.ATOM
 
     override fun exportMol2(writer: Writer) {
+        // Treat an empty set of status bits as being omitted.
+        val statusBitOpt = if (!statusBit.isEmpty()) {
+            statusBit
+        } else {
+            null
+        }
+
         var mol2RecordBuilder = listOf<String>()
 
         mol2RecordBuilder += atomId.toString()
@@ -107,7 +114,7 @@ data class TriposAtom @JvmOverloads constructor(
                 substId,
                 substName,
                 charge,
-                statusBit?.value
+                statusBitOpt?.map { it.value }?.joinToString("|")
             )
             .dropLastWhile { it == null }
             .map { it?.toString() ?: TriposStringField.FOUR_STARS }
@@ -115,6 +122,8 @@ data class TriposAtom @JvmOverloads constructor(
         writer.write(
             mol2RecordBuilder.joinToString(TriposRecord.FIELD_SEPARATOR)
         )
+
+        writer.write("\n")
     }
 
     /**
@@ -135,7 +144,7 @@ data class TriposAtom @JvmOverloads constructor(
 
         private var charge: Double? = null
 
-        private var statusBit: StatusBit? = null
+        private var statusBit: Set<StatusBit>? = null
 
         override fun append(dataLine: String): Boolean {
             if (atomId != null) {
@@ -184,9 +193,14 @@ data class TriposAtom @JvmOverloads constructor(
                 }
 
                 statusBit = if (fields.lastIndex >= 9) {
-                    TriposStringField.enumValueOf<StatusBit>(fields[9])
+                    fields[9]
+                        .split("|")
+                        .map {
+                            TriposStringField.enumValueOf<StatusBit>(it)!!
+                        }
+                        .toSet()
                 } else {
-                    null
+                    setOf()
                 }
             } catch (_: Throwable) {
                 return false
@@ -204,7 +218,7 @@ data class TriposAtom @JvmOverloads constructor(
                 substId = substId,
                 substName = substName,
                 charge = charge,
-                statusBit = statusBit
+                statusBit = statusBit!!
             )
 
         override fun new(): Builder =
