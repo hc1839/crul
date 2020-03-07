@@ -20,11 +20,16 @@ import crul.chemistry.species.Supermolecule
 
 /**
  *  [Mol2DecodingListener] as a builder of [Supermolecule].
+ *
+ *  @param M
+ *      Type of supermolecule being built.
  */
-interface SupermoleculeBuilder : Mol2DecodingListener {
+interface Mol2SupermoleculeBuilder<M : Supermolecule<TriposAtom>> :
+    Mol2DecodingListener
+{
     /**
      *  Builds a list of supermolecules from the data received from
      *  [Mol2Decoder].
      */
-    fun build(): List<Supermolecule<TriposAtom>>
+    fun build(): List<M>
 }

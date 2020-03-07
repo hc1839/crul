@@ -39,6 +39,9 @@ import crul.uuid.UuidGenerator
 /**
  *  Parses Mol2 format.
  *
+ *  @param M
+ *      Type of supermolecules being parsed.
+ *
  *  @param reader
  *      Reader from which Mol2 is to be read.
  *
@@ -49,10 +52,10 @@ import crul.uuid.UuidGenerator
  *      List of deserialized supermolecules in the same order as from `reader`,
  *      where each Tripos `MOLECULE` corresponds to a supermolecule.
  */
-fun Supermolecule.Companion.parseMol2(
+fun <M : Supermolecule<TriposAtom>> Supermolecule.Companion.parseMol2(
     reader: Reader,
-    supermolBuilder: SupermoleculeBuilder = DefaultSupermoleculeBuilder()
-): List<Supermolecule<TriposAtom>>
+    supermolBuilder: Mol2SupermoleculeBuilder<M>
+): List<M>
 {
     val mol2Decoder = Mol2Decoder(reader, supermolBuilder)
     mol2Decoder.run()

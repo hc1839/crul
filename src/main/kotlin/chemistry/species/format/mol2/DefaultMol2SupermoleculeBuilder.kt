@@ -31,7 +31,7 @@ import crul.measure.dimension.Dimension
 import crul.measure.unit.UnitOfMeasure
 
 /**
- *  Default implementation of [SupermoleculeBuilder].
+ *  Default implementation of [Mol2SupermoleculeBuilder].
  *
  *  Each Tripos `MOLECULE` record corresponds to a [Supermolecule].
  *
@@ -40,7 +40,9 @@ import crul.measure.unit.UnitOfMeasure
  *
  *  @constructor
  */
-open class DefaultSupermoleculeBuilder() : SupermoleculeBuilder {
+open class DefaultMol2SupermoleculeBuilder() :
+    Mol2SupermoleculeBuilder<Supermolecule<TriposAtom>>
+{
     /**
      *  Names of supermolecules that the decoder has encountered in order.
      */
