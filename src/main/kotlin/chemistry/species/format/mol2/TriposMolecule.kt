@@ -92,6 +92,8 @@ data class TriposMolecule @JvmOverloads constructor(
      *  Builder for [TriposMolecule].
      */
     class Builder() : TriposRecord.Builder {
+        private var state: State = State.BEGIN
+
         private var molName: String? = null
 
         private var numAtoms: Int? = null
@@ -112,92 +114,104 @@ data class TriposMolecule @JvmOverloads constructor(
 
         private var molComment: String? = null
 
-        override fun append(dataLine: String): Boolean {
-            if (molComment != null) {
-                return false
-            }
+        override fun append(dataLine: String): Boolean = when (state) {
+            // Append molecule name.
+            State.BEGIN -> {
+                molName = TriposStringField.stringValueOf(
+                    dataLine.trim()
+                )
 
-            // Append comment.
-            if (statusBits != null) {
-                molComment = dataLine.trim()
-                return true
-            }
-
-            // Append status bits.
-            if (chargeType != null) {
-                try {
-                    statusBits =
-                        if (dataLine.trim() != TriposStringField.FOUR_STARS) {
-                            dataLine
-                                .trim()
-                                .split("|")
-                                .map {
-                                    TriposStringField
-                                        .enumValueOf<StatusBit>(it)!!
-                                }
-                                .toSet()
-                        } else {
-                            setOf()
-                        }
-                } catch (_: Throwable) {
-                    return false
-                }
-
-                return true
-            }
-
-            // Append charge type.
-            if (molType != null) {
-                chargeType = try {
-                    TriposStringField.enumValueOf<ChargeType>(dataLine)
-                } catch (_: Throwable) {
-                    null
-                }
-
-                return chargeType != null
-            }
-
-            // Append molecule type.
-            if (numAtoms != null) {
-                molType = try {
-                    TriposStringField.enumValueOf<MolType>(dataLine)
-                } catch (_: Throwable) {
-                    null
-                }
-
-                return molType != null
+                state = State.MOL_NAME
+                true
             }
 
             // Append the data line containing the number of atoms.
-            if (molName != null) {
-                try {
-                    val fields = dataLine
-                        .trim()
-                        .split(whitespaceDelimRegex)
-                        .map {
-                            if (it != TriposStringField.FOUR_STARS) {
-                                it.toInt()
-                            } else {
-                                null
-                            }
+            State.MOL_NAME -> try {
+                val fields = dataLine
+                    .trim()
+                    .split(whitespaceDelimRegex)
+                    .map {
+                        if (it != TriposStringField.FOUR_STARS) {
+                            it.toInt()
+                        } else {
+                            null
                         }
+                    }
 
-                    numAtoms = fields[0]!!
-                    numBonds = fields.getOrNull(1)
-                    numSubst = fields.getOrNull(2)
-                    numFeat = fields.getOrNull(3)
-                    numSets = fields.getOrNull(4)
+                numAtoms = fields[0]!!
+                numBonds = fields.getOrNull(1)
+                numSubst = fields.getOrNull(2)
+                numFeat = fields.getOrNull(3)
+                numSets = fields.getOrNull(4)
 
-                    return true
-                } catch (_: Throwable) {
-                    return false
-                }
+                state = State.NUM_ATOMS
+                true
+            } catch (_: Throwable) {
+                state = State.END
+                false
             }
 
-            // Append molecule name.
-            molName = dataLine.trim()
+            // Append molecule type.
+            State.NUM_ATOMS -> try {
+                molType =
+                    TriposStringField.enumValueOf<MolType>(dataLine)
 
-            return true
+                state = State.MOL_TYPE
+                true
+            } catch (_: Throwable) {
+                state = State.END
+                false
+            }
+
+            // Append charge type.
+            State.MOL_TYPE -> try {
+                chargeType =
+                    TriposStringField.enumValueOf<ChargeType>(
+                        dataLine
+                    )
+
+                state = State.CHARGE_TYPE
+                true
+            } catch (_: Throwable) {
+                state = State.END
+                false
+            }
+
+            // Append status bits.
+            State.CHARGE_TYPE -> try {
+                val statusBitsValue =
+                    TriposStringField.stringValueOf(dataLine.trim())
+
+                statusBits = statusBitsValue
+                    ?.trim()
+                    ?.split("|")
+                    ?.map {
+                        TriposStringField.enumValueOf<StatusBit>(it)!!
+                    }
+                    ?.toSet()
+
+                state = State.STATUS_BITS
+                true
+            } catch (_: Throwable) {
+                state = State.END
+                false
+            }
+
+            // Append comment.
+            State.STATUS_BITS -> {
+                molComment =
+                    TriposStringField.stringValueOf(dataLine.trim())
+
+                state = State.MOL_COMMENT
+                true
+            }
+
+            State.MOL_COMMENT -> {
+                state = State.END
+                false
+            }
+
+            State.END -> false
         }
 
         override fun build(): TriposMolecule =
@@ -216,6 +230,22 @@ data class TriposMolecule @JvmOverloads constructor(
 
         override fun new(): Builder =
             Builder()
+
+        /**
+         *  State of the builder.
+         *
+         *  It reflects the type of data line that was appended.
+         */
+        private enum class State {
+            BEGIN,
+            MOL_NAME,
+            NUM_ATOMS,
+            MOL_TYPE,
+            CHARGE_TYPE,
+            STATUS_BITS,
+            MOL_COMMENT,
+            END
+        }
 
         companion object {
             /**
