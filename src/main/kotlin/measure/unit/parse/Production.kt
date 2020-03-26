@@ -99,7 +99,7 @@ enum class Production :
     ID {
         override fun matchesFirst(token: String): Boolean =
             Regex(
-                "^[!#-'\\*,0-<>-Z\\\\^-z|~]*[!#-'\\*,:-<>-Z\\\\^-z|~]$"
+                """^[!#-'*,0-z|~]*[!#-'*,:-Z\]-z|~]$"""
             ) in token
 
         override fun reduce(

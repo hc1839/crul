@@ -126,44 +126,47 @@ class UnitOfMeasure {
     /**
      *  Magnitude.
      */
-    var magnitude: Double
-        private set
+    val magnitude: Double
 
     /**
-     *  Base units associated with their exponents as a backing property.
+     *  Base units associated with their exponents.
+     *
+     *  Only entries where the exponent is non-zero is stored.
      */
-    private val _exponents: MutableMap<BaseUnit, Int> = mutableMapOf()
+    val exponents: Map<BaseUnit, Int>
+
+    private constructor(magnitude: Double, exponents: Map<BaseUnit, Int>) {
+        this.magnitude = magnitude
+        this.exponents = exponents.filter { (_, exp) -> exp != 0 }
+    }
 
     /**
      *  Base unit raised to the power of 1.
      */
-    constructor(baseUnit: BaseUnit) {
-        this.magnitude = 1.0
-        this._exponents[baseUnit] = 1
-    }
+    constructor(baseUnit: BaseUnit): this(
+        1.0,
+        mapOf(baseUnit to 1)
+    )
 
     /**
      *  Dimensionless unit.
      */
-    constructor() {
-        this.magnitude = 1.0
-    }
+    constructor(): this(
+        1.0,
+        mapOf()
+    )
 
     /**
      *  Delegated deserialization constructor.
      */
-    private constructor(avroRecord: GenericRecord) {
-        this.magnitude = avroRecord.get("magnitude") as Double
-
-        this._exponents.putAll(
-            @Suppress("UNCHECKED_CAST") (
-                avroRecord.get("exponents") as Map<*, Int>
-            )
-            .mapKeys { (baseUnitCs, _) ->
-                BaseUnit.getByCs(baseUnitCs.toString())!!
-            }
-        )
-    }
+    private constructor(avroRecord: GenericRecord): this(
+        avroRecord.get("magnitude") as Double,
+        @Suppress("UNCHECKED_CAST") (
+            avroRecord.get("exponents") as Map<*, Int>
+        ).mapKeys { (baseUnitCs, _) ->
+            BaseUnit.getByCs(baseUnitCs.toString())!!
+        }
+    )
 
     /**
      *  Deserialization constructor.
@@ -174,14 +177,6 @@ class UnitOfMeasure {
             avroData
         ).first()
     )
-
-    /**
-     *  Base units associated with their exponents.
-     *
-     *  Only entries where the exponent is non-zero is returned.
-     */
-    val exponents: Map<BaseUnit, Int>
-        get() = _exponents.filter { (_, exp) -> exp != 0 }
 
     /**
      *  Whether this unit is commensurable with another unit.
@@ -277,7 +272,6 @@ class UnitOfMeasure {
             }
 
             n < 0 -> {
-                val newObj = UnitOfMeasure()
                 val unitPositivePowered = pow(-n)
                 val newMagnitude = 1.0 / unitPositivePowered.magnitude
 
@@ -285,13 +279,7 @@ class UnitOfMeasure {
                     .exponents
                     .mapValues { (_, exp) -> -exp }
 
-                newObj.magnitude = newMagnitude
-
-                for ((baseUnit, exp) in newDim) {
-                    newObj._exponents[baseUnit] = exp
-                }
-
-                newObj
+                UnitOfMeasure(newMagnitude, newDim)
             }
 
             else ->
@@ -312,74 +300,58 @@ class UnitOfMeasure {
             return this
         }
 
-        val newObj = UnitOfMeasure()
+        val newMagnitude = magnitude.pow(1.0 / n)
 
-        newObj.magnitude = magnitude.pow(1.0 / n)
-
-        val newDim = exponents
-            .mapValues { (_, exp) ->
-                if (exp % n != 0) {
-                    throw RuntimeException(
-                        "$exp/$n has a non-zero remainder."
-                    )
-                }
-
-                exp / n
+        val newDim = exponents.mapValues { (_, exp) ->
+            if (exp % n != 0) {
+                throw RuntimeException(
+                    "$exp/$n has a non-zero remainder."
+                )
             }
 
-        for ((baseUnit, exp) in newDim) {
-            newObj._exponents[baseUnit] = exp
+            exp / n
         }
 
-        return newObj
+        return UnitOfMeasure(newMagnitude, newDim)
     }
 
     operator fun times(other: UnitOfMeasure): UnitOfMeasure {
-        val newObj = UnitOfMeasure()
-
         val thisDim = exponents
         val otherDim = other.exponents
 
-        newObj.magnitude = magnitude * other.magnitude
+        val newMagnitude = magnitude * other.magnitude
 
         // Add the exponents of each base unit.
-        for (baseUnit in thisDim.keys.union(otherDim.keys)) {
-            newObj._exponents[baseUnit] =
-                thisDim.getOrDefault(baseUnit, 0) +
-                otherDim.getOrDefault(baseUnit, 0)
+        val newDim = thisDim.keys.union(otherDim.keys).associateWith {
+            baseUnit ->
+
+            listOf(thisDim, otherDim).map { dim ->
+                dim.getOrDefault(baseUnit, 0)
+            }.sum()
         }
 
-        return newObj
+        return UnitOfMeasure(newMagnitude, newDim)
     }
 
-    operator fun times(value: Double): UnitOfMeasure {
-        val newObj = UnitOfMeasure()
-
-        newObj.magnitude = magnitude * value
-
-        for ((baseUnit, exp) in exponents) {
-            newObj._exponents[baseUnit] = exp
-        }
-
-        return newObj
-    }
+    operator fun times(value: Double): UnitOfMeasure =
+        UnitOfMeasure(magnitude * value, exponents)
 
     operator fun div(other: UnitOfMeasure): UnitOfMeasure {
-        val newObj = UnitOfMeasure()
-
         val thisDim = exponents
         val otherDim = other.exponents
 
-        newObj.magnitude = magnitude / other.magnitude
+        val newMagnitude = magnitude / other.magnitude
 
         // Subtract the exponents of each base unit.
-        for (baseUnit in thisDim.keys.union(otherDim.keys)) {
-            newObj._exponents[baseUnit] =
-                thisDim.getOrDefault(baseUnit, 0) -
-                otherDim.getOrDefault(baseUnit, 0)
+        val newDim = thisDim.keys.union(otherDim.keys).associateWith {
+            baseUnit ->
+
+            listOf(thisDim, otherDim).map { dim ->
+                dim.getOrDefault(baseUnit, 0)
+            }.reduce(Int::minus)
         }
 
-        return newObj
+        return UnitOfMeasure(newMagnitude, newDim)
     }
 
     override fun hashCode(): Int =

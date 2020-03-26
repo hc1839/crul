@@ -159,7 +159,7 @@ class TokenIterator :
          *  Regular expression for matching an ID.
          */
         private val idRegex: Regex =
-            Regex("^[!#-'\\*,0-<>-Z\\\\^-z|~]*[!#-'\\*,:-<>-Z\\\\^-z|~]")
+            Regex("""^[!#-'*,0-z|~]*[!#-'*,:-Z\]-z|~]""")
 
         /**
          *  Regular expression for matching a terminal symbol at the beginning
