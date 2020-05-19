@@ -44,13 +44,21 @@ internal class Mol2RecordParserImpl(reader: Reader) :
     private var recordBuilder: TriposRecord.Builder? = null
 
     /**
+     *  Whether the first data line of the current section has been
+     *  encountered.
+     *
+     *  It is used to skip empty sections.
+     */
+    private var hasEncounteredDataLine: Boolean = false
+
+    /**
      *  Tripos record, or `null` if parsing has not begun.
      */
     private var record: TriposRecord? = null
 
     override tailrec fun computeNext() {
         if (!lineParser.hasNext()) {
-            if (recordBuilder != null) {
+            if (recordBuilder != null && hasEncounteredDataLine) {
                 record = recordBuilder!!.build()
                 setNext(record!!.recordType)
                 recordBuilder = null
@@ -72,21 +80,30 @@ internal class Mol2RecordParserImpl(reader: Reader) :
                         .getRecordType()
                         .createBuilder()
 
+                    hasEncounteredDataLine = false
+
                     computeNext()
                 } else {
-                    // Build the Tripos record for the previous record type.
-                    record = recordBuilder!!.build()
-                    setNext(record!!.recordType)
+                    if (hasEncounteredDataLine) {
+                        // Build the Tripos record for the previous record
+                        // type.
+                        record = recordBuilder!!.build()
+                        setNext(record!!.recordType)
+                    }
 
                     // Create the builder for the next record, or `null` if the
                     // record type is unsupported.
                     recordBuilder = lineParser
                         .getRecordType()
                         .createBuilder()
+
+                    hasEncounteredDataLine = false
                 }
             }
 
             Mol2LineParser.Event.DATA_LINE -> {
+                hasEncounteredDataLine = true
+
                 val dataLine = lineParser.getDataLine()
 
                 // Append data lines for the current record.
