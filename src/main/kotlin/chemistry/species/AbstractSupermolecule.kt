@@ -29,7 +29,10 @@ import crul.distinct.Referential
  *  @param islands
  *      Molecules and atom islands of the supermolecule.
  */
-abstract class AbstractSupermolecule<A : Atom>(islands: List<Island<A>>) :
+abstract class AbstractSupermolecule<A : Atom>(
+    islands: List<Island<A>>,
+    override val name: String?
+) :
     AbstractAggregate<Island<A>>(islands),
     Supermolecule<A>
 {

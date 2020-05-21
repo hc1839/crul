@@ -26,6 +26,12 @@ package crul.chemistry.species
  *
  *  @param subspecies
  *      Molecules and atom islands of the supermolecule.
+ *
+ *  @param name
+ *      Arbitrary name of the supermolecule, or `null` if not applicable.
  */
-internal class SupermoleculeImpl<A : Atom>(subspecies: List<Island<A>>) :
-    AbstractSupermolecule<A>(subspecies)
+internal class SupermoleculeImpl<A : Atom>(
+    subspecies: List<Island<A>>,
+    name: String?
+) :
+    AbstractSupermolecule<A>(subspecies, name)

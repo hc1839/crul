@@ -39,19 +39,24 @@ import crul.chemistry.species.Supermolecule
  *      such that the resulting atom identifiers are consecutive within each
  *      substructure but do not restart between substructures.
  *
+ *  @param name
+ *      Arbitrary name of the returned supermolecule, or `null` if not
+ *      applicable.
+ *
  *  @return
  *      Supermolecule with substructure and atom identifiers renumbered.
  */
 fun Supermolecule<TriposAtom>.renumberedSubstructures(
     substIdStart: Int,
-    atomIdStart: Int
+    atomIdStart: Int,
+    name: String? = null
 ): Supermolecule<TriposAtom>
 {
     val oldToNewSubstIds = mutableMapOf<Int, Int>()
     var newSubstId = substIdStart
 
     // Renumber substructures only.
-    val renumberedSubstSupermol = map { atom ->
+    val renumberedSubstSupermol = map(null) { atom ->
         if (atom.substId != null) {
             if (!oldToNewSubstIds.containsKey(atom.substId)) {
                 oldToNewSubstIds[atom.substId] = newSubstId++
@@ -72,7 +77,7 @@ fun Supermolecule<TriposAtom>.renumberedSubstructures(
 
     // Renumber atoms for non-null substructures.
     for (substId in (1 until newSubstId)) {
-        renumberedSupermol = renumberedSupermol.map { atom ->
+        renumberedSupermol = renumberedSupermol.map(null) { atom ->
             if (atom.substId == substId) {
                 atom.copy(atomId = newAtomId++)
             } else {
@@ -82,7 +87,7 @@ fun Supermolecule<TriposAtom>.renumberedSubstructures(
     }
 
     // Renumber atoms for null substructures.
-    renumberedSupermol = renumberedSupermol.map { atom ->
+    renumberedSupermol = renumberedSupermol.map(name) { atom ->
         if (atom.substId == null) {
             atom.copy(atomId = newAtomId++)
         } else {

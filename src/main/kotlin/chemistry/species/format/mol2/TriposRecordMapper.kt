@@ -41,9 +41,10 @@ interface TriposRecordMapper {
     /**
      *  Maps Tripos `MOLECULE`.
      *
-     *  UUID Version 4 is used as the name of the supermolecule for
-     *  `inputRecord`. The returned Tripos record must not have a `null`
-     *  [TriposMolecule.molName].
+     *  If [Supermolecule.name] of `supermol` is `null`,
+     *  [TriposMolecule.molName] of `inputRecord` is a UUID Version 4;
+     *  otherwise, it is [Supermolecule.name]. The returned Tripos record must
+     *  not have a `null` [TriposMolecule.molName].
      */
     fun onMolecule(
         supermol: Supermolecule<TriposAtom>,

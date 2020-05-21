@@ -15,7 +15,8 @@ import crul.distinct.Referential
  */
 open class DefaultFragmentedSupermolecule<A : Atom>(
     private val supermol: Supermolecule<A>,
-    override val fragments: List<Fragment<A>>
+    override val fragments: List<Fragment<A>>,
+    override val name: String?
 ) : FragmentedSupermolecule<A>,
     Supermolecule<A> by supermol
 {
@@ -60,15 +61,10 @@ open class DefaultFragmentedSupermolecule<A : Atom>(
         }
     }
 
-    /**
-     *  [fragments] of the returned fragmented supermolecule have the same
-     *  fragmentation and have the same ordering as that of this fragmented
-     *  supermolecule.
-     */
-    override fun <R : Atom> map(transform: (A) -> R):
+    override fun <R : Atom> map(name: String?, transform: (A) -> R):
         FragmentedSupermolecule<R>
     {
-        val mappedSupermol = supermol.map(transform)
+        val mappedSupermol = supermol.map(name, transform)
 
         // From wrapped original atom to mapped atom.
         val atomCorrespondence = atoms.zip(mappedSupermol.atoms) {
@@ -86,7 +82,8 @@ open class DefaultFragmentedSupermolecule<A : Atom>(
 
         return DefaultFragmentedSupermolecule(
             mappedSupermol,
-            newFragments
+            newFragments,
+            name
         )
     }
 }

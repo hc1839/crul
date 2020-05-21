@@ -30,6 +30,11 @@ interface Supermolecule<A : Atom> : Aggregate<Island<A>> {
         }
 
     /**
+     *  Arbitrary name of the supermolecule, or `null` if not applicable.
+     */
+    val name: String?
+
+    /**
      *  Gets the island that contains `atom`.
      *
      *  If `atom` does not exist, an exception is thrown.
@@ -96,11 +101,14 @@ interface Supermolecule<A : Atom> : Aggregate<Island<A>> {
         minusIslands(listOf(island))
 
     /**
-     *  Returns a new supermolecule with atoms from the application of
-     *  `transform` to each atom in this supermolecule.
+     *  Returns a new supermolecule with the specified `name` and with atoms
+     *  from the application of `transform` to each atom in this supermolecule.
      */
-    fun <R : Atom> map(transform: (A) -> R): Supermolecule<R> =
-        Supermolecule(subspecies.map { it.map(transform) })
+    fun <R : Atom> map(
+        name: String?,
+        transform: (A) -> R
+    ): Supermolecule<R> =
+        Supermolecule(subspecies.map { it.map(transform) }, name)
 
     companion object {
         /**
@@ -108,12 +116,17 @@ interface Supermolecule<A : Atom> : Aggregate<Island<A>> {
          *
          *  @param islands
          *      Molecules and atom islands of the supermolecule.
+         *
+         *  @param name
+         *      Arbitrary name of the supermolecule, or `null` if not
+         *      applicable.
          */
         @JvmStatic
         fun <A : Atom> newInstance(
-            islands: List<Island<A>>
+            islands: List<Island<A>>,
+            name: String? = null
         ): Supermolecule<A> =
-            SupermoleculeImpl(islands)
+            SupermoleculeImpl(islands, name)
     }
 }
 
@@ -122,5 +135,8 @@ interface Supermolecule<A : Atom> : Aggregate<Island<A>> {
  *
  *  See [Supermolecule.newInstance].
  */
-fun <A : Atom> Supermolecule(islands: List<Island<A>>): Supermolecule<A> =
-    Supermolecule.newInstance(islands)
+fun <A : Atom> Supermolecule(
+    islands: List<Island<A>>,
+    name: String? = null
+): Supermolecule<A> =
+    Supermolecule.newInstance(islands, name)

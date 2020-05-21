@@ -141,7 +141,10 @@ open class DefaultMol2SupermoleculeBuilder() :
                 .map { Molecule(it) }
 
             supermols.add(
-                Supermolecule<TriposAtom>(atomIslands + molecules)
+                Supermolecule<TriposAtom>(
+                    atomIslands + molecules,
+                    supermolName
+                )
             )
         }
 

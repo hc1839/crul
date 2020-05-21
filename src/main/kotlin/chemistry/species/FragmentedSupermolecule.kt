@@ -22,8 +22,10 @@ interface FragmentedSupermolecule<A : Atom> : Supermolecule<A> {
      *  fragmentation and have the same ordering as that of this fragmented
      *  supermolecule.
      */
-    abstract override fun <R : Atom> map(transform: (A) -> R):
-        FragmentedSupermolecule<R>
+    abstract override fun <R : Atom> map(
+        name: String?,
+        transform: (A) -> R
+    ): FragmentedSupermolecule<R>
 
     companion object {
         /**
@@ -34,13 +36,18 @@ interface FragmentedSupermolecule<A : Atom> : Supermolecule<A> {
          *
          *  @param fragments
          *      Fragments of `supermol`.
+         *
+         *  @param name
+         *      Arbitrary name of the fragmented supermolecule, or `null` if
+         *      not applicable.
          */
         @JvmStatic
         fun <A : Atom> newInstance(
             supermol: Supermolecule<A>,
-            fragments: List<Fragment<A>>
+            fragments: List<Fragment<A>>,
+            name: String? = null
         ): FragmentedSupermolecule<A> =
-            DefaultFragmentedSupermolecule(supermol, fragments)
+            DefaultFragmentedSupermolecule(supermol, fragments, name)
     }
 }
 
@@ -51,6 +58,7 @@ interface FragmentedSupermolecule<A : Atom> : Supermolecule<A> {
  */
 fun <A : Atom> FragmentedSupermolecule(
     supermol: Supermolecule<A>,
-    fragments: List<Fragment<A>>
+    fragments: List<Fragment<A>>,
+    name: String? = null
 ): FragmentedSupermolecule<A> =
-    FragmentedSupermolecule.newInstance(supermol, fragments)
+    FragmentedSupermolecule.newInstance(supermol, fragments, name)

@@ -84,16 +84,22 @@ fun List<Supermolecule<TriposAtom>>.exportMol2(
 
     // Serialize each supermolecule.
     for (supermol in this) {
-        var uuid: String
+        val molName = if (supermol.name == null) {
+            var uuid: String
 
-        do {
-            uuid = crul.uuid.UuidGenerator.asNCName()
-        } while (supermolNames.contains(uuid))
+            do {
+                uuid = crul.uuid.UuidGenerator.asNCName()
+            } while (supermolNames.contains(uuid))
+
+            uuid
+        } else {
+            supermol.name
+        }
 
         val atoms = supermol.atoms
 
         val inputMoleculeRecord = TriposMolecule(
-            molName = uuid,
+            molName = molName,
             numAtoms = atoms.count(),
             numBonds = supermol.subspecies.map { it.bonds.count() }.sum()
         )
