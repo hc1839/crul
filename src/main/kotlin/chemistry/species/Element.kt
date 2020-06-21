@@ -16,28 +16,13 @@
 
 package crul.chemistry.species
 
-import com.google.gson.Gson
 import java.io.File
 import java.nio.ByteBuffer
-import org.apache.avro.Schema
-import org.apache.avro.generic.*
+import javax.json.Json
+import javax.json.JsonObject
 
-import crul.serialize.AvroSimple
-
-private object ElementAvsc {
-    val schema: Schema = Schema.Parser().parse(
-        """
-       |{
-       |    "type": "record",
-       |    "namespace": "crul.chemistry.species",
-       |    "name": "Element",
-       |    "fields": [
-       |        { "type": "string", "name": "symbol" }
-       |    ]
-       |}
-        """.trimMargin()
-    )
-}
+import crul.measure.Quantity
+import crul.measure.QuantityJsonSerializer
 
 /**
  *  Storage information for elements.
@@ -50,16 +35,14 @@ private object ElementStore {
     val path: String = "/crul/chemistry/species/elements.json"
 
     /**
-     *  JSON of elements parsed by Gson.
+     *  JSON of chemical elements.
      */
-    val json: Map<String, Map<String, Any>> by lazy {
-        val gson = Gson()
-
-        @Suppress("UNCHECKED_CAST")
-        gson.fromJson(
-            this::class.java.getResourceAsStream(path).reader(),
-            Map::class.java
-        ) as Map<String, Map<String, Any>>
+    val json: JsonObject by lazy {
+        Json
+            .createReader(
+                this::class.java.getResourceAsStream(path).reader()
+            )
+            .use { it.readObject() }
     }
 }
 
@@ -97,53 +80,43 @@ class Element {
     )
 
     /**
-     *  Delegated deserialization constructor.
-     */
-    private constructor(avroRecord: GenericRecord): this(
-        avroRecord.get("symbol").toString()
-    )
-
-    /**
-     *  Deserialization constructor.
-     */
-    private constructor(avroData: ByteBuffer): this(
-        AvroSimple.deserializeData<GenericRecord>(
-            ElementAvsc.schema,
-            avroData
-        ).first()
-    )
-
-    /**
      *  Name of the element.
      */
     val name: String
-        get() =
-            @Suppress("UNCHECKED_CAST")
-            ElementStore.json[symbol]!!["name"] as String
+        get() = ElementStore
+            .json
+            .getJsonObject(symbol)
+            .getString("name")
 
     /**
      *  Atomic number.
      */
     val number: Int
-        get() =
-            @Suppress("UNCHECKED_CAST")
-            (ElementStore.json[symbol]!!["number"] as Double).toInt()
+        get() = ElementStore
+            .json
+            .getJsonObject(symbol)
+            .getInt("number")
 
     /**
-     *  Atomic weight.
+     *  Atomic weight in atomic units.
      */
     val weight: Double
-        get() =
-            @Suppress("UNCHECKED_CAST")
-            ElementStore.json[symbol]!!["weight"] as Double
+        get() = ElementStore
+            .json
+            .getJsonObject(symbol)
+            .getJsonNumber("weight")
+            .doubleValue()
 
     /**
-     *  Atomic radius in bohr.
+     *  Van der Waals radius.
      */
-    val radius: Double
-        get() =
-            @Suppress("UNCHECKED_CAST")
-            ElementStore.json[symbol]!!["radius"] as Double
+    val radius: Quantity
+        get() = QuantityJsonSerializer.deserialize(
+            ElementStore
+                .json
+                .getJsonObject(symbol)
+                .getJsonArray("radius")
+        )
 
     override fun hashCode(): Int =
         listOf(symbol).hashCode()
@@ -172,12 +145,12 @@ class Element {
         fun getSymbolByNumber(atomicNumber: Int): String {
             val symbol = ElementStore
                 .json
-                .entries
-                .filter { (_, info) ->
-                    (info["number"] as Double).toInt() == atomicNumber
+                .filterValues {
+                    it as JsonObject
+                    it.getInt("number") == atomicNumber
                 }
+                .keys
                 .singleOrNull()
-                ?.key
 
             return if (symbol != null) {
                 symbol
@@ -187,41 +160,5 @@ class Element {
                 )
             }
         }
-
-        /**
-         *  Serializes an [Element] in Apache Avro.
-         *
-         *  @param obj
-         *      [Element] to serialize.
-         *
-         *  @return
-         *      Avro serialization of `obj`.
-         */
-        @JvmStatic
-        fun serialize(obj: Element): ByteBuffer {
-            val avroRecord = GenericData.Record(
-                ElementAvsc.schema
-            )
-
-            avroRecord.put("symbol", obj.symbol)
-
-            return AvroSimple.serializeData<GenericRecord>(
-                ElementAvsc.schema,
-                listOf(avroRecord)
-            )
-        }
-
-        /**
-         *  Deserializes an [Element] in Apache Avro.
-         *
-         *  @param avroData
-         *      Serialized [Element] as returned by [serialize].
-         *
-         *  @return
-         *      Deserialized [Element].
-         */
-        @JvmStatic
-        fun deserialize(avroData: ByteBuffer): Element =
-            Element(avroData)
     }
 }
