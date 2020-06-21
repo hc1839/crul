@@ -16,7 +16,11 @@
 
 package crul.chemistry.species
 
+import org.paukov.combinatorics3.Generator
+
+import crul.apache.math.vector.*
 import crul.distinct.Referential
+import crul.measure.unit.UnitOfMeasure
 
 /**
  *  Aggregator of bonds.
@@ -173,5 +177,91 @@ object BondAggregator {
                 .distinct()
                 .map { it.value }
         }
+    }
+
+    /**
+     *  Aggregates atoms into fragments, each of which corresponds to an
+     *  inferred island.
+     *
+     *  Connectivity between two atoms is inferred when the distance between
+     *  the two atoms is less than the sum of their van der Waals radii times a
+     *  scaling factor.
+     *
+     *  @param atoms
+     *      Collection of referentially distinct atoms.
+     *
+     *  @param scalingFactor
+     *      Scaling factor. It must be positive.
+     *
+     *  @param positionUnit
+     *      Unit of the atom positions.
+     *
+     *  @return
+     *      List of atom lists such that each atom list corresponds to an
+     *      inferred island. If `atoms` is empty, an empty list is returned.
+     */
+    @JvmStatic
+    fun <A : Atom> aggregate(
+        atoms: Collection<A>,
+        scalingFactor: Double,
+        positionUnit: UnitOfMeasure
+    ): List<List<A>>
+    {
+        if (scalingFactor <= 0.0) {
+            throw IllegalArgumentException(
+                "Scaling factor not positive: $scalingFactor"
+            )
+        }
+
+        if (atoms.isEmpty()) {
+            return listOf()
+        }
+
+        val wrappedAtoms = atoms.map { Referential(it) }
+
+        if (wrappedAtoms.distinct().count() != atoms.count()) {
+            throw IllegalArgumentException(
+                "Atoms are not referentially distinct."
+            )
+        }
+
+        val wrappedAtomsArray = Array(wrappedAtoms.count()) { index ->
+            wrappedAtoms[index]
+        }
+
+        // Inferred bonds without regard to bond order.
+        val inferredBonds = Generator
+            .combination(*wrappedAtomsArray)
+            .simple(2)
+            .stream()
+            .iterator()
+            .asSequence()
+            .filter {
+                val atom1 = it[0].value
+                val radius1 = atom1.element.radius.value(positionUnit)
+
+                val atom2 = it[1].value
+                val radius2 = atom2.element.radius.value(positionUnit)
+
+                val distance = (atom2.position - atom1.position).getNorm()
+
+                distance < (radius1 + radius2) * scalingFactor
+            }
+            .map {
+                Bond(it[0].value, it[1].value, "")
+            }
+            .toList()
+
+        val inferredBondedAtomLists = aggregate(inferredBonds).map { bonds ->
+            bonds
+                .flatMap { bond -> bond.atoms }
+                .distinctBy { atom -> Referential(atom) }
+        }
+
+        val wrappedNonbondedAtoms = wrappedAtoms -
+            inferredBondedAtomLists.flatten().map { Referential(it) }
+
+        return wrappedNonbondedAtoms.map { listOf(it.value) } +
+            inferredBondedAtomLists
     }
 }

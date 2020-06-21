@@ -36,6 +36,11 @@ abstract class AbstractSupermolecule<A : Atom>(
     AbstractAggregate<Island<A>>(islands),
     Supermolecule<A>
 {
+    /**
+     *  Island associated by wrapped member atom.
+     */
+    private val islandByAtom: Map<Referential<A>, Island<A>>
+
     init {
         // Referentially distinct atoms from all islands.
         val wrappedAtomSets = islands.map { island ->
@@ -60,18 +65,28 @@ abstract class AbstractSupermolecule<A : Atom>(
                 "At least one atom exists in more than one island."
             )
         }
+
+        val islandByAtomBuffer = mutableMapOf<Referential<A>, Island<A>>()
+
+        for (island in islands) {
+            for (atom in island.atoms) {
+                islandByAtomBuffer[Referential(atom)] = island
+            }
+        }
+
+        this.islandByAtom = islandByAtomBuffer.toMap()
     }
 
     override fun getIslandWithAtom(atom: A): Island<A> {
-        if (!containsAtom(atom)) {
+        val wrappedAtom = Referential(atom)
+
+        if (!islandByAtom.containsKey(wrappedAtom)) {
             throw IllegalArgumentException(
                 "Complex does not contain the given atom."
             )
         }
 
-        return subspecies
-            .filter { island -> island.containsAtom(atom) }
-            .single()
+        return islandByAtom[wrappedAtom]!!
     }
 
     override fun minusAtoms(atoms: Collection<A>): Supermolecule<A> {
