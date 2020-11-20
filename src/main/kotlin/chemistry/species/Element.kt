@@ -22,7 +22,7 @@ import javax.json.Json
 import javax.json.JsonObject
 
 import crul.measure.Quantity
-import crul.measure.QuantityJsonSerializer
+import crul.measure.QuantityJsonReader
 
 /**
  *  Storage information for elements.
@@ -111,12 +111,12 @@ class Element {
      *  Van der Waals radius.
      */
     val radius: Quantity
-        get() = QuantityJsonSerializer.deserialize(
+        get() = QuantityJsonReader(
             ElementStore
                 .json
                 .getJsonObject(symbol)
                 .getJsonArray("radius")
-        )
+        ).read()
 
     override fun hashCode(): Int =
         listOf(symbol).hashCode()

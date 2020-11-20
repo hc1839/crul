@@ -25,6 +25,7 @@ import crul.serialize.Serializer
 /**
  *  Serializer of [Quantity] in JSON.
  */
+@Deprecated("Use QuantityJsonReader and QuantityJsonWriter.")
 object QuantityJsonSerializer : Serializer<Quantity, JsonArray> {
     /**
      *  @param obj
