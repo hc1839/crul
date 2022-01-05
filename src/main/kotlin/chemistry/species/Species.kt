@@ -34,4 +34,37 @@ interface Species {
      *  between evaluations but is implementation-specific.
      */
     val atoms: List<Atom>
+
+    /**
+     *  Centroid of [atoms].
+     */
+    fun centroid(): Vector3D {
+        var positionSum = Vector3D(0.0, 0.0, 0.0)
+        var atomCount = 0
+
+        for (atom in atoms) {
+            positionSum += atom.position
+            ++atomCount
+        }
+
+        return positionSum / atomCount.toDouble()
+    }
+
+    /**
+     *  Center of the extremes along each dimension of the positions of [atoms].
+     */
+    fun volumetricCenter(): Vector3D {
+        val positions = atoms.map { it.position }
+
+        return Vector3D(
+            (0..2).map { axisIndex ->
+                // Coordinates along this axis.
+                val coords = positions.map {
+                    it.toArray()[axisIndex]
+                }
+
+                coords.min()!! + (coords.max()!! - coords.min()!!) * 0.5
+            }.toDoubleArray()
+        )
+    }
 }

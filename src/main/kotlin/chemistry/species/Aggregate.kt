@@ -61,32 +61,6 @@ interface Aggregate<S : Species> : Species {
     fun containsAtom(atom: Atom): Boolean =
         atoms.any { it === atom }
 
-    /**
-     *  Centroid of [atoms].
-     */
-    fun centroid(): Vector3D {
-        var positionSum = Vector3D(0.0, 0.0, 0.0)
-        var atomCount = 0
-
-        for (atom in atoms) {
-            positionSum += atom.position
-            ++atomCount
-        }
-
-        return positionSum / atomCount.toDouble()
-    }
-
-    /**
-     *  Largest distance between the centroid and any atom.
-     */
-    fun radius(): Double {
-        val centroid = centroid()
-
-        return atoms
-            .map { (it.position - centroid).getNorm() }
-            .max()!!
-    }
-
     companion object {
         /**
          *  Constructs an [Aggregate].
