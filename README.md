@@ -17,7 +17,8 @@ CRUL is developed in Kotlin and uses Apache Maven for building.
 ## Documentation
 
 `mvn dokka:dokka` generates the documentation from the Kotlin source files and
-places it in `target/dokka`.
+places it in `target/dokka`. It is also available at
+https://hc1839.github.io/crul/apidocs/.
 
 ## License
 
