@@ -1,0 +1,19 @@
+{
+    "type": "record",
+    "namespace": "io.github.hc1839.crul.chemistry.tinker",
+    "name": "AtomClassPair",
+    "fields": [
+        {
+            "type": "bytes",
+            "name": "atom_class_1"
+        },
+        {
+            "type": "bytes",
+            "name": "atom_class_2"
+        },
+        {
+            "type": "boolean",
+            "name": "order_significant"
+        }
+    ]
+}

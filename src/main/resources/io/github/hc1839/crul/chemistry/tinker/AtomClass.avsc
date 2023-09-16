@@ -1,0 +1,8 @@
+{
+    "type": "record",
+    "namespace": "io.github.hc1839.crul.chemistry.tinker",
+    "name": "AtomClass",
+    "fields": [
+        { "type": "int", "name": "code" }
+    ]
+}

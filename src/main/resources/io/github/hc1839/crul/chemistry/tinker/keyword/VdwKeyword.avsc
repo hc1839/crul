@@ -1,0 +1,11 @@
+{
+    "type": "record",
+    "namespace": "io.github.hc1839.crul.chemistry.tinker.keyword",
+    "name": "VdwKeyword",
+    "fields": [
+        { "type": "bytes", "name": "atom_class" },
+        { "type": "double", "name": "rmin" },
+        { "type": "double", "name": "epsilon" },
+        { "type": ["null", "double"], "name": "beta" }
+    ]
+}

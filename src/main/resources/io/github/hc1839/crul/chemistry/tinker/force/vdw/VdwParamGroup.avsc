@@ -1,0 +1,23 @@
+{
+    "type": "record",
+    "namespace": "io.github.hc1839.crul.chemistry.tinker.force.vdw",
+    "name": "VdwParamGroup",
+    "fields": [
+        {
+            "type": "bytes",
+            "name": "atom_class"
+        },
+        {
+            "type": "double",
+            "name": "rmin"
+        },
+        {
+            "type": "double",
+            "name": "epsilon"
+        },
+        {
+            "type": ["null", "double"],
+            "name": "beta"
+        }
+    ]
+}

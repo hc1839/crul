@@ -1,0 +1,2961 @@
+{
+    "atom": {
+        "1": {
+            "atom_class": 1,
+            "type_name": "He",
+            "description": "Helium Atom He",
+            "atomic_number": 2,
+            "bond_count": 0
+        },
+        "2": {
+            "atom_class": 2,
+            "type_name": "Ne",
+            "description": "Neon Atom Ne",
+            "atomic_number": 10,
+            "bond_count": 0
+        },
+        "3": {
+            "atom_class": 3,
+            "type_name": "Ar",
+            "description": "Argon Atom Ar",
+            "atomic_number": 18,
+            "bond_count": 0
+        },
+        "4": {
+            "atom_class": 4,
+            "type_name": "Kr",
+            "description": "Krypton Atom Kr",
+            "atomic_number": 36,
+            "bond_count": 0
+        },
+        "5": {
+            "atom_class": 5,
+            "type_name": "Xe",
+            "description": "Xenon Atom Xe",
+            "atomic_number": 54,
+            "bond_count": 0
+        },
+        "6": {
+            "atom_class": 6,
+            "type_name": "Li+",
+            "description": "Lithium Ion Li+",
+            "atomic_number": 3,
+            "bond_count": 0
+        },
+        "7": {
+            "atom_class": 7,
+            "type_name": "Na+",
+            "description": "Sodium Ion Na+",
+            "atomic_number": 11,
+            "bond_count": 0
+        },
+        "8": {
+            "atom_class": 8,
+            "type_name": "K+",
+            "description": "Potassium Ion K+",
+            "atomic_number": 19,
+            "bond_count": 0
+        },
+        "9": {
+            "atom_class": 9,
+            "type_name": "Rb+",
+            "description": "Rubidium Ion Rb+",
+            "atomic_number": 37,
+            "bond_count": 0
+        },
+        "10": {
+            "atom_class": 10,
+            "type_name": "Cs+",
+            "description": "Cesium Ion Cs+",
+            "atomic_number": 55,
+            "bond_count": 0
+        },
+        "11": {
+            "atom_class": 11,
+            "type_name": "Mg+",
+            "description": "Magnesium Ion Mg+2",
+            "atomic_number": 12,
+            "bond_count": 0
+        },
+        "12": {
+            "atom_class": 12,
+            "type_name": "Ca+",
+            "description": "Calcium Ion Ca+2",
+            "atomic_number": 20,
+            "bond_count": 0
+        },
+        "13": {
+            "atom_class": 13,
+            "type_name": "Zn+",
+            "description": "Zinc Ion Zn+2",
+            "atomic_number": 30,
+            "bond_count": 0
+        },
+        "14": {
+            "atom_class": 14,
+            "type_name": "F-",
+            "description": "Fluoride Ion F-",
+            "atomic_number": 9,
+            "bond_count": 0
+        },
+        "15": {
+            "atom_class": 15,
+            "type_name": "Cl-",
+            "description": "Chloride Ion Cl-",
+            "atomic_number": 17,
+            "bond_count": 0
+        },
+        "16": {
+            "atom_class": 16,
+            "type_name": "Br-",
+            "description": "Bromide Ion Br-",
+            "atomic_number": 35,
+            "bond_count": 0
+        },
+        "17": {
+            "atom_class": 17,
+            "type_name": "I-",
+            "description": "Iodide Ion I-",
+            "atomic_number": 53,
+            "bond_count": 0
+        },
+        "18": {
+            "atom_class": 18,
+            "type_name": "C",
+            "description": "Cyanide Ion C",
+            "atomic_number": 6,
+            "bond_count": 1
+        },
+        "19": {
+            "atom_class": 19,
+            "type_name": "N",
+            "description": "Cyanide Ion N",
+            "atomic_number": 7,
+            "bond_count": 1
+        },
+        "20": {
+            "atom_class": 20,
+            "type_name": "B",
+            "description": "Tetrafluoroborate B",
+            "atomic_number": 5,
+            "bond_count": 4
+        },
+        "21": {
+            "atom_class": 21,
+            "type_name": "F",
+            "description": "Tetrafluoroborate F",
+            "atomic_number": 9,
+            "bond_count": 1
+        },
+        "22": {
+            "atom_class": 22,
+            "type_name": "P",
+            "description": "Hexafluorophosphate P",
+            "atomic_number": 15,
+            "bond_count": 6
+        },
+        "23": {
+            "atom_class": 23,
+            "type_name": "F",
+            "description": "Hexafluorophosphate F",
+            "atomic_number": 9,
+            "bond_count": 1
+        },
+        "24": {
+            "atom_class": 24,
+            "type_name": "N",
+            "description": "Dinitrogen N2",
+            "atomic_number": 7,
+            "bond_count": 1
+        },
+        "25": {
+            "atom_class": 25,
+            "type_name": "C",
+            "description": "Methane CH4",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "26": {
+            "atom_class": 26,
+            "type_name": "H",
+            "description": "Methane H4C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "27": {
+            "atom_class": 27,
+            "type_name": "C",
+            "description": "Ethane CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "28": {
+            "atom_class": 28,
+            "type_name": "H",
+            "description": "Ethane H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "29": {
+            "atom_class": 27,
+            "type_name": "C",
+            "description": "Alkane CH3-",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "30": {
+            "atom_class": 28,
+            "type_name": "H",
+            "description": "Alkane H3C-",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "31": {
+            "atom_class": 29,
+            "type_name": "C",
+            "description": "Alkane -CH2-",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "32": {
+            "atom_class": 30,
+            "type_name": "H",
+            "description": "Alkane -H2C-",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "33": {
+            "atom_class": 31,
+            "type_name": "C",
+            "description": "Alkane >CH-",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "34": {
+            "atom_class": 32,
+            "type_name": "H",
+            "description": "Alkane -HC<",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "35": {
+            "atom_class": 33,
+            "type_name": "C",
+            "description": "Alkane >C<",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "36": {
+            "atom_class": 34,
+            "type_name": "O",
+            "description": "Water O",
+            "atomic_number": 8,
+            "bond_count": 2
+        },
+        "37": {
+            "atom_class": 35,
+            "type_name": "H",
+            "description": "Water H",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "38": {
+            "atom_class": 36,
+            "type_name": "O",
+            "description": "Methanol O",
+            "atomic_number": 8,
+            "bond_count": 2
+        },
+        "39": {
+            "atom_class": 37,
+            "type_name": "H",
+            "description": "Methanol HO",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "40": {
+            "atom_class": 38,
+            "type_name": "C",
+            "description": "Methanol CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "41": {
+            "atom_class": 39,
+            "type_name": "H",
+            "description": "Methanol H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "42": {
+            "atom_class": 36,
+            "type_name": "O",
+            "description": "Ethanol O",
+            "atomic_number": 8,
+            "bond_count": 2
+        },
+        "43": {
+            "atom_class": 37,
+            "type_name": "H",
+            "description": "Ethanol HO",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "44": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Ethanol CH2",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "45": {
+            "atom_class": 39,
+            "type_name": "H",
+            "description": "Ethanol H2C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "46": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Ethanol CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "47": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "Ethanol H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "48": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Propanol Me-CH2",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "49": {
+            "atom_class": 42,
+            "type_name": "H",
+            "description": "Propanol Me-CH2",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "50": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Propanol CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "51": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "Propanol H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "52": {
+            "atom_class": 36,
+            "type_name": "O",
+            "description": "isoPropanol O",
+            "atomic_number": 8,
+            "bond_count": 2
+        },
+        "53": {
+            "atom_class": 37,
+            "type_name": "H",
+            "description": "isoPropanol HO",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "54": {
+            "atom_class": 43,
+            "type_name": "C",
+            "description": "isoPropanol >CH-",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "55": {
+            "atom_class": 39,
+            "type_name": "H",
+            "description": "isoPropanol >CH-",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "56": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "isoPropanol CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "57": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "isoPropanol H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "58": {
+            "atom_class": 36,
+            "type_name": "O",
+            "description": "Methyl Ether O",
+            "atomic_number": 8,
+            "bond_count": 2
+        },
+        "59": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Methyl Ether CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "60": {
+            "atom_class": 44,
+            "type_name": "H",
+            "description": "Methyl Ether H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "61": {
+            "atom_class": 45,
+            "type_name": "N",
+            "description": "Ammonia N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "62": {
+            "atom_class": 46,
+            "type_name": "H",
+            "description": "Ammonia H3N",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "63": {
+            "atom_class": 47,
+            "type_name": "N",
+            "description": "Ammonium Ion N+",
+            "atomic_number": 7,
+            "bond_count": 4
+        },
+        "64": {
+            "atom_class": 48,
+            "type_name": "H",
+            "description": "Ammonium Ion H4N+",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "65": {
+            "atom_class": 49,
+            "type_name": "N",
+            "description": "Methyl Amine N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "66": {
+            "atom_class": 50,
+            "type_name": "H",
+            "description": "Methyl Amine H2N",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "67": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Methyl Amine CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "68": {
+            "atom_class": 51,
+            "type_name": "H",
+            "description": "Methyl Amine H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "69": {
+            "atom_class": 49,
+            "type_name": "N",
+            "description": "Ethyl Amine N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "70": {
+            "atom_class": 50,
+            "type_name": "H",
+            "description": "Ethyl Amine H2N",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "71": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Ethyl Amine CH2",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "72": {
+            "atom_class": 51,
+            "type_name": "H",
+            "description": "Ethyl Amine H2C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "73": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Ethyl Amine CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "74": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "Ethyl Amine H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "75": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Propyl Amine CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "76": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "Propyl Amine H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "77": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Propyl Amine Me-CH2",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "78": {
+            "atom_class": 42,
+            "type_name": "H",
+            "description": "Propyl Amine Me-CH2",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "79": {
+            "atom_class": 49,
+            "type_name": "N",
+            "description": "Dimethyl Amine N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "80": {
+            "atom_class": 50,
+            "type_name": "H",
+            "description": "Dimethyl Amine HN",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "81": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Dimethyl Amine CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "82": {
+            "atom_class": 51,
+            "type_name": "H",
+            "description": "Dimethyl Amine H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "83": {
+            "atom_class": 49,
+            "type_name": "N",
+            "description": "Trimethyl Amine N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "84": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Trimethyl Amine CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "85": {
+            "atom_class": 51,
+            "type_name": "H",
+            "description": "Trimethyl Amine H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "86": {
+            "atom_class": 49,
+            "type_name": "N",
+            "description": "Pyrrolidine N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "87": {
+            "atom_class": 50,
+            "type_name": "H",
+            "description": "Pyrrolidine HN",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "88": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Pyrrolidine C-CH2-C",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "89": {
+            "atom_class": 52,
+            "type_name": "H",
+            "description": "Pyrrolidine C-CH2-C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "90": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Pyrrolidine CH2-N",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "91": {
+            "atom_class": 52,
+            "type_name": "H",
+            "description": "Pyrrolidine H2C-N",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "92": {
+            "atom_class": 49,
+            "type_name": "N",
+            "description": "NMePyrrolidine N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "93": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "NMePyrrolidine CH2-N",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "94": {
+            "atom_class": 52,
+            "type_name": "H",
+            "description": "NMePyrrolidine H2C-N",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "95": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "NMePyrrolidine CH2<",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "96": {
+            "atom_class": 52,
+            "type_name": "H",
+            "description": "NMePyrrolidine H2C<",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "97": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "NMePyrrolidine CH3-N",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "98": {
+            "atom_class": 42,
+            "type_name": "H",
+            "description": "NMePyrrolidine H3C-N",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "99": {
+            "atom_class": 53,
+            "type_name": "C",
+            "description": "Formamide C=O",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "100": {
+            "atom_class": 54,
+            "type_name": "H",
+            "description": "Formamide HCO",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "101": {
+            "atom_class": 55,
+            "type_name": "O",
+            "description": "Formamide O",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "102": {
+            "atom_class": 56,
+            "type_name": "N",
+            "description": "Formamide N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "103": {
+            "atom_class": 57,
+            "type_name": "H",
+            "description": "Formamide H2N",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "104": {
+            "atom_class": 53,
+            "type_name": "C",
+            "description": "Acetamide C=O",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "105": {
+            "atom_class": 55,
+            "type_name": "O",
+            "description": "Acetamide O",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "106": {
+            "atom_class": 56,
+            "type_name": "N",
+            "description": "Acetamide N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "107": {
+            "atom_class": 57,
+            "type_name": "H",
+            "description": "Acetamide H2N",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "108": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Acetamide CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "109": {
+            "atom_class": 58,
+            "type_name": "H",
+            "description": "Acetamide H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "110": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Propamide Me-CH2",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "111": {
+            "atom_class": 42,
+            "type_name": "H",
+            "description": "Propamide Me-CH2",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "112": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Propamide CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "113": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "Propamide H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "114": {
+            "atom_class": 53,
+            "type_name": "C",
+            "description": "NMeFormamide C=O",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "115": {
+            "atom_class": 54,
+            "type_name": "H",
+            "description": "NMeFormamide HCO",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "116": {
+            "atom_class": 55,
+            "type_name": "O",
+            "description": "NMeFormamide O",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "117": {
+            "atom_class": 56,
+            "type_name": "N",
+            "description": "NMeFormamide N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "118": {
+            "atom_class": 57,
+            "type_name": "H",
+            "description": "NMeFormamide HN",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "119": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "NMeFormamide CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "120": {
+            "atom_class": 59,
+            "type_name": "H",
+            "description": "NMeFormamide H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "121": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "NEtFormamide CH2-N",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "122": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "NEtFormamide CH3-",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "123": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "NEtFormamide H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "124": {
+            "atom_class": 53,
+            "type_name": "C",
+            "description": "NMeAcetamide C=O",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "125": {
+            "atom_class": 55,
+            "type_name": "O",
+            "description": "NMeAcetamide O",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "126": {
+            "atom_class": 56,
+            "type_name": "N",
+            "description": "NMeAcetamide N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "127": {
+            "atom_class": 57,
+            "type_name": "H",
+            "description": "NMeAcetamide HN",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "128": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "NMeAcetamide CH3-N",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "129": {
+            "atom_class": 59,
+            "type_name": "H",
+            "description": "NMeAcetamide H3C-N",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "130": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "NMeAcetamide CH3-C",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "131": {
+            "atom_class": 58,
+            "type_name": "H",
+            "description": "NMeAcetamide H3C-C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "132": {
+            "atom_class": 53,
+            "type_name": "C",
+            "description": "DiMeFormamide C=O",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "133": {
+            "atom_class": 54,
+            "type_name": "H",
+            "description": "DiMeFormamide HCO",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "134": {
+            "atom_class": 55,
+            "type_name": "O",
+            "description": "DiMeFormamide O",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "135": {
+            "atom_class": 56,
+            "type_name": "N",
+            "description": "DiMeFormamide N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "136": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "DiMeFormamide CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "137": {
+            "atom_class": 59,
+            "type_name": "H",
+            "description": "DiMeFormamide H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "138": {
+            "atom_class": 53,
+            "type_name": "C",
+            "description": "DiMeAcetamide C=O",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "139": {
+            "atom_class": 55,
+            "type_name": "O",
+            "description": "DiMeAcetamide O",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "140": {
+            "atom_class": 56,
+            "type_name": "N",
+            "description": "DiMeAcetamide N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "141": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "DiMeAcetamide CH3-N",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "142": {
+            "atom_class": 59,
+            "type_name": "H",
+            "description": "DiMeAcetamide H3C-N",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "143": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "DiMeAcetamide CH3-C",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "144": {
+            "atom_class": 58,
+            "type_name": "H",
+            "description": "DiMeAcetamide H3C-C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "145": {
+            "atom_class": 60,
+            "type_name": "O",
+            "description": "Formic Acid OH",
+            "atomic_number": 8,
+            "bond_count": 2
+        },
+        "146": {
+            "atom_class": 61,
+            "type_name": "H",
+            "description": "Formic Acid HO",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "147": {
+            "atom_class": 62,
+            "type_name": "C",
+            "description": "Formic Acid C=O",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "148": {
+            "atom_class": 55,
+            "type_name": "O",
+            "description": "Formic Acid O=C",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "149": {
+            "atom_class": 63,
+            "type_name": "H",
+            "description": "Formic Acid HC=O",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "150": {
+            "atom_class": 60,
+            "type_name": "O",
+            "description": "Acetic Acid OH",
+            "atomic_number": 8,
+            "bond_count": 2
+        },
+        "151": {
+            "atom_class": 61,
+            "type_name": "H",
+            "description": "Acetic Acid HO",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "152": {
+            "atom_class": 62,
+            "type_name": "C",
+            "description": "Acetic Acid C=O",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "153": {
+            "atom_class": 55,
+            "type_name": "O",
+            "description": "Acetic Acid O=C",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "154": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Acetic Acid CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "155": {
+            "atom_class": 64,
+            "type_name": "H",
+            "description": "Acetic Acid H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "156": {
+            "atom_class": 62,
+            "type_name": "C",
+            "description": "Formaldehyde C=O",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "157": {
+            "atom_class": 55,
+            "type_name": "O",
+            "description": "Formaldehyde O=C",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "158": {
+            "atom_class": 63,
+            "type_name": "H",
+            "description": "Formaldehyde HC=O",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "159": {
+            "atom_class": 62,
+            "type_name": "C",
+            "description": "Acetaldehyde C=O",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "160": {
+            "atom_class": 55,
+            "type_name": "O",
+            "description": "Acetaldehyde O=C",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "161": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Acetaldehyde CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "162": {
+            "atom_class": 64,
+            "type_name": "H",
+            "description": "Acetaldehyde H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "163": {
+            "atom_class": 63,
+            "type_name": "H",
+            "description": "Acetaldehyde HC=O",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "164": {
+            "atom_class": 65,
+            "type_name": "S",
+            "description": "Hydrogen Sulfide S",
+            "atomic_number": 16,
+            "bond_count": 2
+        },
+        "165": {
+            "atom_class": 66,
+            "type_name": "H",
+            "description": "Hydrogen Sulfide H2S",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "166": {
+            "atom_class": 67,
+            "type_name": "S",
+            "description": "Methyl Sulfide S",
+            "atomic_number": 16,
+            "bond_count": 2
+        },
+        "167": {
+            "atom_class": 68,
+            "type_name": "H",
+            "description": "Methyl Sulfide HS",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "168": {
+            "atom_class": 62,
+            "type_name": "C",
+            "description": "Methyl Sulfide CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "169": {
+            "atom_class": 69,
+            "type_name": "H",
+            "description": "Methyl Sulfide H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "170": {
+            "atom_class": 67,
+            "type_name": "S",
+            "description": "Dimethyl Sulfide S",
+            "atomic_number": 16,
+            "bond_count": 2
+        },
+        "171": {
+            "atom_class": 62,
+            "type_name": "C",
+            "description": "Dimethyl Sulfide CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "172": {
+            "atom_class": 69,
+            "type_name": "H",
+            "description": "Dimethyl Sulfide H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "173": {
+            "atom_class": 67,
+            "type_name": "S",
+            "description": "Dimethyl Disulfide S",
+            "atomic_number": 16,
+            "bond_count": 2
+        },
+        "174": {
+            "atom_class": 62,
+            "type_name": "C",
+            "description": "Dimethyl Disulfide CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "175": {
+            "atom_class": 69,
+            "type_name": "H",
+            "description": "Dimethyl Disulfide H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "176": {
+            "atom_class": 67,
+            "type_name": "S",
+            "description": "Ethyl Sulfide S",
+            "atomic_number": 16,
+            "bond_count": 2
+        },
+        "177": {
+            "atom_class": 68,
+            "type_name": "H",
+            "description": "Ethyl Sulfide HS",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "178": {
+            "atom_class": 62,
+            "type_name": "C",
+            "description": "Ethyl Sulfide CH2",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "179": {
+            "atom_class": 69,
+            "type_name": "H",
+            "description": "Ethyl Sulfide H2C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "180": {
+            "atom_class": 70,
+            "type_name": "C",
+            "description": "Ethyl Sulfide CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "181": {
+            "atom_class": 71,
+            "type_name": "H",
+            "description": "Ethyl Sulfide H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "182": {
+            "atom_class": 67,
+            "type_name": "S",
+            "description": "MeEt Sulfide S",
+            "atomic_number": 16,
+            "bond_count": 2
+        },
+        "183": {
+            "atom_class": 62,
+            "type_name": "C",
+            "description": "MeEt Sulfide CH3-S",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "184": {
+            "atom_class": 69,
+            "type_name": "H",
+            "description": "MeEt Sulfide H3C-S",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "185": {
+            "atom_class": 62,
+            "type_name": "C",
+            "description": "MeEt Sulfide CH2-S",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "186": {
+            "atom_class": 69,
+            "type_name": "H",
+            "description": "MeEt Sulfide CH2-S",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "187": {
+            "atom_class": 70,
+            "type_name": "C",
+            "description": "MeEt Sulfide CH3-C",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "188": {
+            "atom_class": 71,
+            "type_name": "H",
+            "description": "MeEt Sulfide H3C-C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "189": {
+            "atom_class": 72,
+            "type_name": "S",
+            "description": "Dimethyl Sulfoxide S=O",
+            "atomic_number": 16,
+            "bond_count": 3
+        },
+        "190": {
+            "atom_class": 73,
+            "type_name": "O",
+            "description": "Dimethyl Sulfoxide S=O",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "191": {
+            "atom_class": 74,
+            "type_name": "C",
+            "description": "Dimethyl Sulfoxide CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "192": {
+            "atom_class": 75,
+            "type_name": "H",
+            "description": "Dimethyl Sulfoxide H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "193": {
+            "atom_class": 76,
+            "type_name": "S",
+            "description": "Methyl Sulfonate SO3-",
+            "atomic_number": 16,
+            "bond_count": 4
+        },
+        "194": {
+            "atom_class": 77,
+            "type_name": "O",
+            "description": "Methyl Sulfonate SO3-",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "195": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Methyl Sulfonate CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "196": {
+            "atom_class": 78,
+            "type_name": "H",
+            "description": "Methyl Sulfonate H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "197": {
+            "atom_class": 76,
+            "type_name": "S",
+            "description": "Ethyl Sulfonate SO3-",
+            "atomic_number": 16,
+            "bond_count": 4
+        },
+        "198": {
+            "atom_class": 77,
+            "type_name": "O",
+            "description": "Ethyl Sulfonate SO3-",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "199": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Ethyl Sulfonate CH2",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "200": {
+            "atom_class": 78,
+            "type_name": "H",
+            "description": "Ethyl Sulfonate H2C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "201": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Ethyl Sulfonate CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "202": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "Ethyl Sulfonate H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "203": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Propyl Sulfonate Me-CH2",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "204": {
+            "atom_class": 42,
+            "type_name": "H",
+            "description": "Propyl Sulfonate Me-CH2",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "205": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Propyl Sulfonate CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "206": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "Propyl Sulfonate H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "207": {
+            "atom_class": 79,
+            "type_name": "C",
+            "description": "Hydrogen Cyanide CN",
+            "atomic_number": 6,
+            "bond_count": 2
+        },
+        "208": {
+            "atom_class": 80,
+            "type_name": "N",
+            "description": "Hydrogen Cyanide CN",
+            "atomic_number": 7,
+            "bond_count": 1
+        },
+        "209": {
+            "atom_class": 81,
+            "type_name": "H",
+            "description": "Hydrogen Cyanide HCN",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "210": {
+            "atom_class": 79,
+            "type_name": "C",
+            "description": "Acetonitrile CN",
+            "atomic_number": 6,
+            "bond_count": 2
+        },
+        "211": {
+            "atom_class": 80,
+            "type_name": "N",
+            "description": "Acetonitrile CN",
+            "atomic_number": 7,
+            "bond_count": 1
+        },
+        "212": {
+            "atom_class": 82,
+            "type_name": "C",
+            "description": "Acetonitrile CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "213": {
+            "atom_class": 83,
+            "type_name": "H",
+            "description": "Acetonitrile H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "214": {
+            "atom_class": 84,
+            "type_name": "C",
+            "description": "Tricyanomethide CN",
+            "atomic_number": 6,
+            "bond_count": 2
+        },
+        "215": {
+            "atom_class": 85,
+            "type_name": "N",
+            "description": "Tricyanomethide CN",
+            "atomic_number": 7,
+            "bond_count": 1
+        },
+        "216": {
+            "atom_class": 86,
+            "type_name": "C",
+            "description": "Tricyanomethide >C-",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "217": {
+            "atom_class": 87,
+            "type_name": "C",
+            "description": "Benzene C",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "218": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "Benzene HC",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "219": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Ethylbenzene C1-CH2",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "220": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Ethylbenzene C2",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "221": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Ethylbenzene C3",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "222": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Ethylbenzene C4",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "223": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "Ethylbenzene H2",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "224": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "Ethylbenzene H3",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "225": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "Ethylbenzene H4",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "226": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Ethylbenzene CH2",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "227": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "Ethylbenzene H2C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "228": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Ethylbenzene CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "229": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "Ethylbenzene H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "230": {
+            "atom_class": 36,
+            "type_name": "O",
+            "description": "Phenol HO",
+            "atomic_number": 8,
+            "bond_count": 2
+        },
+        "231": {
+            "atom_class": 37,
+            "type_name": "H",
+            "description": "Phenol HO",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "232": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Phenol C1-OH",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "233": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Phenol C2",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "234": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Phenol C3",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "235": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Phenol C4",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "236": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "Phenol H2",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "237": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "Phenol H3",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "238": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "Phenol H4",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "239": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "Toluene CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "240": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "Toluene H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "241": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Toluene C1-CH3",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "242": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Toluene C2",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "243": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Toluene C3",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "244": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Toluene C4",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "245": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "Toluene H2",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "246": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "Toluene H3",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "247": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "Toluene H4",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "248": {
+            "atom_class": 36,
+            "type_name": "O",
+            "description": "p-Cresol OH",
+            "atomic_number": 8,
+            "bond_count": 2
+        },
+        "249": {
+            "atom_class": 37,
+            "type_name": "H",
+            "description": "p-Cresol HO",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "250": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "p-Cresol CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "251": {
+            "atom_class": 51,
+            "type_name": "H",
+            "description": "p-Cresol H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "252": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "p-Cresol C1-CH3",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "253": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "p-Cresol C2",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "254": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "p-Cresol C3",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "255": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "p-Cresol C4-OH",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "256": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "p-Cresol H2",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "257": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "p-Cresol H3",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "258": {
+            "atom_class": 91,
+            "type_name": "N",
+            "description": "Imidazole NH",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "259": {
+            "atom_class": 46,
+            "type_name": "H",
+            "description": "Imidazole HN",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "260": {
+            "atom_class": 92,
+            "type_name": "C",
+            "description": "Imidazole N-C-N",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "261": {
+            "atom_class": 93,
+            "type_name": "H",
+            "description": "Imidazole HC",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "262": {
+            "atom_class": 91,
+            "type_name": "N",
+            "description": "Imidazole N=C-",
+            "atomic_number": 7,
+            "bond_count": 2
+        },
+        "263": {
+            "atom_class": 92,
+            "type_name": "C",
+            "description": "Imidazole C-N=C",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "264": {
+            "atom_class": 93,
+            "type_name": "H",
+            "description": "Imidazole HC",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "265": {
+            "atom_class": 92,
+            "type_name": "C",
+            "description": "Imidazole C-NH-",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "266": {
+            "atom_class": 93,
+            "type_name": "H",
+            "description": "Imidazole HC",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "267": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "4-Ethylimidazole CH2",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "268": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "4-Ethylimidazole H2C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "269": {
+            "atom_class": 40,
+            "type_name": "C",
+            "description": "4-Ethylimidazole CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "270": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "4-Ethylimidazole H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "271": {
+            "atom_class": 91,
+            "type_name": "N",
+            "description": "4-Ethylimidazole ND",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "272": {
+            "atom_class": 46,
+            "type_name": "H",
+            "description": "4-Ethylimidazole HND",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "273": {
+            "atom_class": 92,
+            "type_name": "C",
+            "description": "4-Ethylimidazole CE",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "274": {
+            "atom_class": 93,
+            "type_name": "H",
+            "description": "4-Ethylimidazole HCE",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "275": {
+            "atom_class": 91,
+            "type_name": "N",
+            "description": "4-Ethylimidazole NE",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "276": {
+            "atom_class": 46,
+            "type_name": "H",
+            "description": "4-Ethylimidazole HNE",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "277": {
+            "atom_class": 92,
+            "type_name": "C",
+            "description": "4-Ethylimidazole CD",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "278": {
+            "atom_class": 93,
+            "type_name": "H",
+            "description": "4-Ethylimidazole HCD",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "279": {
+            "atom_class": 92,
+            "type_name": "C",
+            "description": "4-Ethylimidazole CG",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "280": {
+            "atom_class": 91,
+            "type_name": "N",
+            "description": "Indole N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "281": {
+            "atom_class": 46,
+            "type_name": "H",
+            "description": "Indole HN",
+            "atomic_number": 6,
+            "bond_count": 1
+        },
+        "282": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "Indole C2",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "283": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "Indole C3",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "284": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "Indole C4",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "285": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "Indole C5",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "286": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "Indole C6",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "287": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "Indole C7",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "288": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "Indole C3a",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "289": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "Indole C7a",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "290": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "Indole HC2",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "291": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "Indole HC3",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "292": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "Indole HC4",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "293": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "Indole HC5",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "294": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "Indole HC6",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "295": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "Indole HC7",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "296": {
+            "atom_class": 91,
+            "type_name": "N",
+            "description": "3-Ethylindole N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "297": {
+            "atom_class": 46,
+            "type_name": "H",
+            "description": "3-Ethylindole HN",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "298": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Ethylindole C2",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "299": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Ethylindole C3",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "300": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Ethylindole C4",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "301": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Ethylindole C5",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "302": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Ethylindole C6",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "303": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Ethylindole C7",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "304": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Ethylindole C3a",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "305": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Ethylindole C7a",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "306": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "3-Ethylindole HC2",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "307": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "3-Ethylindole HC4",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "308": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "3-Ethylindole HC5",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "309": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "3-Ethylindole HC6",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "310": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "3-Ethylindole HC7",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "311": {
+            "atom_class": 95,
+            "type_name": "C",
+            "description": "3-Ethylindole CH2",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "312": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "3-Ethylindole H2C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "313": {
+            "atom_class": 95,
+            "type_name": "C",
+            "description": "3-Ethylindole CH3",
+            "atomic_number": 6,
+            "bond_count": 4
+        },
+        "314": {
+            "atom_class": 41,
+            "type_name": "H",
+            "description": "3-Ethylindole H3C",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "315": {
+            "atom_class": 91,
+            "type_name": "N",
+            "description": "3-Formylindole N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "316": {
+            "atom_class": 46,
+            "type_name": "H",
+            "description": "3-Formylindole HN",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "317": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Formylindole C2",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "318": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Formylindole C3",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "319": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Formylindole C4",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "320": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Formylindole C5",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "321": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Formylindole C6",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "322": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Formylindole C7",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "323": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Formylindole C3a",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "324": {
+            "atom_class": 94,
+            "type_name": "C",
+            "description": "3-Formylindole C7a",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "325": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "3-Formylindole HC2",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "326": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "3-Formylindole HC4",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "327": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "3-Formylindole HC5",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "328": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "3-Formylindole HC6",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "329": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "3-Formylindole HC7",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "330": {
+            "atom_class": 53,
+            "type_name": "C",
+            "description": "3-Formylindole C=O",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "331": {
+            "atom_class": 96,
+            "type_name": "O",
+            "description": "3-Formylindole O=C",
+            "atomic_number": 8,
+            "bond_count": 1
+        },
+        "332": {
+            "atom_class": 63,
+            "type_name": "H",
+            "description": "3-Formylindole HC=O",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "333": {
+            "atom_class": 97,
+            "type_name": "N",
+            "description": "Benzamidine N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "334": {
+            "atom_class": 98,
+            "type_name": "H",
+            "description": "Benzamidine HN",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "335": {
+            "atom_class": 99,
+            "type_name": "C",
+            "description": "Benzamidine N-C-N",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "336": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Benzamidine C1-CN2",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "337": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Benzamidine C2",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "338": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Benzamidine C3",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "339": {
+            "atom_class": 89,
+            "type_name": "C",
+            "description": "Benzamidine C4",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "340": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "Benzamidine H2",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "341": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "Benzamidine H3",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "342": {
+            "atom_class": 90,
+            "type_name": "H",
+            "description": "Benzamidine H4",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "343": {
+            "atom_class": 100,
+            "type_name": "N",
+            "description": "Pyridinium N",
+            "atomic_number": 7,
+            "bond_count": 3
+        },
+        "344": {
+            "atom_class": 87,
+            "type_name": "C",
+            "description": "Pyridinium C2",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "345": {
+            "atom_class": 87,
+            "type_name": "C",
+            "description": "Pyridinium C3",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "346": {
+            "atom_class": 87,
+            "type_name": "C",
+            "description": "Pyridinium C4",
+            "atomic_number": 6,
+            "bond_count": 3
+        },
+        "347": {
+            "atom_class": 101,
+            "type_name": "H",
+            "description": "Pyridinium HN",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "348": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "Pyridinium H2",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "349": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "Pyridinium H3",
+            "atomic_number": 1,
+            "bond_count": 1
+        },
+        "350": {
+            "atom_class": 88,
+            "type_name": "H",
+            "description": "Pyridinium H4",
+            "atomic_number": 1,
+            "bond_count": 1
+        }
+    },
+    "vdw": {
+        "1": {
+            "rmin": 2.99E-10,
+            "epsilon": 33.472,
+            "beta": null
+        },
+        "2": {
+            "rmin": 3.15E-10,
+            "epsilon": 305.432,
+            "beta": null
+        },
+        "3": {
+            "rmin": 3.82E-10,
+            "epsilon": 1087.84,
+            "beta": null
+        },
+        "4": {
+            "rmin": 4.09E-10,
+            "epsilon": 1502.056,
+            "beta": null
+        },
+        "5": {
+            "rmin": 4.37E-10,
+            "epsilon": 2083.632,
+            "beta": null
+        },
+        "6": {
+            "rmin": 2.38E-10,
+            "epsilon": 334.72,
+            "beta": null
+        },
+        "7": {
+            "rmin": 3.02E-10,
+            "epsilon": 1087.84,
+            "beta": null
+        },
+        "8": {
+            "rmin": 3.71E-10,
+            "epsilon": 1464.4,
+            "beta": null
+        },
+        "9": {
+            "rmin": 4.14E-10,
+            "epsilon": 1840.96,
+            "beta": null
+        },
+        "10": {
+            "rmin": 4.37E-10,
+            "epsilon": 2217.52,
+            "beta": null
+        },
+        "11": {
+            "rmin": 2.94E-10,
+            "epsilon": 1255.2,
+            "beta": null
+        },
+        "12": {
+            "rmin": 3.63E-10,
+            "epsilon": 1464.4,
+            "beta": null
+        },
+        "13": {
+            "rmin": 2.68E-10,
+            "epsilon": 928.848,
+            "beta": null
+        },
+        "14": {
+            "rmin": 3.4E-10,
+            "epsilon": 1046,
+            "beta": null
+        },
+        "15": {
+            "rmin": 4.13E-10,
+            "epsilon": 1422.56,
+            "beta": null
+        },
+        "16": {
+            "rmin": 4.38E-10,
+            "epsilon": 1799.12,
+            "beta": null
+        },
+        "17": {
+            "rmin": 4.66E-10,
+            "epsilon": 2175.68,
+            "beta": null
+        },
+        "18": {
+            "rmin": 4.12E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "19": {
+            "rmin": 3.71E-10,
+            "epsilon": 460.24,
+            "beta": null
+        },
+        "20": {
+            "rmin": 3.9E-10,
+            "epsilon": 418.4,
+            "beta": null
+        },
+        "21": {
+            "rmin": 3.22E-10,
+            "epsilon": 502.08,
+            "beta": null
+        },
+        "22": {
+            "rmin": 4.53E-10,
+            "epsilon": 1464.4,
+            "beta": null
+        },
+        "23": {
+            "rmin": 3.22E-10,
+            "epsilon": 502.08,
+            "beta": null
+        },
+        "24": {
+            "rmin": 3.71E-10,
+            "epsilon": 334.72,
+            "beta": 0.99
+        },
+        "25": {
+            "rmin": 3.78E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "26": {
+            "rmin": 2.9E-10,
+            "epsilon": 92.048,
+            "beta": 0.9
+        },
+        "27": {
+            "rmin": 3.82E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "28": {
+            "rmin": 2.96E-10,
+            "epsilon": 100.416,
+            "beta": 0.92
+        },
+        "29": {
+            "rmin": 3.82E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "30": {
+            "rmin": 2.98E-10,
+            "epsilon": 100.416,
+            "beta": 0.94
+        },
+        "31": {
+            "rmin": 3.65E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "32": {
+            "rmin": 2.94E-10,
+            "epsilon": 108.784,
+            "beta": 0.91
+        },
+        "33": {
+            "rmin": 3.6E-10,
+            "epsilon": 435.136,
+            "beta": null
+        },
+        "34": {
+            "rmin": 3.405E-10,
+            "epsilon": 460.24,
+            "beta": null
+        },
+        "35": {
+            "rmin": 2.655E-10,
+            "epsilon": 56.484,
+            "beta": 0.91
+        },
+        "36": {
+            "rmin": 3.405E-10,
+            "epsilon": 460.24,
+            "beta": null
+        },
+        "37": {
+            "rmin": 2.655E-10,
+            "epsilon": 56.484,
+            "beta": 0.91
+        },
+        "38": {
+            "rmin": 3.76E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "39": {
+            "rmin": 2.87E-10,
+            "epsilon": 100.416,
+            "beta": 0.91
+        },
+        "40": {
+            "rmin": 3.82E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "41": {
+            "rmin": 2.96E-10,
+            "epsilon": 100.416,
+            "beta": 0.92
+        },
+        "42": {
+            "rmin": 2.98E-10,
+            "epsilon": 100.416,
+            "beta": 0.92
+        },
+        "43": {
+            "rmin": 3.65E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "44": {
+            "rmin": 2.89E-10,
+            "epsilon": 100.416,
+            "beta": 0.91
+        },
+        "45": {
+            "rmin": 3.71E-10,
+            "epsilon": 439.32,
+            "beta": null
+        },
+        "46": {
+            "rmin": 2.7E-10,
+            "epsilon": 83.68,
+            "beta": 0.91
+        },
+        "47": {
+            "rmin": 3.71E-10,
+            "epsilon": 439.32,
+            "beta": null
+        },
+        "48": {
+            "rmin": 2.48E-10,
+            "epsilon": 48.116,
+            "beta": 0.9
+        },
+        "49": {
+            "rmin": 3.71E-10,
+            "epsilon": 439.32,
+            "beta": null
+        },
+        "50": {
+            "rmin": 2.7E-10,
+            "epsilon": 83.68,
+            "beta": 0.91
+        },
+        "51": {
+            "rmin": 2.88E-10,
+            "epsilon": 100.416,
+            "beta": 0.91
+        },
+        "52": {
+            "rmin": 2.96E-10,
+            "epsilon": 92.048,
+            "beta": 0.92
+        },
+        "53": {
+            "rmin": 3.82E-10,
+            "epsilon": 443.504,
+            "beta": null
+        },
+        "54": {
+            "rmin": 2.8E-10,
+            "epsilon": 108.784,
+            "beta": 0.91
+        },
+        "55": {
+            "rmin": 3.3E-10,
+            "epsilon": 468.608,
+            "beta": null
+        },
+        "56": {
+            "rmin": 3.71E-10,
+            "epsilon": 460.24,
+            "beta": null
+        },
+        "57": {
+            "rmin": 2.59E-10,
+            "epsilon": 92.048,
+            "beta": 0.9
+        },
+        "58": {
+            "rmin": 2.95E-10,
+            "epsilon": 108.784,
+            "beta": 0.91
+        },
+        "59": {
+            "rmin": 2.93E-10,
+            "epsilon": 108.784,
+            "beta": 0.91
+        },
+        "60": {
+            "rmin": 3.405E-10,
+            "epsilon": 460.24,
+            "beta": null
+        },
+        "61": {
+            "rmin": 2.655E-10,
+            "epsilon": 62.76,
+            "beta": 0.91
+        },
+        "62": {
+            "rmin": 3.78E-10,
+            "epsilon": 443.504,
+            "beta": null
+        },
+        "63": {
+            "rmin": 2.92E-10,
+            "epsilon": 125.52,
+            "beta": 0.92
+        },
+        "64": {
+            "rmin": 2.98E-10,
+            "epsilon": 100.416,
+            "beta": 0.94
+        },
+        "65": {
+            "rmin": 4.005E-10,
+            "epsilon": 1485.32,
+            "beta": null
+        },
+        "66": {
+            "rmin": 2.77E-10,
+            "epsilon": 100.416,
+            "beta": 0.96
+        },
+        "67": {
+            "rmin": 4.005E-10,
+            "epsilon": 1485.32,
+            "beta": null
+        },
+        "68": {
+            "rmin": 2.77E-10,
+            "epsilon": 100.416,
+            "beta": 0.96
+        },
+        "69": {
+            "rmin": 2.87E-10,
+            "epsilon": 138.072,
+            "beta": 0.9
+        },
+        "70": {
+            "rmin": 3.82E-10,
+            "epsilon": 435.136,
+            "beta": null
+        },
+        "71": {
+            "rmin": 2.98E-10,
+            "epsilon": 100.416,
+            "beta": 0.92
+        },
+        "72": {
+            "rmin": 3.91E-10,
+            "epsilon": 1610.84,
+            "beta": null
+        },
+        "73": {
+            "rmin": 3.52E-10,
+            "epsilon": 468.608,
+            "beta": null
+        },
+        "74": {
+            "rmin": 3.82E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "75": {
+            "rmin": 2.91E-10,
+            "epsilon": 102.508,
+            "beta": 0.91
+        },
+        "76": {
+            "rmin": 3.91E-10,
+            "epsilon": 1610.84,
+            "beta": null
+        },
+        "77": {
+            "rmin": 3.51E-10,
+            "epsilon": 468.608,
+            "beta": null
+        },
+        "78": {
+            "rmin": 2.91E-10,
+            "epsilon": 138.072,
+            "beta": 0.9
+        },
+        "79": {
+            "rmin": 3.82E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "80": {
+            "rmin": 3.58E-10,
+            "epsilon": 460.24,
+            "beta": null
+        },
+        "81": {
+            "rmin": 2.92E-10,
+            "epsilon": 125.52,
+            "beta": 0.92
+        },
+        "82": {
+            "rmin": 3.82E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "83": {
+            "rmin": 2.91E-10,
+            "epsilon": 138.072,
+            "beta": 0.9
+        },
+        "84": {
+            "rmin": 3.82E-10,
+            "epsilon": 443.504,
+            "beta": null
+        },
+        "85": {
+            "rmin": 3.69E-10,
+            "epsilon": 460.24,
+            "beta": null
+        },
+        "86": {
+            "rmin": 3.82E-10,
+            "epsilon": 443.504,
+            "beta": null
+        },
+        "87": {
+            "rmin": 3.8E-10,
+            "epsilon": 372.376,
+            "beta": null
+        },
+        "88": {
+            "rmin": 2.98E-10,
+            "epsilon": 108.784,
+            "beta": 0.92
+        },
+        "89": {
+            "rmin": 3.8E-10,
+            "epsilon": 380.744,
+            "beta": null
+        },
+        "90": {
+            "rmin": 2.98E-10,
+            "epsilon": 108.784,
+            "beta": 0.92
+        },
+        "91": {
+            "rmin": 3.71E-10,
+            "epsilon": 439.32,
+            "beta": null
+        },
+        "92": {
+            "rmin": 3.78E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "93": {
+            "rmin": 3.0E-10,
+            "epsilon": 100.416,
+            "beta": 0.94
+        },
+        "94": {
+            "rmin": 3.8E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "95": {
+            "rmin": 3.82E-10,
+            "epsilon": 435.136,
+            "beta": null
+        },
+        "96": {
+            "rmin": 3.3E-10,
+            "epsilon": 476.976,
+            "beta": null
+        },
+        "97": {
+            "rmin": 3.71E-10,
+            "epsilon": 460.24,
+            "beta": null
+        },
+        "98": {
+            "rmin": 2.59E-10,
+            "epsilon": 92.048,
+            "beta": 0.9
+        },
+        "99": {
+            "rmin": 3.65E-10,
+            "epsilon": 422.584,
+            "beta": null
+        },
+        "100": {
+            "rmin": 3.71E-10,
+            "epsilon": 439.32,
+            "beta": null
+        },
+        "101": {
+            "rmin": 2.7E-10,
+            "epsilon": 83.68,
+            "beta": 0.91
+        }
+    }
+}

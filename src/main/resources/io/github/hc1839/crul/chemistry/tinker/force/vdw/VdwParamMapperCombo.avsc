@@ -1,0 +1,11 @@
+{
+    "type": "record",
+    "namespace": "io.github.hc1839.crul.chemistry.tinker.force.vdw",
+    "name": "VdwParamMapperCombo",
+    "fields": [
+        {
+            "type": { "type": "array", "items": "bytes" },
+            "name": "vdw_param_groups"
+        }
+    ]
+}

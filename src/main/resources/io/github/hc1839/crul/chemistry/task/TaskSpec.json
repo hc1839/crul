@@ -1,0 +1,106 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "title": "Task Specification",
+    "description": "Specification of a task as a calculation along with its dependencies.",
+    "properties": {
+        "task_uri": {
+            "type": "string",
+            "description": "URI of this task."
+        },
+        "tag_uris": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+                "type": "string",
+                "description": "URIs of the tags for this task."
+            }
+        },
+        "calculation_complete": {
+            "type": "boolean",
+            "description": "Whether the calculation for this task is complete."
+        },
+        "estimated_duration": {
+            "type": "string",
+            "description": "Estimated duration of the calculation. Extra time as margin should be included. It is in the ISO-8601 duration format `PnDTnHnMn.nS`."
+        },
+        "parallelization": {
+            "type": "object",
+            "description": "Parallelization parameters. To specify the number of threads per MPI process, `OMP_NUM_THREADS` must be explicitly set as a command in `commands`.",
+            "properties": {
+                "num_procs": {
+                    "type": "integer",
+                    "description": "Total number of MPI processes.",
+                    "minimum": 1
+                }
+            },
+            "required": [
+                "num_procs"
+            ]
+        },
+        "io_file_names": {
+            "type": "object",
+            "description": "I/O file names for this task.",
+            "properties": {
+                "io_prefix": {
+                    "type": "string",
+                    "description": "Prefix part of the file name that is the same for all of the IO files."
+                },
+                "input_suffix": {
+                    "type": "string",
+                    "description": "Suffix of the input file name.",
+                    "minLength": 1
+                },
+                "output_suffix": {
+                    "type": "string",
+                    "description": "Suffix of the output file name.",
+                    "minLength": 1
+                },
+                "error_suffix": {
+                    "type": "string",
+                    "description": "Suffix of the error file name.",
+                    "minLength": 1
+                }
+            },
+            "required": [
+                "io_prefix",
+                "input_suffix",
+                "output_suffix",
+                "error_suffix"
+            ]
+        },
+        "executable_path": {
+            "type": "string",
+            "description": "Absolute path to the executable."
+        },
+        "commands": {
+            "type": "array",
+            "description": "Array of commands to execute for this task. Applications must support `@task_dir_absolute_path@` (absolute path to the directory of this task), `@task_dir_relative_path@` (relative path to the directory of this task with respect to the directory of the job file), `@job_dir_relative_path@` (relative path to the directory of the job with respect to the directory of this task file), `@task_file_name@` (file name of this task), `@executable_path@` (absolute path to the executable), and the properties of `parallelization` and `io_file_names` as token filters.",
+            "items": {
+                "type": "string",
+                "minLength": 1
+            },
+            "minItems": 1
+        },
+        "dependencies": {
+            "type": "array",
+            "description": "Task dependencies. Each dependency is a task URI.",
+            "uniqueItems": true,
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
+        }
+    },
+    "required": [
+        "task_uri",
+        "tag_uris",
+        "calculation_complete",
+        "estimated_duration",
+        "parallelization",
+        "io_file_names",
+        "executable_path",
+        "commands",
+        "dependencies"
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "type": "record",
+    "namespace": "io.github.hc1839.crul.chemistry.tinker.keyword",
+    "name": "AtomKeyword",
+    "fields": [
+        { "type": "int", "name": "atom_type_code" },
+        { "type": "bytes", "name": "atom_class" },
+        { "type": "string", "name": "type_name" },
+        { "type": "string", "name": "description" },
+        { "type": "int", "name": "atomic_number" },
+        { "type": "int", "name": "bond_count" }
+    ]
+}
